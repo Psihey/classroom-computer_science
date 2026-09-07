@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практична робота: Мережа зсередини</title>
+<style>
+  :root{
+    --ink:#1c2321;
+    --paper:#f6f4ee;
+    --panel:#ffffff;
+    --line:#d8d3c4;
+    --signal:#2f6f5e;
+    --signal-dim:#e4efec;
+    --accent:#c65d3b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Iowan Old Style','Georgia',serif;
+    line-height:1.5;
+    padding-bottom:60px;
+  }
+  header{
+    padding:36px 20px 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'Courier New',monospace;
+    font-size:13px;
+    color:var(--signal);
+    margin:0 0 10px;
+  }
+  h1{
+    font-size:28px;
+    margin:0 0 8px;
+    font-weight:600;
+    max-width:26ch;
+  }
+  .lead{
+    font-size:15px;
+    color:#4a4a44;
+    max-width:38ch;
+    margin:0;
+  }
+  main{
+    max-width:520px;
+    margin:0 auto;
+    padding:0 20px;
+  }
+  .station{
+    border-bottom:1px solid var(--line);
+    padding:28px 0;
+  }
+  .station:last-of-type{
+    border-bottom:none;
+  }
+  .station-head{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    margin-bottom:10px;
+  }
+  .n{
+    font-family:'Courier New',monospace;
+    font-size:14px;
+    color:var(--accent);
+    flex-shrink:0;
+  }
+  .station h2{
+    font-size:19px;
+    margin:0;
+    font-weight:600;
+  }
+  .station p{
+    margin:0 0 12px;
+    font-size:15px;
+    color:#3a3a35;
+  }
+  code, .cmd{
+    display:block;
+    background:var(--ink);
+    color:#eef0e8;
+    font-family:'Courier New',monospace;
+    font-size:15px;
+    padding:12px 14px;
+    border-radius:3px;
+    margin:10px 0;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .task{
+    background:var(--signal-dim);
+    border-left:3px solid var(--signal);
+    padding:10px 14px;
+    font-size:14px;
+    margin-top:10px;
+  }
+  .task strong{color:var(--signal);}
+  .answer{
+    margin-top:10px;
+    border-bottom:1px dashed #a9a397;
+    padding:6px 0 2px;
+    font-size:14px;
+    color:#8a8578;
+  }
+  .note{
+    margin-top:60px;
+    padding:20px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    font-size:13px;
+    color:#5a5a52;
+  }
+  .note strong{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Урок 1 · Інформаційні системи та мережі</p>
+  <h1>Практична робота: мережа зсередини</h1>
+  <p class="lead">П'ять коротких завдань на власному комп'ютері. Виконуй по черзі, записуй відповіді.</p>
+</header>
+
+<main>
+
+  <div class="station">
+    <div class="station-head">
+      <span class="n">01</span>
+      <h2>Хто я в мережі?</h2>
+    </div>
+    <p>Відкрий командний рядок: <strong>Win + R</strong>, введи <strong>cmd</strong>, натисни Enter.</p>
+    <code>ipconfig /all</code>
+    <div class="task">
+      <strong>Завдання:</strong> знайди й запиши свою IP-адресу, MAC-адресу та адресу шлюзу (Default Gateway).
+    </div>
+    <div class="answer">IP-адреса: _______________</div>
+    <div class="answer">Шлюз: _______________</div>
+  </div>
+
+  <div class="station">
+    <div class="station-head">
+      <span class="n">02</span>
+      <h2>Наскільки далеко сервер?</h2>
+    </div>
+    <p>У тому ж вікні командного рядка введи:</p>
+    <code>ping google.com</code>
+    <div class="task">
+      <strong>Завдання:</strong> запиши час відгуку (мс) та чи були втрачені пакети (Lost).
+    </div>
+    <div class="answer">Час відгуку: _______________</div>
+  </div>
+
+  <div class="station">
+    <div class="station-head">
+      <span class="n">03</span>
+      <h2>Простеж шлях пакета</h2>
+    </div>
+    <p>Введи команду трасування маршруту:</p>
+    <code>tracert google.com</code>
+    <div class="task">
+      <strong>Завдання:</strong> порахуй, через скільки проміжних вузлів (рядків) пройшов твій запит, перш ніж дістатися сервера.
+    </div>
+    <div class="answer">Кількість вузлів: _______________</div>
+  </div>
+
+  <div class="station">
+    <div class="station-head">
+      <span class="n">04</span>
+      <h2>Моніторинг у реальному часі</h2>
+    </div>
+    <p>Відкрий Диспетчер завдань: <strong>Ctrl + Shift + Esc</strong> → вкладка «Продуктивність» → «Мережа».</p>
+    <p>Відкрий у браузері відео на YouTube і подивись, як змінюється графік.</p>
+    <div class="task">
+      <strong>Завдання:</strong> опиши одним реченням, що відбувається з графіком мережі під час завантаження відео.
+    </div>
+    <div class="answer">Спостереження: _______________</div>
+  </div>
+
+  <div class="station">
+    <div class="station-head">
+      <span class="n">05</span>
+      <h2>Кабелі на дні океану</h2>
+    </div>
+    <p>Відкрий сайт <strong>submarinecablemap.com</strong> — інтерактивну карту підводних інтернет-кабелів світу.</p>
+    <div class="task">
+      <strong>Завдання:</strong> знайди найближчий до України кабель і запиши, які країни він з'єднує.
+    </div>
+    <div class="answer">Кабель з'єднує: _______________</div>
+  </div>
+
+</main>
+
+<div class="note" style="max-width:520px;margin:60px auto 0;">
+  <strong>Нагадування:</strong> якщо команда не спрацювала — перевір, чи немає помилки в написанні, і повтори. Готово раніше за інших? Спробуй <code style="display:inline;padding:2px 6px;">tracert</code> для іншого сайту й порівняй кількість вузлів.
+</div>
+
+</body>
+</html>
