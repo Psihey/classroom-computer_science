@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Живі дані планети — датчики IoT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0F1C;
+    --panel: #101828;
+    --panel-line: #1E293F;
+    --text: #E7ECF6;
+    --text-dim: #8A96B2;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(79,209,197,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(246,173,85,0.05), transparent 45%);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    padding: 48px 24px 80px;
+  }
+  .wrap{ max-width: 980px; margin: 0 auto; }
+
+  header{ margin-bottom: 44px; }
+  .kicker{
+    font-family: var(--mono);
+    font-size: 13px;
+    color: #4FD1C5;
+    letter-spacing: 0.02em;
+    margin-bottom: 14px;
+  }
+  h1{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(30px, 4.4vw, 44px);
+    line-height: 1.12;
+    max-width: 15ch;
+    margin-bottom: 16px;
+  }
+  header p{
+    color: var(--text-dim);
+    font-size: 16px;
+    max-width: 62ch;
+  }
+
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+  }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 10px;
+    padding: 22px 22px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before{
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .card-top{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .card-name{
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 19px;
+  }
+  .card-tag{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .card-url{
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    word-break: break-all;
+  }
+  .card-desc{
+    font-size: 14.5px;
+    color: #C6CEE0;
+    margin-bottom: 16px;
+  }
+  .tech{
+    border-top: 1px solid var(--panel-line);
+    padding-top: 14px;
+  }
+  .tech-label{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .tech-list{
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tech-list li{
+    font-size: 13.5px;
+    color: var(--text);
+    padding-left: 14px;
+    position: relative;
+  }
+  .tech-list li::before{
+    content: "";
+    position: absolute;
+    left: 0; top: 7px;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .card.air{ --accent: #4FD1C5; }
+  .card.weather{ --accent: #63B3ED; }
+  .card.satellite{ --accent: #B794F4; }
+  .card.flight{ --accent: #F6AD55; }
+  .card.ship{ --accent: #68D391; }
+  .card.seismic{ --accent: #FC8181; }
+  .card.energy{ --accent: #F6E05E; }
+
+  footer{
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--panel-line);
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px){
+    body{ padding: 32px 16px 60px; }
+    .card-top{ flex-direction: column; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">IoT · збір даних · урок інформатики</div>
+    <h1>Сайти, за якими стоять тисячі реальних датчиків</h1>
+    <p>Кожен із цих сервісів показує дані, які прямо зараз збирають фізичні пристрої десь у світі — метеостанції, супутники, антени чи сейсмографи — і передають через інтернет. Ось що саме там "чує" техніка.</p>
+  </header>
+
+  <div class="grid">
+
+    <div class="card air">
+      <div class="card-top">
+        <div class="card-name">World Air Quality Index</div>
+        <div class="card-tag">якість повітря</div>
+      </div>
+      <div class="card-url">aqicn.org</div>
+      <div class="card-desc">Мапа якості повітря в реальному часі для тисяч міст світу.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Державні станції моніторингу повітря (офіційні екологічні служби)</li>
+          <li>Оптичні датчики частинок пилу — вимірюють PM2.5 та PM10</li>
+          <li>Електрохімічні газові датчики — NO₂, SO₂, O₃, CO</li>
+          <li>Мережа недорогих народних сенсорів (community sensors)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card weather">
+      <div class="card-top">
+        <div class="card-name">Windy</div>
+        <div class="card-tag">погода й вітер</div>
+      </div>
+      <div class="card-url">windy.com</div>
+      <div class="card-desc">Анімована мапа вітру, температури й опадів по всій планеті.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Наземні метеостанції: термометр, гігрометр, барометр, анемометр</li>
+          <li>Метеорологічні радари (опади)</li>
+          <li>Дані з погодних супутників</li>
+          <li>Результати накладаються на моделі прогнозування погоди</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card satellite">
+      <div class="card-top">
+        <div class="card-name">Zoom Earth</div>
+        <div class="card-tag">супутник</div>
+      </div>
+      <div class="card-url">zoom.earth</div>
+      <div class="card-desc">Знімки Землі з супутників у режимі, близькому до реального часу.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Геостаціонарні метеосупутники</li>
+          <li>Оптичні (видиме світло) сенсори на борту супутника</li>
+          <li>Інфрачервоні сенсори — для зйомки вночі й температури хмар</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card satellite">
+      <div class="card-top">
+        <div class="card-name">NASA Worldview</div>
+        <div class="card-tag">супутник</div>
+      </div>
+      <div class="card-url">worldview.earthdata.nasa.gov</div>
+      <div class="card-desc">Пожежі, лід, температура океану — дані NASA за майже реальний час.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Прилад MODIS на супутниках Terra та Aqua</li>
+          <li>Прилад VIIRS на супутнику Suomi NPP</li>
+          <li>Багатоспектральні оптичні сенсори (десятки діапазонів світла)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card flight">
+      <div class="card-top">
+        <div class="card-name">Flightradar24</div>
+        <div class="card-tag">авіація</div>
+      </div>
+      <div class="card-url">flightradar24.com</div>
+      <div class="card-desc">Тисячі літаків у небі прямо зараз, у реальному часі.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Наземні приймачі сигналу ADS-B (мережа з тисяч антен-волонтерів)</li>
+          <li>Транспондер літака передає GPS-позицію, висоту, швидкість</li>
+          <li>Додатково — дані наземних радарів</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card ship">
+      <div class="card-top">
+        <div class="card-name">MarineTraffic</div>
+        <div class="card-tag">морський транспорт</div>
+      </div>
+      <div class="card-url">marinetraffic.com</div>
+      <div class="card-desc">Рух суден і кораблів по всіх морях і океанах світу.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Система AIS (Automatic Identification System) на кожному судні</li>
+          <li>GPS-модуль судна передає координати по радіо (VHF)</li>
+          <li>Берегові приймачі AIS та приймачі на супутниках</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card seismic">
+      <div class="card-top">
+        <div class="card-name">USGS Earthquakes</div>
+        <div class="card-tag">сейсміка</div>
+      </div>
+      <div class="card-url">earthquake.usgs.gov</div>
+      <div class="card-desc">Карта землетрusів на планеті за останні години й дні.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Сейсмометри — вимірюють найменші коливання ґрунту</li>
+          <li>Глобальна мережа сейсмостанцій (Global Seismographic Network)</li>
+          <li>Автоматичний аналіз хвиль P і S для визначення епіцентру</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card energy">
+      <div class="card-top">
+        <div class="card-name">Electricity Maps</div>
+        <div class="card-tag">енергетика</div>
+      </div>
+      <div class="card-url">electricitymaps.com</div>
+      <div class="card-desc">Звідки береться електроенергія в кожній країні прямо зараз.</div>
+      <div class="tech">
+        <div class="tech-label">ДАТЧИКИ / IoT-ТЕХНОЛОГІЯ</div>
+        <ul class="tech-list">
+          <li>Розумні лічильники (smart meters) на електростанціях</li>
+          <li>Системи SCADA — телеметрія роботи енергомереж</li>
+          <li>Дані операторів енергосистем країн у реальному часі</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    Матеріал для уроку інформатики — компонент IoT "Збір даних". Кожен сайт демонструє один і той самий принцип: фізичний давач → сигнал → передача через інтернет → візуалізація для людини.
+  </footer>
+
+</div>
+</body>
+</html>
