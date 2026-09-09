@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практика 1 — Перша програма на Java</title>
+<style>
+  :root {
+    --paper: #F4EEE1;
+    --paper-edge: #E7DCC3;
+    --ink: #2A2018;
+    --ink-soft: #5B4E3E;
+    --coffee: #4A2E1E;
+    --coffee-deep: #33200F;
+    --gold: #B9812F;
+    --rule: #C9BBA0;
+    --code-bg: #2A2018;
+    --code-text: #F1E9D8;
+    --ok: #4C6B4F;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 48px 20px 80px;
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--paper) 39px, var(--rule) 40px);
+    background-size: 100% 40px;
+    background-position: 0 96px;
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    line-height: 1.6;
+  }
+
+  .sheet {
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .sheet::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    bottom: -40px;
+    left: 64px;
+    width: 1px;
+    background: #C9756A;
+    opacity: 0.45;
+  }
+
+  header {
+    padding-left: 84px;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: 32px;
+    color: var(--coffee-deep);
+    font-weight: normal;
+  }
+
+  .sub {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 16px;
+    max-width: 46ch;
+  }
+
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding: 10px 18px;
+    background: var(--coffee);
+    color: var(--paper);
+    text-decoration: none;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 14px;
+    border-radius: 2px;
+  }
+  .link-btn:hover { background: var(--coffee-deep); }
+
+  .step {
+    padding-left: 84px;
+    position: relative;
+    margin-bottom: 36px;
+  }
+
+  .step-num {
+    position: absolute;
+    left: 48px;
+    top: 2px;
+    width: 32px;
+    height: 32px;
+    background: var(--paper);
+    border: 2px solid var(--coffee);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 14px;
+    color: var(--coffee);
+  }
+
+  .step h2 {
+    margin: 0 0 8px;
+    font-size: 20px;
+    color: var(--coffee-deep);
+    font-weight: normal;
+  }
+
+  .step p {
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+
+  code.inline {
+    font-family: "Courier New", Consolas, monospace;
+    background: var(--paper-edge);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
+
+  pre {
+    margin: 0 0 12px;
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 20px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  pre code {
+    font-family: "Fira Code", Consolas, "Courier New", monospace;
+    white-space: pre;
+  }
+
+  .note {
+    border-left: 3px solid var(--gold);
+    padding: 6px 14px;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    background: rgba(185, 129, 47, 0.08);
+  }
+
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 4px;
+  }
+  .checklist li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 6px 0;
+    color: var(--ink);
+  }
+  .checklist li::before {
+    content: "";
+    flex: none;
+    width: 15px;
+    height: 15px;
+    margin-top: 3px;
+    border: 2px solid var(--coffee);
+    border-radius: 3px;
+  }
+
+  footer {
+    padding-left: 84px;
+    margin-top: 40px;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    font-family: "Courier New", Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <header>
+      <span class="eyebrow">Практика 1 · 10 клас · Інформатика</span>
+      <h1>Перша програма на Java</h1>
+      <p class="sub">Сьогодні ти напишеш і запустиш свою першу Java-програму — прямо в браузері, без встановлення нічого зайвого.</p>
+      <a class="link-btn" href="https://onecompiler.com/java" target="_blank" rel="noopener">→ Відкрити OneCompiler</a>
+    </header>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <h2>Відкрий редактор</h2>
+      <p>Перейди за посиланням вище. Ти побачиш готовий шаблон коду — не видаляй його одразу, спочатку натисни кнопку <code class="inline">Run</code> і подивись, що виведеться.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <h2>Напиши власне привітання</h2>
+      <p>Заміни вміст файлу на код нижче — і встав своє ім'я замість <code class="inline">Ім'я</code>:</p>
+      <pre><code>class Main {
+    public static void main(String[] args) {
+        System.out.println("Привіт, мене звати Ім'я!");
+    }
+}</code></pre>
+      <p>Натисни <code class="inline">Run</code>. Якщо все правильно — текст з'явиться в панелі виводу праворуч (або знизу).</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <h2>Додай ще рядки</h2>
+      <p>Постав курсор перед закриваючою дужкою <code class="inline">}</code> методу <code class="inline">main</code> і додай ще 2–3 команди <code class="inline">System.out.println(...)</code>, наприклад:</p>
+      <pre><code>System.out.println("Я учень/учениця 10 класу.");
+System.out.println("Мій улюблений предмет — ...");
+System.out.println("Інформатику я обрав(-ла), бо ...");</code></pre>
+      <div class="note">Кожен рядок — окрема команда. Не забувай крапку з комою в кінці кожного рядка!</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <h2>Зламай і полагодь</h2>
+      <p>Навмисно приберіть одну крапку з комою або одну дужку — і натисніть <code class="inline">Run</code>. Прочитайте повідомлення про помилку: воно завжди вказує, у якому рядку проблема.</p>
+      <p>Поверніть символ на місце, щоб програма знову працювала.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-num">✓</div>
+      <h2>Перевір себе</h2>
+      <ul class="checklist">
+        <li>Програма запускається без помилок</li>
+        <li>У виводі є моє ім'я</li>
+        <li>Є щонайменше 4 рядки виводу (println)</li>
+        <li>Я бачив(-ла), як виглядає повідомлення про помилку компіляції</li>
+      </ul>
+    </div>
+
+    <footer>class Main → метод main → System.out.println</footer>
+  </div>
+</body>
+</html>
