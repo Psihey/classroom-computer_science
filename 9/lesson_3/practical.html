@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дослідження: обираємо розумний пристрій</title>
+<style>
+  :root{
+    --ink:#1c2321;
+    --paper:#f6f4ee;
+    --panel:#ffffff;
+    --line:#d8d3c4;
+    --signal:#2f6f5e;
+    --signal-dim:#e4efec;
+    --accent:#c65d3b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Iowan Old Style','Georgia',serif;
+    line-height:1.5;
+    padding-bottom:60px;
+  }
+  header{
+    padding:32px 20px 24px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'Courier New',monospace;
+    font-size:13px;
+    color:var(--signal);
+    margin:0 0 10px;
+  }
+  h1{
+    font-size:25px;
+    margin:0 0 8px;
+    font-weight:600;
+    max-width:26ch;
+  }
+  .lead{
+    font-size:15px;
+    color:#4a4a44;
+    max-width:40ch;
+    margin:0;
+  }
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:0 20px;
+  }
+  section{
+    padding:26px 0;
+    border-bottom:1px solid var(--line);
+  }
+  section h2{
+    font-size:17px;
+    margin:0 0 6px;
+  }
+  section p{
+    font-size:14.5px;
+    color:#3a3a35;
+    margin:0 0 14px;
+  }
+  .devices{
+    list-style:none;
+    padding:0;
+    margin:0;
+    display:grid;
+    gap:10px;
+  }
+  .device{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:12px 14px;
+  }
+  .device-name{
+    font-weight:600;
+    font-size:15px;
+  }
+  .device-ex{
+    font-family:'Courier New',monospace;
+    font-size:12.5px;
+    color:#6a6a60;
+    margin-top:3px;
+  }
+  .task{
+    background:var(--signal-dim);
+    border-left:3px solid var(--signal);
+    padding:12px 14px;
+    font-size:14px;
+    margin:14px 0;
+  }
+  .task strong{color:var(--signal);}
+  label{
+    display:block;
+    font-family:'Courier New',monospace;
+    font-size:12.5px;
+    color:var(--signal);
+    margin:16px 0 5px;
+  }
+  input[type=text], textarea{
+    width:100%;
+    font-family:'Iowan Old Style','Georgia',serif;
+    font-size:15px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:var(--panel);
+    color:var(--ink);
+  }
+  textarea{
+    min-height:60px;
+    resize:vertical;
+  }
+  .radios{
+    display:flex;
+    gap:16px;
+    margin-top:6px;
+  }
+  .radios label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Iowan Old Style','Georgia',serif;
+    font-size:14px;
+    color:var(--ink);
+    margin:0;
+  }
+  .step-n{
+    font-family:'Courier New',monospace;
+    color:var(--accent);
+    font-size:13px;
+  }
+  .present{
+    margin-top:60px;
+    padding:18px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    font-size:13.5px;
+    color:#5a5a52;
+    max-width:560px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  .present strong{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Практична робота · IoT</p>
+  <h1>Уявімо, що ми обираємо розумний пристрій для дому</h1>
+  <p class="lead">Обери один пристрій зі списку, знайди офіційну сторінку виробника й заповни таблицю дослідження.</p>
+</header>
+
+<main>
+
+  <section>
+    <span class="step-n">КРОК 1</span>
+    <h2>Обери пристрій</h2>
+    <p>Відкрий Google і введи назву одного з прикладів — знайди офіційну сторінку виробника цього пристрою (сторінку продукту або специфікацій).</p>
+    <ul class="devices">
+      <li class="device">
+        <div class="device-name">💡 Розумна лампа</div>
+        <div class="device-ex">напр. Xiaomi Yeelight, Philips Hue, TP-Link Tapo</div>
+      </li>
+      <li class="device">
+        <div class="device-name">📷 Камера відеоспостереження</div>
+        <div class="device-ex">напр. Xiaomi Mi Camera, TP-Link Tapo C200, Ring</div>
+      </li>
+      <li class="device">
+        <div class="device-name">🔊 Розумна колонка</div>
+        <div class="device-ex">напр. Google Nest Mini, Amazon Echo, Яндекс Станція</div>
+      </li>
+      <li class="device">
+        <div class="device-name">⌚ Фітнес-браслет / годинник</div>
+        <div class="device-ex">напр. Xiaomi Mi Band, Apple Watch, Garmin</div>
+      </li>
+      <li class="device">
+        <div class="device-name">🌡️ Розумний термостат</div>
+        <div class="device-ex">напр. Google Nest Thermostat, Ecobee</div>
+      </li>
+      <li class="device">
+        <div class="device-name">🔒 Розумний замок</div>
+        <div class="device-ex">напр. August Smart Lock, Xiaomi Smart Door Lock</div>
+      </li>
+      <li class="device">
+        <div class="device-name">🤖 Робот-пилосос</div>
+        <div class="device-ex">напр. Xiaomi Robot Vacuum, iRobot Roomba</div>
+      </li>
+      <li class="device">
+        <div class="device-name">🔌 Розумна розетка</div>
+        <div class="device-ex">напр. TP-Link Tapo P100, Xiaomi Smart Plug</div>
+      </li>
+      <li class="device">
+        <div class="device-name">🚨 Датчик диму / чадного газу</div>
+        <div class="device-ex">напр. Google Nest Protect, Xiaomi Smoke Detector</div>
+      </li>
+      <li class="device">
+        <div class="device-name">💧 Зволожувач повітря</div>
+        <div class="device-ex">напр. Xiaomi Smart Humidifier</div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <span class="step-n">КРОК 2</span>
+    <h2>Заповни таблицю дослідження</h2>
+    <p>На сторінці виробника знайди розділ "Характеристики" / "Specifications" / "Features" — там зазвичай є вся потрібна інформація.</p>
+
+    <div class="task"><strong>Обраний пристрій:</strong> запиши назву й виробника</div>
+    <input type="text" placeholder="напр. Xiaomi Smart Camera C200">
+
+    <label>Який сенсор(и) використовує пристрій?</label>
+    <textarea placeholder="напр. датчик руху, мікрофон, датчик освітлення..."></textarea>
+
+    <label>Яка дія-відповідь (актуатор) у пристрою?</label>
+    <textarea placeholder="напр. надсилає сповіщення, вмикає світло, подає звук..."></textarea>
+
+    <label>Чи вказана марка мікроконтролера / чипа?</label>
+    <textarea placeholder="напр. вказано ESP32, або 'не вказано на сайті'..."></textarea>
+
+    <label>Чи передає пристрій дані в мережу/додаток?</label>
+    <div class="radios">
+      <label><input type="radio" name="network"> Так</label>
+      <label><input type="radio" name="network"> Ні</label>
+      <label><input type="radio" name="network"> Не зрозуміло</label>
+    </div>
+
+    <label>Як саме (Wi-Fi, Bluetooth, застосунок)?</label>
+    <input type="text" placeholder="напр. Wi-Fi + мобільний застосунок Mi Home">
+  </section>
+
+  <section style="border-bottom:none;">
+    <span class="step-n">КРОК 3</span>
+    <h2>Готуйся представити</h2>
+    <p>За 30 секунд розкажи класу: який пристрій обрав(-ла), що найцікавіше дізнався(-лась), і чи здивувало щось у характеристиках.</p>
+  </section>
+
+</main>
+
+<div class="present">
+  <strong>Нагадування:</strong> якщо на сайті виробника немає якоїсь інформації (наприклад, марки мікроконтролера) — це нормально, напиши "не вказано на сайті". Це теж важливе спостереження: не всі виробники розкривають технічні деталі.
+</div>
+
+</body>
+</html>

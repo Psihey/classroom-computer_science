@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Практична робота: Що ховається всередині smart-девайсів?</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-orange: #fb923c;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 25px 20px;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(56, 189, 248, 0.15);
+            color: var(--accent-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .step-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .step-card:hover {
+            border-color: var(--accent-color);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .step-number {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            font-weight: 700;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        ol, ul {
+            padding-left: 20px;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        li strong {
+            color: var(--text-main);
+        }
+
+        .link-box {
+            display: inline-block;
+            background-color: #334155;
+            color: var(--accent-color);
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 8px 0;
+            transition: background 0.2s;
+        }
+
+        .link-box:hover {
+            background-color: #475569;
+        }
+
+        .bonus-card {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(30, 41, 59, 1) 100%);
+            border: 1px solid var(--accent-orange);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+
+        .bonus-card .step-number {
+            background-color: var(--accent-orange);
+            color: #fff;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #0f172a;
+            color: var(--accent-color);
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.4rem; }
+            .step-title { font-size: 1.05rem; }
+            body { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <span class="badge">Інформатика • 10 клас</span>
+            <h1>Тема: Вступ до мікроконтролерів. Огляд Arduino та micro:bit. Open Source</h1>
+            <p class="subtitle">Практичне дослідження: Що всередині розумних гаджетів?</p>
+        </header>
+
+        <div class="step-card">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">Крок 1: Віртуальний «розбір» гаджета (5 хв)</div>
+            </div>
+            <p style="margin-bottom: 10px; color: var(--text-muted);">Відкрий інтерактивний симулятор та завантаж готову демо-схему:</p>
+            <a href="https://www.tinkercad.com/circuits" target="_blank" class="link-box">🚀 Відкрити Tinkercad Circuits</a>
+            <ol>
+                <li>Знайдіть у бібліотеці елементів <strong>Arduino Uno R3</strong> та перетягніть його на робоче поле.</li>
+                <li>Додайте <strong>LED (світлодіод)</strong> та <strong>Pushbutton (кнопку)</strong>.</li>
+                <li>Натисніть <strong>Start Simulation (Запустити моделювання)</strong> та перевірте, як плата реагує на натискання.</li>
+            </ol>
+        </div>
+
+        <div class="step-card">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">Крок 2: Порівняльний аналіз плат (10 хв)</div>
+            </div>
+            <p style="margin-bottom: 10px; color: var(--text-muted);">Перейди до візуального симулятора BBC micro:bit:</p>
+            <a href="https://makecode.microbit.org/" target="_blank" class="link-box" style="color: var(--accent-green);">🟩 Відкрити MakeCode micro:bit</a>
+            <p style="margin-top: 10px; color: var(--text-muted);">Порівняй дві плати за критеріями та заповни короткий чек-лист:</p>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Критерій</th>
+                            <th>Arduino Uno</th>
+                            <th>BBC micro:bit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Вбудовані датчики</strong></td>
+                            <td>Потрібно підключати окремо</td>
+                            <td>Кнопки, акселерометр, компас, світлодіодна матриця 5x5</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Бездротовий зв'язок</strong></td>
+                            <td>Потрібен окремий модуль</td>
+                            <td>Вбудований Bluetooth та Radio</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Для чого краще підходить?</strong></td>
+                            <td>Для DIY-проєктів, робототехніки, автоматизації</td>
+                            <td>Для швидкого старту, носимих пристроїв, ігор</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">Крок 3: Аналітичний аналіз маркетплейсу (5-7 хв)</div>
+            </div>
+            <ul>
+                <li>Знайдіть у магазині (наприклад, Rozetka / Prom / Hotline) будь-який розумний девайс (розумну розетку, датчик протікання води, або smart-лампу).</li>
+                <li>Знайдіть у характеристиках: чи вказано там тип процесора/мікроконтролера? Чи вказано підтримку Open Source екосистем (наприклад, Home Assistant)?</li>
+                <li>Зробіть висновок: чи можна цей пристрій перепрошити під свої потреби, чи це «закрита чорна скринька»?</li>
+            </ul>
+        </div>
+
+        <div class="bonus-card">
+            <div class="step-header">
+                <div class="step-number">★</div>
+                <div class="step-title" style="color: var(--accent-orange);">Задача для тих, хто зробив швидше (LEVEL UP)</div>
+            </div>
+            <p style="color: var(--text-muted);">
+                У симуляторі MakeCode для micro:bit виведіть на матрицю діодів анімацію серця, яке пульсує при струшуванні плати (подія <code>on shake</code>). Поясніть, який саме вбудований датчик задіяв ваш код.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
