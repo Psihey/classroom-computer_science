@@ -3,237 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Інформаційні процеси в галузевих системах та ШІ</title>
+<title>Практична робота: Дані та інформаційні моделі</title>
 <style>
-    * { box-sizing: border-box; }
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #f4f7fb;
-        color: #172033;
-        line-height: 1.55;
-    }
-    .container {
-        max-width: 1000px;
-        margin: auto;
-        padding: 30px 20px 60px;
-    }
-    header {
-        background: linear-gradient(135deg, #243b55, #141e30);
-        color: white;
-        padding: 42px 35px;
-        border-radius: 22px;
-        margin-bottom: 25px;
-    }
-    header .lesson {
-        opacity: .75;
-        font-size: 15px;
-        margin-bottom: 10px;
-    }
-    h1 { margin: 0; font-size: 34px; line-height: 1.2; }
-    h2 { margin-top: 0; font-size: 25px; }
-    h3 { margin-bottom: 8px; }
-    .subtitle {
-        margin-top: 15px;
-        font-size: 18px;
-        opacity: .9;
-    }
-    section, .card {
-        background: white;
-        border-radius: 18px;
-        padding: 25px;
-        margin: 20px 0;
-        box-shadow: 0 4px 18px rgba(20,30,48,.07);
-    }
-    .idea {
-        border-left: 5px solid #4f7cff;
-        background: #eef3ff;
-        padding: 15px 18px;
-        border-radius: 10px;
-        margin: 15px 0;
-    }
-    .flow {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        margin: 20px 0;
-    }
-    .flow span {
-        background: #edf1f7;
-        padding: 10px 15px;
-        border-radius: 10px;
-        font-weight: bold;
-    }
-    .arrow { background: none !important; padding: 0 !important; }
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 14px;
-    }
-    .mini {
-        background: #f7f9fc;
-        border: 1px solid #e4e9f1;
-        border-radius: 13px;
-        padding: 16px;
-    }
-    .badge {
-        display: inline-block;
-        background: #e9f0ff;
-        color: #3157bd;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: bold;
-    }
-    .step {
-        display: flex;
-        gap: 14px;
-        margin: 14px 0;
-        align-items: flex-start;
-    }
-    .num {
-        min-width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: #3157bd;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-    }
-    .task {
-        background: #fff8e8;
-        border: 1px solid #f1d58b;
-        border-radius: 15px;
-        padding: 20px;
-    }
-    .copy {
-        background: #172033;
-        color: #f4f7fb;
-        border-radius: 12px;
-        padding: 16px;
-        font-family: Consolas, monospace;
-        white-space: pre-wrap;
-        user-select: text;
-    }
-    ul { padding-left: 22px; }
-    .footer {
-        text-align: center;
-        color: #6c7585;
-        margin-top: 30px;
-        font-size: 14px;
-    }
-    @media (max-width: 600px) {
-        header { padding: 30px 22px; }
-        h1 { font-size: 27px; }
-        section, .card { padding: 20px; }
-    }
+body{font-family:Arial,sans-serif;line-height:1.5;max-width:1000px;margin:auto;padding:24px;background:#f5f7fa;color:#1f2937}
+h1,h2{color:#111827}.card{background:white;padding:22px;margin:18px 0;border-radius:14px;box-shadow:0 2px 8px #0001}
+.step{border-left:5px solid #4f46e5;padding-left:16px;margin:18px 0}
+button,a.btn{display:inline-block;padding:10px 16px;border:0;border-radius:8px;background:#4f46e5;color:white;text-decoration:none;cursor:pointer;margin:4px}
+input,select{padding:8px;border:1px solid #cbd5e1;border-radius:7px}
+table{border-collapse:collapse;width:100%;margin:12px 0}td,th{border:1px solid #cbd5e1;padding:8px;text-align:left}
+.note{background:#eef2ff;padding:12px;border-radius:8px}.done{background:#dcfce7}
+#result{font-weight:bold;margin-top:12px}
 </style>
 </head>
 <body>
-<div class="container">
+<h1>Практична робота: «Дані та інформаційні моделі»</h1>
+<p><b>Час:</b> 20–25 хвилин</p>
 
-<header>
-    <div class="lesson">УРОК 3 • 10 КЛАС • ПРАКТИЧНА РОБОТА</div>
-    <h1>Інформаційні процеси в галузевих системах та штучний інтелект</h1>
-    <div class="subtitle">Як працюють «розумні» системи та де в них використовується ШІ</div>
-</header>
-
-<section>
-    <h2>🎯 Що потрібно зрозуміти</h2>
-    <p>Будь-яка інформаційна система постійно працює з інформацією: отримує її, обробляє, зберігає та передає.</p>
-    <div class="flow">
-        <span>Отримати</span><span class="arrow">→</span>
-        <span>Обробити</span><span class="arrow">→</span>
-        <span>Зберегти</span><span class="arrow">→</span>
-        <span>Передати</span><span class="arrow">→</span>
-        <span>Результат</span>
-    </div>
-    <div class="idea">
-        <b>Головне:</b> ШІ — не вся інформаційна система. Це інструмент, який може допомагати системі аналізувати інформацію, знаходити закономірності, прогнозувати або створювати нову інформацію.
-    </div>
-</section>
-
-<section>
-    <h2>🏠 Від гаджета до галузевої системи</h2>
-    <p>Почнемо з того, що є майже у кожного вдома.</p>
-    <div class="grid">
-        <div class="mini"><h3>📷 Камера</h3><p>Отримує відео → аналізує → визначає рух або людину → надсилає повідомлення.</p></div>
-        <div class="mini"><h3>💡 Розумна лампа</h3><p>Отримує команду → обробляє її → вмикається. Для цього ШІ взагалі не обов'язковий.</p></div>
-        <div class="mini"><h3>🎧 Розумна колонка</h3><p>Отримує голос → розпізнає команду → виконує дію.</p></div>
-        <div class="mini"><h3>🤖 Робот-пилосос</h3><p>Отримує дані з датчиків → будує карту → планує маршрут → рухається.</p></div>
-    </div>
-
-    <p><b>Тепер масштабуємо цю ідею.</b> Такі самі інформаційні процеси використовуються у великих системах:</p>
-    <div class="grid">
-        <div class="mini"><span class="badge">Медицина</span><p>аналізи, медичні знімки, електронні картки → допомога лікарю</p></div>
-        <div class="mini"><span class="badge">Банки</span><p>транзакції → перевірка → дозвіл або блокування платежу</p></div>
-        <div class="mini"><span class="badge">Транспорт</span><p>GPS та дорожні дані → аналіз → маршрут і прогноз заторів</p></div>
-        <div class="mini"><span class="badge">Торгівля</span><p>покупки та перегляди → аналіз → рекомендації товарів</p></div>
-    </div>
-</section>
-
-<section>
-    <h2>🤖 Де тут штучний інтелект?</h2>
-    <p>Уявімо камеру, яка не просто реагує на рух, а намагається визначити, хто потрапив у кадр.</p>
-    <div class="idea">
-        <b>Машинне навчання:</b> комп'ютер навчається знаходити закономірності на великій кількості прикладів, а потім використовує їх для аналізу нових даних.
-    </div>
-    <div class="grid">
-        <div class="mini"><h3>🔎 Аналітичний ШІ</h3><p>Аналізує дані: розпізнає об'єкти, знаходить підозрілі операції, прогнозує попит.</p></div>
-        <div class="mini"><h3>✨ Генеративний ШІ</h3><p>Створює нову інформацію: текст, зображення, код, звук тощо.</p></div>
-    </div>
-    <p><b>Важливо:</b> напис «AI» на коробці ще не означає, що пристрій кращий. Треба запитати: <i>що саме робить ШІ?</i></p>
-</section>
-
-<section>
-    <h2>💻 Практична робота</h2>
-    <div class="task">
-        <h3>Завдання</h3>
-        <p>Оберіть одну галузь: <b>медицина, банк, транспорт, торгівля, освіта або виробництво.</b></p>
-
-        <div class="step"><div class="num">1</div><div><b>Виберіть систему.</b><br>Наприклад: банківська система, система відеонагляду лікарні, навігація або електронний журнал.</div></div>
-        <div class="step"><div class="num">2</div><div><b>Знайдіть інформацію.</b><br>Що ця система отримує? Які дані їй потрібні?</div></div>
-        <div class="step"><div class="num">3</div><div><b>Опишіть обробку.</b><br>Що система робить із цими даними?</div></div>
-        <div class="step"><div class="num">4</div><div><b>Визначте результат.</b><br>Що система передає або робить після обробки?</div></div>
-        <div class="step"><div class="num">5</div><div><b>Знайдіть місце для ШІ.</b><br>Чи можна використати ШІ? Якщо так — для якої конкретної задачі?</div></div>
-        <div class="step"><div class="num">6</div><div><b>Подумайте про дані.</b><br>Де вони можуть зберігатися: на пристрої, локальному сервері чи в хмарі?</div></div>
-    </div>
-</section>
-
-<section>
-    <h2>📝 Що здати</h2>
-    <p>Створіть коротку схему своєї системи. Її можна зробити у Word, Google Docs, презентації або просто текстом.</p>
-    <div class="copy">Назва системи:
-Галузь:
-
-1. Яку інформацію отримує?
-2. Що з нею робить?
-3. Що зберігає?
-4. Що і кому передає?
-5. Де можна використати ШІ?
-6. Які дані можуть бути чутливими або важливими для захисту?
-
-Схема:
-Дані → Обробка → ШІ (якщо є) → Результат</div>
-</section>
-
-<section>
-    <h2>🔍 Перевір себе</h2>
-    <ul>
-        <li>Я можу назвати інформаційні процеси на прикладі реальної системи.</li>
-        <li>Я розумію, чим галузева інформаційна система відрізняється від звичайного гаджета.</li>
-        <li>Я можу пояснити, де саме в системі використовується ШІ.</li>
-        <li>Я розумію різницю між генеративним та аналітичним ШІ.</li>
-        <li>Я можу поставити питання про дані перед купівлею «розумного» пристрою.</li>
-    </ul>
-</section>
-
-<div class="footer">Інформатика • 10 клас • Урок 3</div>
-
+<div class="card">
+<h2>🎯 Твоє завдання</h2>
+<p>Уяви, що ти дослідник даних. Тобі потрібно дослідити, як учні використовують смартфон, знайти закономірність і зробити висновок.</p>
 </div>
+
+<div class="card">
+<h2>Крок 1. Подивись на дані</h2>
+<table>
+<tr><th>Ім'я</th><th>Вік</th><th>Години смартфона</th><th>Ігри</th><th>Улюблений жанр</th></tr>
+<tr><td>Анна</td><td>16</td><td>4.5</td><td>Так</td><td>Музика</td></tr>
+<tr><td>Максим</td><td>15</td><td>6.2</td><td>Так</td><td>Ігри</td></tr>
+<tr><td>Олег</td><td>16</td><td>2.8</td><td>Ні</td><td>Спорт</td></tr>
+<tr><td>Марія</td><td>15</td><td>3.7</td><td>Так</td><td>Музика</td></tr>
+<tr><td>Іван</td><td>17</td><td>5.4</td><td>Так</td><td>Ігри</td></tr>
+</table>
+<p><b>Питання:</b> Які типи даних ти бачиш у таблиці?</p>
+<button onclick="show('q1','Текст, цілі та дійсні числа, логічні значення.')">Показати підказку</button>
+<div id="q1"></div>
+</div>
+
+<div class="card">
+<h2>Крок 2. Знайди найбільше значення</h2>
+<p>Хто користується смартфоном найдовше?</p>
+<select id="person">
+<option value="">Обери відповідь</option><option>Анна</option><option>Максим</option><option>Олег</option><option>Марія</option><option>Іван</option>
+</select>
+<button onclick="check()">Перевірити</button>
+<div id="result"></div>
+</div>
+
+<div class="card">
+<h2>Крок 3. Знайди закономірність</h2>
+<p>Подумай: чи є зв'язок між грою в ігри та кількістю часу зі смартфоном?</p>
+<p><b>Твоя гіпотеза:</b></p>
+<textarea id="hyp" rows="3" style="width:100%;padding:10px" placeholder="Напиши свою гіпотезу..."></textarea>
+<p><button onclick="save('hyp','hypSaved')">Зберегти відповідь</button></p>
+<div id="hypSaved"></div>
+</div>
+
+<div class="card">
+<h2>Крок 4. Побудуй власну модель</h2>
+<p>Уяви, що ти створюєш застосунок для аналізу учнів. Які 3–5 характеристик ти додав би до моделі?</p>
+<textarea id="model" rows="4" style="width:100%;padding:10px" placeholder="Наприклад: вік, час використання..."></textarea>
+<p><button onclick="save('model','modelSaved')">Зберегти відповідь</button></p>
+<div id="modelSaved"></div>
+</div>
+
+<div class="card">
+<h2>🚀 Додаткове завдання</h2>
+<p>Придумай власне питання, на яке можна відповісти за допомогою цих даних.</p>
+<p>Наприклад: «Чи користуються смартфоном довше ті, хто грає в ігри?»</p>
+<textarea id="extra" rows="4" style="width:100%;padding:10px" placeholder="Моє питання..."></textarea>
+<button onclick="save('extra','extraSaved')">Зберегти питання</button>
+<div id="extraSaved"></div>
+</div>
+
+<div class="card note">
+<h2>💡 Фінальний висновок</h2>
+<p>Доповни речення:</p>
+<p><b>«Дані допомагають нам...»</b></p>
+<textarea id="final" rows="3" style="width:100%;padding:10px" placeholder="Напиши свій висновок..."></textarea>
+<button onclick="save('final','finalSaved')">Зберегти висновок</button>
+<div id="finalSaved"></div>
+</div>
+
+<script>
+function show(id,text){document.getElementById(id).innerHTML='<p class="done">'+text+'</p>'}
+function check(){
+ let v=document.getElementById('person').value;
+ document.getElementById('result').innerHTML=v==='Максим'?'<span style="color:green">✓ Правильно! 6.2 години.</span>':'<span style="color:#b91c1c">✗ Спробуй ще раз. Подивись на значення в стовпці «Години смартфона».</span>';
+}
+function save(input,out){
+ let v=document.getElementById(input).value.trim();
+ document.getElementById(out).innerHTML=v?'<p class="done">✓ Відповідь збережено на сторінці.</p>':'<p>Спочатку введи відповідь.</p>';
+}
+</script>
 </body>
 </html>
