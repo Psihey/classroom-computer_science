@@ -1,1854 +1,744 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Робототехніка — Напруга, струм, опір</title>
+<title>Практична робота — Спроєктуй свого робота</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f3f6fa;
+        color: #172033;
+        line-height: 1.6;
+    }
+
+    header {
+        background: linear-gradient(135deg, #182848, #4b6cb7);
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    header h1 {
+        margin: 0 0 10px;
+        font-size: 36px;
+    }
+
+    header p {
+        margin: 5px;
+        font-size: 18px;
+        opacity: 0.9;
+    }
+
+    .container {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 18px rgba(0,0,0,0.07);
+    }
+
+    h2 {
+        margin-top: 0;
+        color: #243b6b;
+    }
+
+    h3 {
+        color: #344b7c;
+    }
+
+    .goal {
+        background: #eaf2ff;
+        border-left: 5px solid #4b6cb7;
+        padding: 15px 18px;
+        border-radius: 8px;
+    }
+
+    .time {
+        display: inline-block;
+        background: #243b6b;
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+
+    .step {
+        border-left: 4px solid #4b6cb7;
+        padding: 15px 20px;
+        margin: 18px 0;
+        background: #f8faff;
+        border-radius: 8px;
+    }
+
+    .step-number {
+        font-size: 20px;
+        font-weight: bold;
+        color: #243b6b;
+    }
+
+    .component-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .component {
+        border: 1px solid #dce3ef;
+        border-radius: 12px;
+        padding: 15px;
+        background: #fafcff;
+    }
+
+    .component strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 17px;
+    }
+
+    .icon {
+        font-size: 30px;
+        float: left;
+        margin-right: 10px;
+    }
+
+    .search-box {
+        background: #fff7df;
+        border-left: 5px solid #e5a900;
+        padding: 18px;
+        border-radius: 8px;
+    }
+
+    .example {
+        background: #f0f7f0;
+        border-left: 5px solid #3c8c40;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .warning {
+        background: #fff0f0;
+        border-left: 5px solid #d9534f;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .scheme {
+        background: #172033;
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        font-family: monospace;
+        font-size: 16px;
+        overflow-x: auto;
+        white-space: pre;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 12px;
+        border: 1px solid #ccd5e3;
+        border-radius: 8px;
+        resize: vertical;
+        font-family: Arial;
+        font-size: 15px;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccd5e3;
+        border-radius: 8px;
+        font-size: 15px;
+    }
+
+    .checklist label {
+        display: block;
+        margin: 10px 0;
+        padding: 10px;
+        background: #f8f9fc;
+        border-radius: 8px;
+    }
+
+    button {
+        background: #243b6b;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        margin-top: 10px;
+    }
+
+    button:hover {
+        background: #172b50;
+    }
+
+    .result {
+        display: none;
+        margin-top: 15px;
+        padding: 15px;
+        border-radius: 8px;
+        background: #e9f7ec;
+        color: #215d2a;
+    }
+
+    .footer {
+        text-align: center;
+        padding: 30px;
+        color: #667085;
+    }
+
+    @media print {
+        button {
+            display: none;
         }
 
         body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7fb;
-            color: #172033;
-            line-height: 1.65;
-        }
-
-        header {
-            background: linear-gradient(135deg, #172554, #2563eb);
-            color: white;
-            padding: 55px 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 42px;
-            margin: 0 0 15px;
-        }
-
-        header p {
-            font-size: 20px;
-            max-width: 900px;
-            margin: auto;
-            opacity: 0.95;
-        }
-
-        main {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        section {
             background: white;
-            border-radius: 18px;
-            padding: 30px;
-            margin-bottom: 28px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
         }
 
-        h2 {
-            color: #1d4ed8;
-            border-bottom: 2px solid #dbeafe;
-            padding-bottom: 10px;
+        .card {
+            box-shadow: none;
+            border: 1px solid #ddd;
         }
-
-        h3 {
-            color: #334155;
-            margin-top: 30px;
-        }
-
-        .question {
-            background: #eff6ff;
-            border-left: 6px solid #2563eb;
-            padding: 18px 22px;
-            border-radius: 10px;
-            font-size: 19px;
-            margin: 20px 0;
-        }
-
-        .important {
-            background: #fff7ed;
-            border-left: 6px solid #f97316;
-            padding: 18px 22px;
-            border-radius: 10px;
-        }
-
-        .success {
-            background: #ecfdf5;
-            border-left: 6px solid #10b981;
-            padding: 18px 22px;
-            border-radius: 10px;
-        }
-
-        .danger {
-            background: #fef2f2;
-            border-left: 6px solid #ef4444;
-            padding: 18px 22px;
-            border-radius: 10px;
-        }
-
-        .concept-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-            margin: 25px 0;
-        }
-
-        .concept {
-            border: 2px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .concept .icon {
-            font-size: 42px;
-        }
-
-        .concept h3 {
-            margin: 8px 0;
-        }
-
-        .formula {
-            background: #0f172a;
-            color: white;
-            padding: 22px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 27px;
-            margin: 20px 0;
-            font-family: Consolas, monospace;
-        }
-
-        .code {
-            background: #111827;
-            color: #e5e7eb;
-            padding: 20px;
-            border-radius: 12px;
-            overflow-x: auto;
-            font-family: Consolas, monospace;
-            font-size: 15px;
-            line-height: 1.55;
-            white-space: pre;
-        }
-
-        .diagram {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 25px;
-            margin: 20px 0;
-            text-align: center;
-            overflow-x: auto;
-        }
-
-        .box {
-            display: inline-block;
-            background: white;
-            border: 2px solid #334155;
-            border-radius: 12px;
-            padding: 15px 22px;
-            margin: 8px;
-            min-width: 150px;
-            font-weight: bold;
-        }
-
-        .arrow {
-            font-size: 28px;
-            color: #2563eb;
-            margin: 0 5px;
-        }
-
-        .robot-chain {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        th, td {
-            border: 1px solid #cbd5e1;
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #e0ecff;
-        }
-
-        tr:nth-child(even) {
-            background: #f8fafc;
-        }
-
-        .task {
-            background: #f8fafc;
-            border: 2px solid #cbd5e1;
-            border-radius: 14px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-
-        .answer {
-            background: #ecfdf5;
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-top: 12px;
-        }
-
-        .pwm {
-            font-family: Consolas, monospace;
-            font-size: 20px;
-            margin: 15px 0;
-        }
-
-        .bar {
-            height: 35px;
-            display: flex;
-            margin: 8px 0;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .on {
-            background: #2563eb;
-        }
-
-        .off {
-            background: #cbd5e1;
-        }
-
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: #64748b;
-        }
-
-        @media (max-width: 800px) {
-            header h1 {
-                font-size: 30px;
-            }
-
-            .concept-grid {
-                grid-template-columns: 1fr;
-            }
-
-            section {
-                padding: 20px;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 
 <body>
 
 <header>
-    <h1>🤖 Базові електричні концепції</h1>
-    <p>
-        Напруга, струм, опір та їх зв'язок із програмуванням справжніх роботів
-    </p>
+    <h1>🤖 Практична робота</h1>
+    <p>«Спроєктуй свого робота»</p>
+    <p>Перші кроки в робототехніці</p>
 </header>
 
-<main>
+<div class="container">
 
-<!-- 1 -->
-<section>
-    <h2>🎯 Головне питання уроку</h2>
+    <!-- INTRO -->
+    <div class="card">
 
-    <div class="question">
-        <strong>Як команда в комп'ютерній програмі перетворюється на рух справжнього робота?</strong>
-    </div>
+        <span class="time">⏱ 20–25 хвилин</span>
 
-    <p>
-        Сьогодні ми не просто вивчимо три фізичні величини.
-        Ми розберемо, що відбувається всередині робота,
-        коли ми пишемо програму:
-    </p>
+        <h2>🎯 Мета роботи</h2>
 
-    <div class="formula">
-        forward();
-    </div>
-
-    <p>
-        Чому після цієї команди колесо може почати обертатися?
-    </p>
-</section>
-
-
-<!-- 2 -->
-<section>
-    <h2>🤖 1. Що відбувається після команди роботу?</h2>
-
-    <p>
-        Комп'ютерний код сам по собі не обертає колесо.
-        Між кодом і рухом відбувається цілий ланцюжок.
-    </p>
-
-    <div class="diagram">
-        <div class="robot-chain">
-
-            <div class="box">💻<br>КОД</div>
-            <div class="arrow">→</div>
-
-            <div class="box">🧠<br>МІКРОКОНТРОЛЕР</div>
-            <div class="arrow">→</div>
-
-            <div class="box">⚡<br>ЕЛЕКТРИЧНИЙ СИГНАЛ</div>
-            <div class="arrow">→</div>
-
-            <div class="box">🔌<br>ДРАЙВЕР</div>
-            <div class="arrow">→</div>
-
-            <div class="box">⚡<br>СТРУМ</div>
-            <div class="arrow">→</div>
-
-            <div class="box">⚙️<br>МОТОР</div>
-            <div class="arrow">→</div>
-
-            <div class="box">🛞<br>КОЛЕСО</div>
-            <div class="arrow">→</div>
-
-            <div class="box">🤖<br>РУХ</div>
-
-        </div>
-    </div>
-
-    <div class="success">
-        <strong>Головна ідея:</strong>
-        код керує електронікою, електроніка керує електричною енергією,
-        а мотор перетворює її на механічний рух.
-    </div>
-</section>
-
-
-<!-- 3 -->
-<section>
-    <h2>🔋 2. Що потрібно роботу для руху?</h2>
-
-    <div class="diagram">
-        <div class="box">🔋<br>БАТАРЕЯ</div>
-        <div class="arrow">→</div>
-        <div class="box">⚡<br>ЕЛЕКТРИЧНА ЕНЕРГІЯ</div>
-        <div class="arrow">→</div>
-        <div class="box">⚙️<br>МОТОР</div>
-        <div class="arrow">→</div>
-        <div class="box">🛞<br>РУХ</div>
-    </div>
-
-    <p>
-        Батарея забезпечує систему електричною енергією.
-        Мотор використовує цю енергію для створення обертання.
-    </p>
-
-    <p>
-        Але щоб зрозуміти, як це працює, нам потрібно знати три основні
-        електричні величини:
-    </p>
-
-    <div class="concept-grid">
-
-        <div class="concept">
-            <div class="icon">⚡</div>
-            <h3>Напруга</h3>
-            <p><strong>U</strong></p>
-            <p>Вимірюється у вольтах (V)</p>
+        <div class="goal">
+            Навчитися розуміти призначення сенсорів та виконавчих пристроїв,
+            знаходити інформацію про них в Інтернеті та використовувати її
+            для створення власної концепції робота.
         </div>
 
-        <div class="concept">
-            <div class="icon">🔌</div>
-            <h3>Струм</h3>
-            <p><strong>I</strong></p>
-            <p>Вимірюється в амперах (A)</p>
+        <h3>Сьогодні ви НЕ будете програмувати робота.</h3>
+
+        <p>
+            Ваше завдання — спочатку подумати як інженер:
+            <strong>що робот повинен робити, яку інформацію він має отримувати
+            і які дії виконувати?</strong>
+        </p>
+
+    </div>
+
+
+    <!-- WHAT IS ROBOT -->
+    <div class="card">
+
+        <h2>🤖 1. З чого складається робот?</h2>
+
+        <p>
+            У найпростішому випадку робот має три основні частини:
+        </p>
+
+        <div class="component-grid">
+
+            <div class="component">
+                <div class="icon">👁️</div>
+                <strong>Сенсори</strong>
+                Отримують інформацію про навколишній світ.
+            </div>
+
+            <div class="component">
+                <div class="icon">🧠</div>
+                <strong>Контролер</strong>
+                Обробляє інформацію та приймає рішення.
+            </div>
+
+            <div class="component">
+                <div class="icon">⚙️</div>
+                <strong>Виконавчі пристрої</strong>
+                Виконують дію: рухаються, світяться, видають звук тощо.
+            </div>
+
         </div>
 
-        <div class="concept">
-            <div class="icon">🧱</div>
-            <h3>Опір</h3>
-            <p><strong>R</strong></p>
-            <p>Вимірюється в омах (Ω)</p>
-        </div>
+        <div class="scheme">
+
+СЕНСОР
+   ↓
+"Що відбувається?"
+   ↓
+КОНТРОЛЕР
+   ↓
+"Що потрібно зробити?"
+   ↓
+ВИКОНАВЧИЙ ПРИСТРІЙ
+   ↓
+ДІЯ РОБОТА
 
-    </div>
-</section>
-
-
-<!-- 4 -->
-<section>
-    <h2>💧 3. Аналогія з водою</h2>
-
-    <p>
-        Для першого знайомства з електрикою можна використати аналогію
-        з водою у трубах.
-    </p>
-
-    <div class="diagram">
-        <div class="box">💧 ВОДА</div>
-        <div class="arrow">→</div>
-        <div class="box">🚰 ТРУБА</div>
-        <div class="arrow">→</div>
-        <div class="box">💧 ПОТІК</div>
-    </div>
-
-    <table>
-        <tr>
-            <th>Електрика</th>
-            <th>Аналогія з водою</th>
-            <th>Просте пояснення</th>
-        </tr>
-
-        <tr>
-            <td>⚡ Напруга</td>
-            <td>Тиск / перепад тиску</td>
-            <td>Сила, яка сприяє руху заряду</td>
-        </tr>
-
-        <tr>
-            <td>🔌 Струм</td>
-            <td>Потік води</td>
-            <td>Рух електричного заряду</td>
-        </tr>
-
-        <tr>
-            <td>🧱 Опір</td>
-            <td>Вузька труба / перешкода</td>
-            <td>Протидія проходженню струму</td>
-        </tr>
-    </table>
-
-    <div class="important">
-        ⚠️ Це лише аналогія. Електрика не є водою в трубі.
-        Але така модель допомагає зрозуміти співвідношення між величинами.
-    </div>
-</section>
-
-
-<!-- 5 -->
-<section>
-    <h2>⚡ 4. Напруга</h2>
-
-    <p>
-        Напруга позначається літерою <strong>U</strong>.
-    </p>
-
-    <p>
-        Одиниця вимірювання — <strong>вольт (V)</strong>.
-    </p>
-
-    <p>
-        Для простого пояснення можна сказати:
-    </p>
-
-    <div class="question">
-        <strong>
-            Напруга — це своєрідна «сила поштовху»,
-            яка створює умови для руху електричного заряду.
-        </strong>
-    </div>
-
-    <h3>Приклади напруги</h3>
-
-    <table>
-        <tr>
-            <th>Приклад</th>
-            <th>Приблизна напруга</th>
-        </tr>
-        <tr>
-            <td>🔋 AA батарейка</td>
-            <td>1,5 V</td>
-        </tr>
-        <tr>
-            <td>🔌 USB</td>
-            <td>5 V</td>
-        </tr>
-        <tr>
-            <td>🚗 Автомобільна система</td>
-            <td>близько 12 V</td>
-        </tr>
-        <tr>
-            <td>🤖 Робототехнічна батарея</td>
-            <td>може бути 7,4 V, 9 V, 12 V тощо</td>
-        </tr>
-    </table>
-</section>
-
-
-<!-- 6 -->
-<section>
-    <h2>🔌 5. Електричний струм</h2>
-
-    <p>
-        Струм позначається:
-        <strong>I</strong>
-    </p>
-
-    <p>
-        Одиниця вимірювання:
-        <strong>ампер (A)</strong>.
-    </p>
-
-    <div class="question">
-        <strong>
-            Струм — це рух електричного заряду.
-        </strong>
-    </div>
-
-    <p>
-        Наприклад, невеликий світлодіод може працювати з відносно
-        невеликим струмом, тоді як мотор може потребувати значно більшого.
-    </p>
-
-    <div class="important">
-        <strong>Запам'ятайте:</strong><br>
-        5 V ≠ 5 A.<br><br>
-        Вольти та ампери — це різні величини.
-    </div>
-</section>
-
-
-<!-- 7 -->
-<section>
-    <h2>🧱 6. Опір</h2>
-
-    <p>
-        Опір позначається:
-        <strong>R</strong>
-    </p>
-
-    <p>
-        Одиниця вимірювання:
-        <strong>ом (Ω)</strong>.
-    </p>
-
-    <div class="question">
-        <strong>
-            Опір характеризує протидію проходженню електричного струму.
-        </strong>
-    </div>
-
-    <p>
-        Уявіть дві труби:
-    </p>
-
-    <div class="diagram">
-
-        <h3>Широка труба</h3>
-
-        <div class="bar">
-            <div class="on" style="width:100%"></div>
-        </div>
-
-        <p>→ → → → → → → → → →</p>
-
-        <h3>Вузька труба</h3>
-
-        <div class="bar">
-            <div class="on" style="width:35%"></div>
-            <div class="off" style="width:65%"></div>
-        </div>
-
-        <p>→ →</p>
-
-    </div>
-
-    <p>
-        У спрощеній аналогії більший опір означає більшу протидію потоку.
-    </p>
-</section>
-
-
-<!-- 8 -->
-<section>
-    <h2>📐 7. Закон Ома</h2>
-
-    <p>
-        Напруга, струм та опір пов'язані між собою.
-    </p>
-
-    <div class="formula">
-        U = I × R
-    </div>
-
-    <p>Звідси:</p>
-
-    <div class="formula">
-        I = U / R
-    </div>
-
-    <div class="formula">
-        R = U / I
-    </div>
-
-    <h3>Приклад</h3>
-
-    <p>
-        Маємо джерело:
-    </p>
-
-    <div class="formula">
-        U = 5 V
-    </div>
-
-    <p>
-        та резистор:
-    </p>
-
-    <div class="formula">
-        R = 100 Ω
-    </div>
-
-    <p>
-        Знайдемо струм:
-    </p>
-
-    <div class="formula">
-        I = 5 / 100 = 0,05 A = 50 mA
-    </div>
-</section>
-
-
-<!-- 9 -->
-<section>
-    <h2>💡 8. Навіщо резистор?</h2>
-
-    <p>
-        Розглянемо світлодіод.
-    </p>
-
-    <div class="diagram">
-        <div class="box">🧠 Arduino</div>
-        <div class="arrow">→</div>
-        <div class="box">🔴 LED</div>
-        <div class="arrow">→</div>
-        <div class="box">🧱 220 Ω</div>
-        <div class="arrow">→</div>
-        <div class="box">GND</div>
-    </div>
-
-    <p>
-        Резистор використовується для обмеження струму в колі
-        відповідно до розрахунку схеми та характеристик компонента.
-    </p>
-
-    <div class="success">
-        Тому резистор — це не просто «зайва деталь».
-        Він може бути необхідною частиною електричного кола.
-    </div>
-</section>
-
-
-<!-- 10 -->
-<section>
-    <h2>🔋 9. Електричне коло</h2>
-
-    <p>
-        У простому електричному колі повинен існувати замкнений шлях
-        для струму.
-    </p>
-
-    <div class="diagram">
-
-        <div class="box">🔋<br>Батарея</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">💡<br>Лампа</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🔗<br>Повернення</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🔋<br>Батарея</div>
-
-    </div>
-
-    <div class="danger">
-        Якщо коло розірване, струм у такому простому колі не може протікати
-        по повному шляху.
-    </div>
-</section>
-
-
-<!-- 11 -->
-<section>
-    <h2>🧠 10. Мікроконтролер — мозок робота</h2>
-
-    <p>
-        Мікроконтролер — це невелика спеціалізована обчислювальна система,
-        яка може виконувати програму та взаємодіяти з електронними компонентами.
-    </p>
-
-    <h3>Приклади:</h3>
-
-    <ul>
-        <li>Arduino</li>
-        <li>ESP32</li>
-        <li>micro:bit</li>
-        <li>Raspberry Pi Pico</li>
-        <li>STM32</li>
-    </ul>
-
-    <div class="diagram">
-
-        <div class="box">📡 Датчики</div>
-        <div class="arrow">→</div>
-
-        <div class="box">
-            🧠<br>
-            МІКРОКОНТРОЛЕР
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">⚙️ Виконавчі пристрої</div>
-
-    </div>
-</section>
-
-
-<!-- 12 -->
-<section>
-    <h2>💻 11. Код → електрика</h2>
-
-    <p>
-        Наприклад, програма може керувати цифровим виходом.
-    </p>
-
-    <div class="code">const int LED_PIN = 13;
-
-void setup() {
-    pinMode(LED_PIN, OUTPUT);
-}
-
-void loop() {
-    digitalWrite(LED_PIN, HIGH);
-    delay(1000);
-
-    digitalWrite(LED_PIN, LOW);
-    delay(1000);
-}</div>
-
-    <h3>Що відбувається?</h3>
-
-    <div class="diagram">
-
-        <div class="box">💻 Код</div>
-        <div class="arrow">→</div>
-
-        <div class="box">🧠 Arduino</div>
-        <div class="arrow">→</div>
-
-        <div class="box">⚡ Вихідний сигнал</div>
-        <div class="arrow">→</div>
-
-        <div class="box">🔴 LED</div>
-        <div class="arrow">→</div>
-
-        <div class="box">💡 Світло</div>
-
-    </div>
-</section>
-
-
-<!-- 13 -->
-<section>
-    <h2>🔴 12. HIGH та LOW</h2>
-
-    <p>
-        Цифрові системи часто працюють із двома логічними станами:
-    </p>
-
-    <div class="concept-grid">
-
-        <div class="concept">
-            <div class="icon">🟢</div>
-            <h3>HIGH</h3>
-            <p>Високий логічний рівень</p>
-        </div>
-
-        <div class="concept">
-            <div class="icon">🔴</div>
-            <h3>LOW</h3>
-            <p>Низький логічний рівень</p>
         </div>
 
     </div>
 
-    <p>Наприклад:</p>
 
-    <div class="code">digitalWrite(13, HIGH);</div>
+    <!-- STEP 1 -->
+    <div class="card">
 
-    <p>або:</p>
+        <div class="step">
 
-    <div class="code">digitalWrite(13, LOW);</div>
+            <div class="step-number">
+                1️⃣ Обери свого робота — 2 хв
+            </div>
 
-    <p>
-        Конкретна електрична напруга, що відповідає HIGH, залежить
-        від конкретного мікроконтролера та його живлення.
-    </p>
-</section>
-
-
-<!-- 14 -->
-<section>
-    <h2>⚙️ 13. Як Arduino керує мотором?</h2>
-
-    <p>
-        Тут з'являється дуже важлива деталь робототехніки:
-        <strong>драйвер мотора</strong>.
-    </p>
-
-    <div class="danger">
-        Не можна вважати, що GPIO мікроконтролера може напряму живити
-        будь-який мотор.
-    </div>
-
-    <div class="diagram">
-
-        <div class="box">🧠 Arduino</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">
-            🔌<br>
-            Драйвер<br>
-            мотора
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">⚙️ MOTOR</div>
-
-    </div>
-</section>
-
-
-<!-- 15 -->
-<section>
-    <h2>💪 14. Аналогія: мозок, м'яз і силовий блок</h2>
-
-    <div class="concept-grid">
-
-        <div class="concept">
-            <div class="icon">🧠</div>
-            <h3>Arduino</h3>
-            <p>Мозок</p>
-            <p>Приймає рішення та формує керуючі сигнали.</p>
-        </div>
-
-        <div class="concept">
-            <div class="icon">💪</div>
-            <h3>Драйвер</h3>
-            <p>Силовий блок</p>
-            <p>Керує потужнішою електричною частиною.</p>
-        </div>
-
-        <div class="concept">
-            <div class="icon">⚙️</div>
-            <h3>Мотор</h3>
-            <p>М'яз</p>
-            <p>Перетворює електричну енергію на рух.</p>
-        </div>
-
-    </div>
-</section>
-
-
-<!-- 16 -->
-<section>
-    <h2>🔋 15. Живлення робота</h2>
-
-    <div class="diagram">
-
-        <div class="box">🔋<br>БАТАРЕЯ</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">⚡<br>ЖИВЛЕННЯ</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🧠 MCU</div>
-
-        <br>
-
-        <div class="box">🔋 Батарея</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🔌 Driver</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">⚙️ Motors</div>
-
-    </div>
-
-    <p>
-        У реальних роботах різні компоненти можуть потребувати різних
-        напруг. Для цього можуть використовуватися стабілізатори
-        або DC/DC-перетворювачі.
-    </p>
-
-    <div class="important">
-        Перед підключенням компонента потрібно перевірити його
-        допустиму напругу та струм.
-    </div>
-</section>
-
-
-<!-- 17 -->
-<section>
-    <h2>⚡ 16. Потужність</h2>
-
-    <p>
-        Ще одна важлива величина — електрична потужність.
-    </p>
-
-    <div class="formula">
-        P = U × I
-    </div>
-
-    <p>
-        Потужність вимірюється у ватах — <strong>W</strong>.
-    </p>
-
-    <h3>Приклад</h3>
-
-    <div class="formula">
-        5 V × 2 A = 10 W
-    </div>
-
-    <p>
-        Отже, за таких умов електрична потужність становить 10 Вт.
-    </p>
-</section>
-
-
-<!-- 18 -->
-<section>
-    <h2>🎛️ 17. Як код керує швидкістю мотора?</h2>
-
-    <p>
-        Для керування потужністю, що подається до навантаження,
-        часто використовується <strong>PWM</strong>.
-    </p>
-
-    <h3>Pulse Width Modulation</h3>
-
-    <p>
-        Українською — широтно-імпульсна модуляція.
-    </p>
-
-    <div class="diagram">
-
-        <p><strong>100%</strong></p>
-
-        <div class="pwm">
-            ████████████████████
-        </div>
-
-        <p><strong>50%</strong></p>
-
-        <div class="pwm">
-            ██████████░░░░░░░░░░
-        </div>
-
-        <p><strong>25%</strong></p>
-
-        <div class="pwm">
-            █████░░░░░░░░░░░░░░░
-        </div>
-
-    </div>
-
-    <p>
-        Сигнал дуже швидко перемикається між увімкненим і вимкненим станами.
-        Змінюється співвідношення часу ON та OFF.
-    </p>
-</section>
-
-
-<!-- 19 -->
-<section>
-    <h2>💻 18. PWM у коді</h2>
-
-    <div class="code">analogWrite(MOTOR_PIN, 255);</div>
-
-    <p>Для типової 8-бітної шкали:</p>
-
-    <table>
-        <tr>
-            <th>Значення</th>
-            <th>Приблизний duty cycle</th>
-        </tr>
-        <tr>
-            <td>0</td>
-            <td>0%</td>
-        </tr>
-        <tr>
-            <td>128</td>
-            <td>≈ 50%</td>
-        </tr>
-        <tr>
-            <td>255</td>
-            <td>100%</td>
-        </tr>
-    </table>
-
-    <div class="important">
-        Реальна швидкість мотора не обов'язково буде прямо пропорційною
-        значенню PWM. На неї впливають навантаження, мотор, механіка,
-        живлення та інші фактори.
-    </div>
-</section>
-
-
-<!-- 20 -->
-<section>
-    <h2>📡 19. Як робот дізнається про навколишній світ?</h2>
-
-    <p>
-        Роботу потрібні датчики.
-    </p>
-
-    <div class="diagram">
-
-        <div class="box">🌍<br>Навколишній світ</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">📡<br>Датчик</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">⚡<br>Сигнал</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🧠<br>Arduino</div>
-
-    </div>
-</section>
-
-
-<!-- 21 -->
-<section>
-    <h2>📡 20. Приклад — ультразвуковий датчик</h2>
-
-    <div class="diagram">
-
-        <div class="box">📡</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">〰️ Звукова хвиля</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🧱 СТІНА</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">↩️ Відбиття</div>
-
-    </div>
-
-    <p>
-        Датчик може використовувати час проходження сигналу до об'єкта
-        і назад для оцінки відстані.
-    </p>
-
-    <p>Наприклад:</p>
-
-    <div class="formula">
-        distance = 15 cm
-    </div>
-</section>
-
-
-<!-- 22 -->
-<section>
-    <h2>🧠 21. Датчик → Arduino → рішення</h2>
-
-    <div class="diagram">
-
-        <div class="box">📡 Датчик</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🧠 Arduino</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">💻 Код</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">⚙️ Мотори</div>
-
-    </div>
-
-    <p>
-        Наприклад, програма може перевіряти відстань:
-    </p>
-
-    <div class="code">if (distance &lt; 20) {
-    stop();
-} else {
-    forward();
-}</div>
-
-    <p>
-        Українською це означає:
-    </p>
-
-    <div class="question">
-        Якщо відстань до перешкоди менша за 20 см —
-        зупинити робота. Інакше — продовжувати рух.
-    </div>
-</section>
-
-
-<!-- 23 -->
-<section>
-    <h2>🤖 22. Робот сам приймає рішення</h2>
-
-    <div class="diagram">
-
-        <div class="box">🧱 Перешкода</div>
-        <div class="arrow">→</div>
-
-        <div class="box">📡 Датчик</div>
-        <div class="arrow">→</div>
-
-        <div class="box">🧠 Arduino</div>
-        <div class="arrow">→</div>
-
-        <div class="box">💻 if</div>
-        <div class="arrow">→</div>
-
-        <div class="box">⚙️ Мотори</div>
-
-    </div>
-
-    <p>
-        Саме програма визначає, що робити з інформацією,
-        яку отримав робот.
-    </p>
-</section>
-
-
-<!-- 24 -->
-<section>
-    <h2>↩️ 23. Як робот повертає?</h2>
-
-    <p>
-        Уявімо робота з двома колесами.
-    </p>
-
-    <div class="diagram">
-
-        <div class="box">
-            🛞<br>
-            Ліве колесо
-        </div>
-
-        <div class="box">
-            🤖<br>
-            Робот
-        </div>
-
-        <div class="box">
-            🛞<br>
-            Праве колесо
-        </div>
-
-    </div>
-
-    <p>
-        Якщо швидкість лівого та правого колеса відрізняється,
-        робот може змінювати напрямок руху.
-    </p>
-
-    <div class="diagram">
-
-        <div class="box">
-            🐢<br>
-            Лівий мотор<br>
-            повільніше
-        </div>
-
-        <div class="arrow">+</div>
-
-        <div class="box">
-            🐇<br>
-            Правий мотор<br>
-            швидше
-        </div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🤖 ↶</div>
-
-    </div>
-</section>
-
-
-<!-- 25 -->
-<section>
-    <h2>🔄 24. Повний цикл роботи робота</h2>
-
-    <div class="diagram">
-
-        <div class="box">📡<br>ЗЧИТАТИ ДАТЧИК</div>
-        <div class="arrow">↓</div>
-
-        <div class="box">🧠<br>ОБРОБИТИ ДАНІ</div>
-        <div class="arrow">↓</div>
-
-        <div class="box">💻<br>ПРИЙНЯТИ РІШЕННЯ</div>
-        <div class="arrow">↓</div>
-
-        <div class="box">⚙️<br>КЕРУВАТИ МОТОРАМИ</div>
-        <div class="arrow">↓</div>
-
-        <div class="box">🔄<br>ПОВТОРИТИ</div>
-
-    </div>
-</section>
-
-
-<!-- 26 -->
-<section>
-    <h2>🌐 25. Повна система робота</h2>
-
-    <div class="diagram">
-
-<pre style="text-align:left; font-family:Consolas,monospace; line-height:1.7;">
-
-                     🌍 НАВКОЛИШНІЙ СВІТ
-                              │
-                              ▼
-                         📡 ДАТЧИК
-                              │
-                              │ сигнал
-                              ▼
-                       ┌─────────────┐
-                       │             │
-                       │    🧠 MCU   │
-                       │             │
-                       │  + ПРОГРАМА │
-                       │             │
-                       └──────┬──────┘
-                              │
-                         керуючий
-                           сигнал
-                              │
-                              ▼
-                       ┌─────────────┐
-                       │ 🔌 DRIVER   │
-                       │   MOTOR     │
-                       └──────┬──────┘
-                              │
-                           ⚡ СТРУМ
-                              │
-                    ┌─────────┴─────────┐
-                    ▼                   ▼
-                 ⚙️ MOTOR            MOTOR ⚙️
-                    │                   │
-                    ▼                   ▼
-                   🛞                   🛞
-                    └────────┬──────────┘
-                             │
-                             ▼
-                           🤖
-                         РОБОТ
-
-</pre>
-
-    </div>
-</section>
-
-
-<!-- 27 -->
-<section>
-    <h2>🔋 26. Де тут електрика?</h2>
-
-    <div class="concept-grid">
-
-        <div class="concept">
-            <div class="icon">⚡</div>
-            <h3>Напруга</h3>
             <p>
-                Джерело живлення створює різницю потенціалів,
-                завдяки якій у колі може виникати струм.
+                Придумай робота, якого ти хотів би створити.
             </p>
+
+            <p>Наприклад:</p>
+
+            <ul>
+                <li>🚗 робот-машинка</li>
+                <li>🧹 робот-прибиральник</li>
+                <li>🏠 робот для розумного будинку</li>
+                <li>🐕 робот-доглядальник</li>
+                <li>🚀 робот-дослідник</li>
+                <li>🛡️ робот-охоронець</li>
+                <li>🌱 робот для догляду за рослинами</li>
+            </ul>
+
+            <label><strong>Назва мого робота:</strong></label>
+            <input type="text" placeholder="Наприклад: RoboGarden">
+
+            <br><br>
+
+            <label><strong>Для чого він потрібен?</strong></label>
+            <textarea placeholder="Опиши одним-двома реченнями..."></textarea>
+
         </div>
 
-        <div class="concept">
-            <div class="icon">🔌</div>
-            <h3>Струм</h3>
+    </div>
+
+
+    <!-- STEP 2 -->
+    <div class="card">
+
+        <div class="step">
+
+            <div class="step-number">
+                2️⃣ Досліди сенсори — 6 хв
+            </div>
+
             <p>
-                Рух електричного заряду в колі.
+                Тепер потрібно знайти в Інтернеті інформацію про сенсори.
             </p>
+
+            <div class="search-box">
+
+                <strong>🔎 Завдання</strong>
+
+                <p>
+                    Обери <strong>2 сенсори</strong>, які можуть бути корисними
+                    для твого робота.
+                </p>
+
+                <p>
+                    Для пошуку можна використати Google або інший пошуковик.
+                </p>
+
+                <p>
+                    Приклади запитів:
+                </p>
+
+                <ul>
+                    <li>«ультразвуковий датчик Arduino як працює»</li>
+                    <li>«датчик освітленості Arduino»</li>
+                    <li>«датчик температури Arduino»</li>
+                    <li>«датчик руху Arduino»</li>
+                </ul>
+
+            </div>
+
+            <h3>Можливі сенсори</h3>
+
+            <div class="component-grid">
+
+                <div class="component">
+                    👁️ <strong>Датчик відстані</strong>
+                    Визначає, наскільки далеко знаходиться об'єкт.
+                </div>
+
+                <div class="component">
+                    ☀️ <strong>Датчик освітленості</strong>
+                    Визначає рівень освітлення.
+                </div>
+
+                <div class="component">
+                    🌡️ <strong>Датчик температури</strong>
+                    Вимірює температуру.
+                </div>
+
+                <div class="component">
+                    🚶 <strong>Датчик руху</strong>
+                    Виявляє рух людини або об'єкта.
+                </div>
+
+                <div class="component">
+                    🔊 <strong>Датчик звуку</strong>
+                    Реагує на звук або зміну його рівня.
+                </div>
+
+                <div class="component">
+                    👆 <strong>Кнопка</strong>
+                    Дозволяє людині передати команду роботу.
+                </div>
+
+            </div>
+
+            <h3>Запиши результати дослідження</h3>
+
+            <p><strong>Сенсор №1</strong></p>
+            <input type="text" placeholder="Назва сенсора">
+
+            <textarea placeholder="Що він вимірює або визначає?"></textarea>
+
+            <br>
+
+            <p><strong>Сенсор №2</strong></p>
+            <input type="text" placeholder="Назва сенсора">
+
+            <textarea placeholder="Що він вимірює або визначає?"></textarea>
+
         </div>
 
-        <div class="concept">
-            <div class="icon">🧱</div>
-            <h3>Опір</h3>
+    </div>
+
+
+    <!-- STEP 3 -->
+    <div class="card">
+
+        <div class="step">
+
+            <div class="step-number">
+                3️⃣ Обери виконавчі пристрої — 4 хв
+            </div>
+
             <p>
-                Характеризує протидію проходженню струму.
+                Сенсор лише отримує інформацію. Робот повинен ще й
+                <strong>щось робити</strong>.
             </p>
-        </div>
 
-    </div>
-</section>
-
-
-<!-- 28 -->
-<section>
-    <h2>💻 27. Де тут програмування?</h2>
-
-    <p>
-        Програмування визначає поведінку робота.
-    </p>
-
-    <div class="code">if (distance &lt; 20) {
-
-    stop();
-
-    turnLeft();
-
-} else {
-
-    forward();
-
-}</div>
-
-    <p>
-        Програма отримує інформацію від датчиків,
-        аналізує її та формує команди для виконавчих пристроїв.
-    </p>
-</section>
-
-
-<!-- 29 -->
-<section>
-    <h2>🧪 28. Практична демонстрація — LED</h2>
-
-    <h3>Схема</h3>
-
-    <div class="diagram">
-
-        <div class="box">🧠 Arduino</div>
-        <div class="arrow">→</div>
-
-        <div class="box">🔴 LED</div>
-        <div class="arrow">→</div>
-
-        <div class="box">🧱 Резистор</div>
-        <div class="arrow">→</div>
-
-        <div class="box">GND</div>
-
-    </div>
-
-    <h3>Код</h3>
-
-    <div class="code">const int LED_PIN = 13;
-
-void setup() {
-    pinMode(LED_PIN, OUTPUT);
-}
-
-void loop() {
-
-    digitalWrite(LED_PIN, HIGH);
-    delay(1000);
-
-    digitalWrite(LED_PIN, LOW);
-    delay(1000);
-}</div>
-
-    <h3>Що відбувається?</h3>
-
-    <div class="diagram">
-
-        <div class="box">HIGH</div>
-        <div class="arrow">→</div>
-        <div class="box">⚡ Сигнал</div>
-        <div class="arrow">→</div>
-        <div class="box">🔴 LED</div>
-        <div class="arrow">→</div>
-        <div class="box">💡 Світло</div>
-
-    </div>
-</section>
-
-
-<!-- 30 -->
-<section>
-    <h2>🎛️ 29. Практична демонстрація — PWM</h2>
-
-    <p>Спробуйте різні значення:</p>
-
-    <div class="code">analogWrite(LED_PIN, 255);</div>
-
-    <div class="code">analogWrite(LED_PIN, 128);</div>
-
-    <div class="code">analogWrite(LED_PIN, 30);</div>
-
-    <p>
-        Порівняйте яскравість світлодіода.
-    </p>
-
-    <div class="question">
-        Чому яскравість змінилася, хоча батарейку ми не замінили?
-    </div>
-</section>
-
-
-<!-- 31 -->
-<section>
-    <h2>⚙️ 30. Практична демонстрація — мотор</h2>
-
-    <div class="diagram">
-
-        <div class="box">🧠 Arduino</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">🔌 Драйвер</div>
-
-        <div class="arrow">→</div>
-
-        <div class="box">⚙️ MOTOR</div>
-
-    </div>
-
-    <p>Умовно керуємо сигналом:</p>
-
-    <div class="code">analogWrite(MOTOR_PIN, 100);</div>
-
-    <p>Потім:</p>
-
-    <div class="code">analogWrite(MOTOR_PIN, 200);</div>
-
-    <p>
-        Спостерігаємо, як змінюється поведінка мотора.
-    </p>
-</section>
-
-
-<!-- 32 -->
-<section>
-    <h2>📡 31. Практична демонстрація — датчик</h2>
-
-    <div class="code">int distance = readDistance();
-
-if (distance &lt; 20) {
-    stopMotor();
-} else {
-    startMotor();
-}</div>
-
-    <p>
-        Тут ми бачимо повний зв'язок фізики та програмування:
-    </p>
-
-    <div class="diagram">
-
-        <div class="box">🌍 Об'єкт</div>
-        <div class="arrow">→</div>
-        <div class="box">📡 Датчик</div>
-        <div class="arrow">→</div>
-        <div class="box">⚡ Сигнал</div>
-        <div class="arrow">→</div>
-        <div class="box">🧠 MCU</div>
-        <div class="arrow">→</div>
-        <div class="box">💻 Код</div>
-        <div class="arrow">→</div>
-        <div class="box">⚙️ Мотор</div>
-
-    </div>
-</section>
-
-
-<!-- 33 -->
-<section>
-    <h2>📝 32. Завдання для учнів</h2>
-
-    <div class="task">
-
-        <h3>Завдання 1</h3>
-
-        <p>
-            Є джерело:
-            <strong>5 V</strong>
-        </p>
-
-        <p>
-            та резистор:
-            <strong>100 Ω</strong>
-        </p>
-
-        <p>
-            Знайдіть струм.
-        </p>
-
-        <div class="formula">
-            I = U / R
-        </div>
-
-        <div class="answer">
-            <strong>Відповідь:</strong><br>
-            I = 5 / 100 = 0,05 A = 50 mA
-        </div>
-
-    </div>
-
-
-    <div class="task">
-
-        <h3>Завдання 2</h3>
-
-        <p>
-            Що станеться зі струмом, якщо напруга залишається сталою,
-            а опір збільшується?
-        </p>
-
-        <p>
-            A — струм збільшиться<br>
-            B — струм зменшиться<br>
-            C — нічого не зміниться
-        </p>
-
-        <div class="answer">
-            <strong>Правильна відповідь: B</strong>
-        </div>
-
-    </div>
-
-
-    <div class="task">
-
-        <h3>Завдання 3</h3>
-
-        <p>Що робить батарея?</p>
-
-        <p>
-            A — виконує програму<br>
-            B — вимірює відстань<br>
-            C — забезпечує систему електричною енергією<br>
-            D — є мотором
-        </p>
-
-        <div class="answer">
-            <strong>Правильна відповідь: C</strong>
-        </div>
-
-    </div>
-
-
-    <div class="task">
-
-        <h3>Завдання 4</h3>
-
-        <p>Що робить мікроконтролер?</p>
-
-        <p>
-            A — виконує програму та взаємодіє з електронними компонентами<br>
-            B — є батарейкою<br>
-            C — є мотором<br>
-            D — є колесом
-        </p>
-
-        <div class="answer">
-            <strong>Правильна відповідь: A</strong>
-        </div>
-
-    </div>
-
-
-    <div class="task">
-
-        <h3>Завдання 5</h3>
-
-        <p>Навіщо потрібен драйвер мотора?</p>
-
-        <p>
-            A — для написання коду<br>
-            B — для керування мотором та його силовою частиною<br>
-            C — для вимірювання температури<br>
-            D — для зберігання фотографій
-        </p>
-
-        <div class="answer">
-            <strong>Правильна відповідь: B</strong>
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- 34 -->
-<section>
-    <h2>🧠 33. Перевір себе</h2>
-
-    <div class="task">
-
-        <p>Напруга вимірюється у...</p>
-        <p>________________________</p>
-
-        <p>Струм вимірюється у...</p>
-        <p>________________________</p>
-
-        <p>Опір вимірюється у...</p>
-        <p>________________________</p>
-
-        <p>Потужність вимірюється у...</p>
-        <p>________________________</p>
-
-        <p>Закон Ома:</p>
-        <p>________________________</p>
-
-        <p>Формула потужності:</p>
-        <p>________________________</p>
-
-    </div>
-
-    <details>
-        <summary><strong>Показати відповіді</strong></summary>
-
-        <div class="answer">
-
-            Напруга — <strong>вольт (V)</strong><br>
-            Струм — <strong>ампер (A)</strong><br>
-            Опір — <strong>ом (Ω)</strong><br>
-            Потужність — <strong>ват (W)</strong><br>
-            Закон Ома — <strong>U = I × R</strong><br>
-            Потужність — <strong>P = U × I</strong>
-
-        </div>
-    </details>
-</section>
-
-
-<!-- 35 -->
-<section>
-    <h2>🔥 34. Головне, що потрібно запам'ятати</h2>
-
-    <div class="concept-grid">
-
-        <div class="concept">
-            <div class="icon">⚡</div>
-            <h3>Напруга</h3>
             <p>
-                Різниця потенціалів, яка створює умови
-                для руху електричного заряду.
+                Знайди та обери мінімум <strong>2 виконавчі пристрої</strong>.
             </p>
+
+            <div class="component-grid">
+
+                <div class="component">
+                    ⚙️ <strong>Мотор</strong>
+                    Забезпечує рух коліс або механізмів.
+                </div>
+
+                <div class="component">
+                    🔄 <strong>Сервопривід</strong>
+                    Повертає механізм на певний кут.
+                </div>
+
+                <div class="component">
+                    💡 <strong>LED</strong>
+                    Може подавати світловий сигнал.
+                </div>
+
+                <div class="component">
+                    🔊 <strong>Бузер</strong>
+                    Видає звуковий сигнал.
+                </div>
+
+                <div class="component">
+                    🖥️ <strong>Дисплей</strong>
+                    Може показувати інформацію.
+                </div>
+
+            </div>
+
+            <p><strong>Мої виконавчі пристрої:</strong></p>
+
+            <input type="text" placeholder="Наприклад: два мотори">
+
+            <br><br>
+
+            <input type="text" placeholder="Наприклад: LED">
+
         </div>
 
-        <div class="concept">
-            <div class="icon">🔌</div>
-            <h3>Струм</h3>
+    </div>
+
+
+    <!-- STEP 4 -->
+    <div class="card">
+
+        <div class="step">
+
+            <div class="step-number">
+                4️⃣ Побудуй логіку робота — 5 хв
+            </div>
+
             <p>
-                Рух електричного заряду.
+                Тепер найважливіше.
             </p>
-        </div>
 
-        <div class="concept">
-            <div class="icon">🧱</div>
-            <h3>Опір</h3>
             <p>
-                Протидія проходженню струму.
+                Покажи, як робот буде реагувати на інформацію
+                від сенсорів.
             </p>
+
+            <div class="example">
+
+                <strong>Приклад:</strong>
+
+                <p>
+                    Якщо датчик відстані виявив перешкоду ближче ніж 20 см,
+                    робот зупиняється та повертає праворуч.
+                </p>
+
+                <p>
+                    У вигляді алгоритму:
+                </p>
+
+                <strong>
+                    Якщо → перешкода близько →
+                    зупинити мотори →
+                    повернути праворуч.
+                </strong>
+
+            </div>
+
+            <br>
+
+            <p><strong>Тепер придумай мінімум 2 правила для свого робота.</strong></p>
+
+            <textarea placeholder="Правило 1: Якщо ..., робот ..."></textarea>
+
+            <br>
+
+            <textarea placeholder="Правило 2: Якщо ..., робот ..."></textarea>
+
         </div>
 
     </div>
 
-    <div class="success">
 
-        <strong>Для робототехніки:</strong>
+    <!-- STEP 5 -->
+    <div class="card">
 
-        <br><br>
+        <div class="step">
 
-        🔋 Батарея — дає енергію.<br>
-        🧠 Мікроконтролер — виконує програму.<br>
-        📡 Датчик — отримує інформацію.<br>
-        🔌 Драйвер — керує силовою частиною.<br>
-        ⚙️ Мотор — створює рух.<br>
-        💻 Код — визначає поведінку робота.
+            <div class="step-number">
+                5️⃣ Намалюй схему робота — 5 хв
+            </div>
 
-    </div>
-</section>
+            <p>
+                На папері, у Paint, PowerPoint, Google Drawings або іншому
+                графічному редакторі намалюй схему свого робота.
+            </p>
 
+            <p>На схемі повинні бути:</p>
 
-<!-- 36 -->
-<section>
-    <h2>🎯 35. Фінальне питання уроку</h2>
+            <div class="checklist">
 
-    <div class="question">
+                <label>
+                    <input type="checkbox">
+                    🧠 Контролер
+                </label>
 
-        <strong>
-            Якщо я напишу в програмі
-            <code>forward();</code>,
-            чому фізично починає рухатися колесо?
-        </strong>
+                <label>
+                    <input type="checkbox">
+                    👁️ Мінімум 2 сенсори
+                </label>
 
-    </div>
+                <label>
+                    <input type="checkbox">
+                    ⚙️ Мінімум 2 виконавчі пристрої
+                </label>
 
-    <div class="diagram">
+                <label>
+                    <input type="checkbox">
+                    ➡️ З'єднання між компонентами
+                </label>
 
-<pre style="font-family:Consolas,monospace; line-height:1.8;">
+                <label>
+                    <input type="checkbox">
+                    🏷️ Підписи компонентів
+                </label>
 
-forward()
-    ↓
-💻 КОД
-    ↓
-🧠 МІКРОКОНТРОЛЕР
-    ↓
-⚡ ЕЛЕКТРИЧНИЙ СИГНАЛ
-    ↓
-🔌 ДРАЙВЕР
-    ↓
-⚡ СТРУМ
-    ↓
-⚙️ МОТОР
-    ↓
-🔄 ОБЕРТАННЯ
-    ↓
-🛞 КОЛЕСО
-    ↓
-🤖 РУХ
+            </div>
 
-</pre>
+            <div class="scheme">
 
-    </div>
+             ┌───────────────────┐
+             │    🧠 КОНТРОЛЕР   │
+             │      Arduino      │
+             └─────────┬─────────┘
+                       │
+            ┌──────────┴──────────┐
+            ↓                     ↓
+      👁️ СЕНСОР 1            👁️ СЕНСОР 2
+            │                     │
+            └──────────┬──────────┘
+                       ↓
+                  РІШЕННЯ
+                       │
+             ┌─────────┴─────────┐
+             ↓                   ↓
+          ⚙️ МОТОР             💡 LED
 
-    <div class="question">
+            </div>
 
-        <strong>
-            А як робот дізнається, що перед ним стіна?
-        </strong>
-
-    </div>
-
-    <div class="diagram">
-
-<pre style="font-family:Consolas,monospace; line-height:1.8;">
-
-🧱 СТІНА
-    ↓
-📡 ДАТЧИК
-    ↓
-⚡ ЕЛЕКТРИЧНИЙ СИГНАЛ
-    ↓
-🧠 МІКРОКОНТРОЛЕР
-    ↓
-💻 ПРОГРАМА
-    ↓
-if (distance &lt; 20)
-    ↓
-⚙️ МОТОРИ
-    ↓
-🤖 РОБОТ ЗМІНЮЄ РУХ
-
-</pre>
-
-    </div>
-</section>
-
-
-<!-- 37 -->
-<section>
-    <h2>🏁 Висновок</h2>
-
-    <p>
-        Робототехніка — це поєднання кількох дисциплін.
-    </p>
-
-    <div class="concept-grid">
-
-        <div class="concept">
-            <div class="icon">💻</div>
-            <h3>Програмування</h3>
-            <p>Визначає логіку поведінки.</p>
-        </div>
-
-        <div class="concept">
-            <div class="icon">⚡</div>
-            <h3>Електрика</h3>
-            <p>Забезпечує енергію та електричні процеси.</p>
-        </div>
-
-        <div class="concept">
-            <div class="icon">🔧</div>
-            <h3>Механіка</h3>
-            <p>Перетворює енергію на фізичний рух.</p>
         </div>
 
     </div>
 
-    <div class="formula">
-        💻 ПРОГРАМУВАННЯ
-        +
-        ⚡ ЕЛЕКТРИКА
-        +
-        🔌 ЕЛЕКТРОНІКА
-        +
-        🔧 МЕХАНІКА
-        =
-        🤖 РОБОТОТЕХНІКА
+
+    <!-- FINAL -->
+    <div class="card">
+
+        <h2>🏁 Фінальна перевірка</h2>
+
+        <p>
+            Перед завершенням роботи переконайся, що твій проєкт має:
+        </p>
+
+        <div class="checklist">
+
+            <label>
+                <input type="checkbox">
+                Я придумав призначення робота.
+            </label>
+
+            <label>
+                <input type="checkbox">
+                Я дослідив щонайменше 2 сенсори.
+            </label>
+
+            <label>
+                <input type="checkbox">
+                Я обрав щонайменше 2 виконавчі пристрої.
+            </label>
+
+            <label>
+                <input type="checkbox">
+                Я придумав щонайменше 2 правила поведінки робота.
+            </label>
+
+            <label>
+                <input type="checkbox">
+                Я намалював схему робота.
+            </label>
+
+            <label>
+                <input type="checkbox">
+                Я можу пояснити, навіщо потрібен кожен компонент.
+            </label>
+
+        </div>
+
     </div>
 
-    <div class="success">
 
-        <strong>
-            Код говорить роботу, що робити.
-        </strong>
+    <!-- QUESTIONS -->
+    <div class="card">
 
-        <br><br>
+        <h2>💡 Питання для обговорення</h2>
 
-        Електроніка передає ці команди.
+        <ol>
+            <li>
+                Чим сенсор відрізняється від мотора?
+            </li>
 
-        <br><br>
+            <li>
+                Чи може робот працювати без сенсорів?
+            </li>
 
-        Електрика забезпечує енергію.
+            <li>
+                Чому сенсор сам не може змусити робота їхати?
+            </li>
 
-        <br><br>
+            <li>
+                Який сенсор ти додав би до свого робота,
+                якби мав необмежений бюджет?
+            </li>
 
-        Мотори перетворюють електричну енергію на рух.
-
-        <br><br>
-
-        Датчики повідомляють роботу, що відбувається навколо нього.
+            <li>
+                Яку одну функцію свого робота ти хотів би
+                реалізувати наступного уроку?
+            </li>
+        </ol>
 
     </div>
-</section>
-
-</main>
 
 
-<footer>
-    <p>🤖 Робототехніка • 10 клас</p>
-    <p>Напруга • Струм • Опір • Мікроконтролери • Мотори • Датчики</p>
-</footer>
+    <!-- EXTRA -->
+    <div class="card">
+
+        <h2>⭐ Додаткове завдання</h2>
+
+        <p>
+            Уяви, що твій робот повинен працювати повністю автономно.
+            Людина не повинна ним керувати.
+        </p>
+
+        <p>
+            Додай до своєї схеми ще <strong>один сенсор</strong>
+            і придумай нове правило:
+        </p>
+
+        <div class="example">
+
+            <strong>Якщо __________________________</strong>
+
+            <br><br>
+
+            <strong>то робот _______________________</strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+
+        🤖 Робототехніка починається не з коду,
+        а з правильного запитання:
+
+        <strong>«Що робот повинен знати і що він повинен зробити?»</strong>
+
+    </div>
+
+</div>
 
 </body>
 </html>
