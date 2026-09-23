@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Класифікація типів даних та структур для моделювання — учні</title>
+<style>
+:root{--bg:#f5f8fb;--card:#fff;--ink:#182332;--blue:#145b86;--line:#dbe4ec;--accent:#eaf5ff;--task:#fff6df}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:#eaf4fb;border-bottom:4px solid #1b6b98;padding:38px 7%;}h1{font-size:34px;line-height:1.15;color:#123f5c;margin:0 0 8px}main{max-width:950px;margin:28px auto;padding:0 20px}section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:25px;margin-bottom:20px}h2{color:#145b86;margin-top:0}h3{margin-bottom:6px;color:#194d72}
+table{width:100%;border-collapse:collapse}th,td{border:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}th{background:#edf4f9}
+.task{background:var(--task);border-left:5px solid #c58912;padding:15px 18px;margin:14px 0;border-radius:8px}.note{background:var(--accent);border-left:5px solid #2579ad;padding:14px 18px;border-radius:8px}
+.step{border:1px solid var(--line);border-radius:12px;padding:18px;margin:14px 0}.num{display:inline-block;background:#145b86;color:white;border-radius:50%;width:31px;height:31px;text-align:center;line-height:31px;margin-right:8px}
+code{background:#edf1f4;padding:2px 5px;border-radius:4px}pre{background:#172332;color:#f4f7fa;padding:14px;border-radius:9px;overflow:auto}
+a{color:#075f91}ul,ol{padding-left:25px}@media(max-width:700px){h1{font-size:28px}section{padding:19px}}@media print{body{background:#fff}section{box-shadow:none;break-inside:avoid}}
+</style></head>
+<body>
+<header><h1>Класифікація типів даних та структур для моделювання</h1><p><strong>10 клас · Інформатика</strong></p></header>
+<main>
+<section><h2>1. Тема уроку</h2><p>Як описувати об’єкти реального світу за допомогою даних і правильно організовувати ці дані для комп’ютера.</p></section>
+
+<section><h2>2. Коротка теорія</h2>
+<p><strong>Тип даних</strong> показує, що за значення ми зберігаємо і як із ним можна працювати.</p>
+<table><tr><th>Тип</th><th>Приклад</th><th>Приклад використання</th></tr>
+<tr><td>Ціле число</td><td><code>15</code></td><td>вік, кількість, очки</td></tr>
+<tr><td>Дійсне число</td><td><code>72.5</code></td><td>маса, температура, ціна</td></tr>
+<tr><td>Текст</td><td><code>"Anna"</code></td><td>ім’я, назва, повідомлення</td></tr>
+<tr><td>Логічне</td><td><code>True</code> / <code>False</code></td><td>увімкнено/вимкнено, так/ні</td></tr></table>
+<p><strong>Структура даних</strong> організовує кілька значень.</p>
+<table><tr><th>Структура</th><th>Приклад</th><th>Ідея</th></tr>
+<tr><td>Список</td><td><code>["меч","щит","зілля"]</code></td><td>елементи в певному порядку</td></tr>
+<tr><td>Множина</td><td><code>{"uk","en","pl"}</code></td><td>унікальні елементи</td></tr>
+<tr><td>Словник</td><td><code>{"name":"Anna","age":15}</code></td><td>пари «ключ → значення»</td></tr></table>
+<div class="note"><strong>Модель даних</strong> — спрощене представлення об’єкта або процесу, у якому зберігаються потрібні для задачі характеристики.</div>
+</section>
+
+<section><h2>3. Основні поняття</h2>
+<ul><li><strong>Дані</strong> — відомості, які можна зберігати та обробляти.</li><li><strong>Тип даних</strong> — характеристика значення, що визначає його природу та допустимі операції.</li><li><strong>Структура даних</strong> — спосіб організації набору значень.</li><li><strong>Список</strong> — впорядкована колекція.</li><li><strong>Множина</strong> — колекція унікальних елементів.</li><li><strong>Словник</strong> — набір пар «ключ → значення».</li><li><strong>Модель</strong> — спрощене представлення реального об’єкта для певної задачі.</li></ul>
+</section>
+
+<section><h2>4. Сучасні приклади</h2>
+<ul><li><strong>Гра:</strong> персонаж має ім’я, рівень, кількість монет, стан і список предметів.</li>
+<li><strong>Смартфон:</strong> контакт має ім’я, номер, пошту та групи.</li>
+<li><strong>Робот:</strong> сенсори дають числа, стан може бути True/False, команди можна зберігати списком.</li>
+<li><strong>Соціальна мережа:</strong> профіль, дописи, реакції та підписки — структуровані дані.</li>
+<li><strong>AI:</strong> дані перед обробкою подаються у формах, придатних для обчислень.</li></ul>
+</section>
+
+<section><h2>5. Практична робота</h2>
+<p>Для запуску Python у браузері можна використати <a href="https://www.programiz.com/python-programming/online-compiler/" target="_blank">Programiz Online Python Compiler</a>. Для покрокового перегляду виконання — <a href="https://pythontutor.com/" target="_blank">Python Tutor</a>.</p>
+
+<div class="step"><h3><span class="num">1</span>Розпізнай типи</h3>
+<pre>name = "Anna"
+age = 15
+height = 1.67
+online = True
+
+print(type(name))
+print(type(age))
+print(type(height))
+print(type(online))</pre>
+<p>Запусти код і визнач, який тип має кожне значення.</p><p><strong>Подумай:</strong> чим відрізняються <code>15</code> і <code>15.0</code>?</p></div>
+
+<div class="step"><h3><span class="num">2</span>Створи модель профілю</h3>
+<pre>student = {
+    "name": "Anna",
+    "age": 15,
+    "favorite_subject": "informatics",
+    "online": True,
+    "scores": [10, 11, 12]
+}
+
+print(student["name"])
+print(student["scores"])</pre>
+<p>Зміни ім’я, вік і предмет. Додай ще один ключ. Зміни список оцінок.</p><p><strong>Подумай:</strong> який тип має <code>scores</code>? Чому <code>student</code> містить різні типи даних?</p></div>
+
+<div class="step"><h3><span class="num">3</span>Обери структуру</h3>
+<p>Для кожної ситуації запиши: <strong>список / множина / словник</strong>.</p>
+<ol><li>Черга пісень, які відтворюються по порядку.</li><li>Набір унікальних мов інтерфейсу.</li><li>Характеристики ноутбука: бренд, RAM, процесор.</li><li>Інвентар персонажа гри.</li></ol>
+<p><strong>Подумай:</strong> чому для характеристик ноутбука зручно використовувати ключі?</p></div>
+
+<div class="step"><h3><span class="num">4</span>Створи власну модель</h3>
+<p>Обери <strong>смартфон, автомобіль, персонажа гри, робота або відео</strong>.</p>
+<p>Запиши 5 властивостей. Для кожної вкажи тип даних. Одну властивість зроби списком.</p>
+<p><strong>Приклад:</strong> робот → ім’я — текст; заряд — число; активний — логічне; температура — число; сенсори — список.</p>
+</div>
+</section>
+
+<section><h2>6. Самостійна робота</h2>
+<div class="task"><ol><li>Що таке тип даних?</li><li>Який тип підходить для температури 21.5?</li><li>Чим список відрізняється від множини?</li><li>Коли зручно використовувати словник?</li><li>Що таке модель даних?</li><li>Чи може словник містити список?</li></ol></div>
+</section>
+
+<section><h2>7. Додаткове завдання</h2>
+<p>Створи модель персонажа гри з <strong>6 властивостями</strong>. Використай щонайменше <strong>3 різні типи даних</strong> і <strong>2 структури даних</strong>.</p>
+</section>
+
+<section><h2>8. Що треба запам’ятати</h2>
+<ol><li>Тип даних описує, <strong>що це за значення</strong>.</li><li>Структура даних описує, <strong>як організувати багато значень</strong>.</li><li>Числа, текст і логічні значення використовуються для різних задач.</li><li>Список зручний, коли важливі елементи та їх порядок.</li><li>Множина зручна, коли потрібні унікальні елементи.</li><li>Словник зручний для зв’язків «ключ → значення».</li><li>Хороша модель містить не все підряд, а лише дані, потрібні для конкретної задачі.</li></ol>
+</section>
+</main>
+</body></html>
