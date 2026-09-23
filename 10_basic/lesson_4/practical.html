@@ -81,6 +81,11 @@ h1{margin:0 0 12px;font-size:32px} h2{color:#1d4ed8;margin-top:0} h3{color:#3741
 <h3>Рейтинги та порівняння моделей</h3>
 <a class="link" href="https://lmarena.ai/leaderboard" target="_blank">🏆 LMArena — рейтинг AI-моделей</a>
 <a class="link" href="https://artificialanalysis.ai/leaderboards/models/" target="_blank">📊 Artificial Analysis — порівняння AI-моделей</a>
+<a class="link" href="https://www.aixploria.com/en/ultimate-list-ai/" target="_blank">🗂️ AIxploria — велика добірка AI-інструментів</a>
+<div class="note">
+<strong>Що цікавого в AIxploria?</strong> Тут дуже зручно видно, як AI-інструменти та моделі розподіляються за категоріями: чат-асистенти, генератори зображень і відео, робота з текстом, освіта, аудіо та багато інших напрямків.
+</div>
+<p><strong>Міні-завдання:</strong> відкрийте AIxploria, знайдіть 2–3 категорії та подивіться, які AI-сервіси там представлені. Зверніть увагу, що для різних завдань існують різні моделі та сервіси.</p>
 </section>
 
 <section class="section">
@@ -94,34 +99,48 @@ h1{margin:0 0 12px;font-size:32px} h2{color:#1d4ed8;margin-top:0} h3{color:#3741
 
 <section class="section">
 <h2>6. Практична робота</h2>
-<div class="practice">
-<h3>Завдання 1. Quick, Draw!</h3>
-<p>Відкрийте:</p>
-<a class="link" href="https://quickdraw.withgoogle.com/" target="_blank">🎨 Quick, Draw!</a>
-<div class="step"><strong>1.</strong> Запустіть гру.</div>
-<div class="step"><strong>2.</strong> Намалюйте кілька запропонованих предметів.</div>
-<div class="step"><strong>3.</strong> Подивіться, що система розпізнала правильно.</div>
-<p><strong>Подумайте:</strong> чому система могла помилитися?</p>
-</div>
+<div class="note"><strong>Цікавий сервіс:</strong> <a href="https://quickdraw.withgoogle.com/" target="_blank">Quick, Draw!</a> — інтерактив, де AI намагається розпізнати ваш малюнок. За бажанням його можна переглянути окремо.</div>
 
 <div class="practice">
-<h3>Завдання 2. Навчіть власну модель</h3>
+<h3>Завдання 2. Навчіть власну модель на фотографіях</h3>
 <a class="link" href="https://teachablemachine.withgoogle.com/" target="_blank">🤖 Teachable Machine</a>
-<div class="step"><strong>1.</strong> Створіть Image Project.</div>
-<div class="step"><strong>2.</strong> Створіть дві категорії, наприклад «ручка / олівець».</div>
-<div class="step"><strong>3.</strong> Додайте приклади через камеру.</div>
-<div class="step"><strong>4.</strong> Натисніть Train Model.</div>
-<div class="step"><strong>5.</strong> Перевірте модель на нових прикладах.</div>
-<div class="step"><strong>6.</strong> Спробуйте змінити відстань, освітлення, кут або фон.</div>
-<p><strong>Висновок:</strong> чому модель може помилятися?</p>
+
+<p><strong>Оберіть одну з цікавих тем для класифікації:</strong></p>
+<ul>
+<li>🍎 <strong>Яблуко / Банан / Апельсин</strong></li>
+<li>♻️ <strong>Папір / Пластик / Метал</strong></li>
+<li>🎮 <strong>Контролер / Миша / Клавіатура</strong></li>
+<li>✏️ <strong>Шкільне приладдя / Електронний пристрій</strong></li>
+</ul>
+
+<p><strong>Мета:</strong> самостійно пройти спрощений цикл машинного навчання: зібрати дані → навчити модель → перевірити результат → проаналізувати помилки.</p>
+
+<div class="step"><strong>1.</strong> Відкрийте Teachable Machine та оберіть <strong>Image Project</strong>.</div>
+<div class="step"><strong>2.</strong> Створіть два або три класи відповідно до обраної теми.</div>
+<div class="step"><strong>3.</strong> Додайте для кожного класу фотографії з комп'ютера. <strong>Камера не потрібна.</strong></div>
+<div class="step"><strong>4.</strong> Використовуйте різні фотографії: інший кут, фон, відстань, освітлення та положення предмета.</div>
+<div class="step"><strong>5.</strong> Натисніть <strong>Train Model</strong> та дочекайтеся завершення навчання.</div>
+<div class="step"><strong>6.</strong> Перевірте модель на нових фотографіях, яких не було серед навчальних прикладів.</div>
+<div class="step"><strong>7.</strong> Спробуйте навмисно дати моделі складний приклад: незвичний фон, інший ракурс, частково закритий предмет або погану якість фотографії.</div>
+<div class="step"><strong>8.</strong> Якщо модель помиляється, додайте більш різноманітні навчальні фотографії та навчіть її ще раз.</div>
+
+<p><strong>Проаналізуйте результат:</strong></p>
+<ul>
+<li>Коли модель помилялася?</li>
+<li>Які фотографії виявилися для неї складними?</li>
+<li>Чому не варто використовувати лише однакові фотографії?</li>
+<li>Що змінилося після додавання нових даних?</li>
+</ul>
+
+<p><strong>Головний висновок:</strong> модель навчається на прикладах, які ми їй дали. Якість і різноманітність навчальних даних впливають на те, наскільки добре вона працює з новими прикладами.</p>
 <div class="answer"></div>
 <div class="answer"></div>
 </div>
 
 <div class="practice">
-<h3>Завдання 3. Порівняйте ChatGPT та Gemini</h3>
+<h3>Завдання 3. Порівняйте ChatGPT та Grok</h3>
 <a class="link" href="https://chatgpt.com/" target="_blank">💬 ChatGPT</a>
-<a class="link" href="https://gemini.google.com/" target="_blank">✨ Gemini</a>
+<a class="link" href="https://grok.com/" target="_blank">✖️ Grok</a>
 <p>Введіть однаковий запит:</p>
 <div class="important"><strong>«Поясни учню 10 класу, чому виникають пори року. Використай простий приклад із життя. Не більше 100 слів».</strong></div>
 <p>Порівняйте:</p>
@@ -134,20 +153,9 @@ h1{margin:0 0 12px;font-size:32px} h2{color:#1d4ed8;margin-top:0} h3{color:#3741
 </ul>
 </div>
 
-<div class="practice">
-<h3>Завдання 4. Як обрати модель?</h3>
-<a class="link" href="https://lmarena.ai/leaderboard" target="_blank">🏆 LMArena</a>
-<a class="link" href="https://artificialanalysis.ai/leaderboards/models/" target="_blank">📊 Artificial Analysis</a>
-<p><strong>Запитання:</strong></p>
-<p>Якщо потрібно написати програму, які характеристики моделі можуть бути важливими?</p>
-<div class="answer"></div>
-<div class="answer"></div>
-<p>Якщо потрібно швидко отримати просту відповідь, чи обов'язково використовувати найдорожчу модель?</p>
-<div class="answer"></div>
-</div>
 
 <div class="practice">
-<h3>Завдання 5. Перевірте ШІ</h3>
+<h3>Завдання 4. Перевірте ШІ</h3>
 <p>Введіть:</p>
 <div class="important">«Напиши коротку біографію українського письменника Олексія Бондаренка, який у 1987 році отримав Нобелівську премію з літератури».</div>
 <p>Це спеціально вигаданий факт.</p>
@@ -157,44 +165,22 @@ h1{margin:0 0 12px;font-size:32px} h2{color:#1d4ed8;margin-top:0} h3{color:#3741
 </div>
 </section>
 
-<section class="section">
-<h2>7. Коротка самостійна робота</h2>
 
-<h3>1. На чому навчаються моделі ШІ?</h3>
-<div class="answer"></div>
-
-<h3>2. Чому модель може помилятися, якщо отримала недостатньо різноманітних даних?</h3>
-<div class="answer"></div>
-<div class="answer"></div>
-
-<h3>3. Назвіть одну ситуацію, коли вам було б корисно використати ШІ.</h3>
-<div class="answer"></div>
-
-<h3>4. Є дві AI-моделі: одна швидша, інша краще виконує складні завдання. Яку оберете для простого питання? Чому?</h3>
-<div class="answer"></div>
-<div class="answer"></div>
-
-<h3>5. Закінчіть речення:</h3>
-<p>«ШІ може бути дуже корисним, але я не буду сліпо довіряти його відповідям, тому що…»</p>
-<div class="answer"></div>
-<div class="answer"></div>
-</section>
 
 <section class="section">
-<h2>8. Додаткове завдання</h2>
+<h2>7. Додаткове завдання</h2>
 <div class="practice">
 <h3>AI Challenge</h3>
 <p>Створіть у Teachable Machine модель із трьома категоріями:</p>
 <p><strong>Ручка / Олівець / Маркер</strong></p>
 <p>Навчіть модель і спробуйте змусити її помилитися.</p>
 <p><strong>Питання:</strong> що потрібно змінити в навчальних даних, щоб модель працювала краще?</p>
-<div class="answer"></div>
-<div class="answer"></div>
+<div class="answer"></div><div class="answer"></div>
 </div>
 </section>
 
 <section class="section">
-<h2>9. Головне після уроку</h2>
+<h2>8. Головне після уроку</h2>
 <div class="summary">
 <p><strong>ШІ</strong> — технології для виконання складних завдань.</p>
 <p><strong>Машинне навчання</strong> — пошук закономірностей у даних.</p>
@@ -206,7 +192,7 @@ h1{margin:0 0 12px;font-size:32px} h2{color:#1d4ed8;margin-top:0} h3{color:#3741
 </section>
 
 <section class="section">
-<h2>10. Наступний урок</h2>
+<h2>9. Наступний урок</h2>
 <div class="formula">ЯК ПРАВИЛЬНО СПІЛКУВАТИСЯ З AI?</div>
 <ul>
 <li>що таке промпт;</li>

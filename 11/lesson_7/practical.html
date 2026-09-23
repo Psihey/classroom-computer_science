@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Практична робота №2 — Комп'ютерне моделювання в еру Data Science</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        background: #f4f7fb;
+        color: #222;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 30px auto;
+        background: white;
+        padding: 35px 45px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+        color: #174ea6;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    h2 {
+        color: #174ea6;
+        border-bottom: 2px solid #dbe7ff;
+        padding-bottom: 6px;
+        margin-top: 30px;
+    }
+
+    h3 {
+        color: #333;
+    }
+
+    .info {
+        background: #e8f0fe;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+
+    .important {
+        background: #fff3cd;
+        border-left: 5px solid #f0ad4e;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+    }
+
+    .success {
+        background: #e8f5e9;
+        border-left: 5px solid #34a853;
+        padding: 15px 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+    }
+
+    .step {
+        background: #fafafa;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin: 18px 0;
+    }
+
+    .step-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #174ea6;
+        margin-bottom: 8px;
+    }
+
+    code {
+        background: #f1f3f4;
+        padding: 3px 7px;
+        border-radius: 5px;
+        font-family: Consolas, monospace;
+    }
+
+    .formula {
+        background: #202124;
+        color: #fff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-family: Consolas, monospace;
+        margin: 10px 0;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+    }
+
+    th {
+        background: #174ea6;
+        color: white;
+        padding: 9px;
+        border: 1px solid #ccc;
+    }
+
+    td {
+        padding: 8px;
+        border: 1px solid #ccc;
+        text-align: center;
+    }
+
+    tr:nth-child(even) {
+        background: #f7f9fc;
+    }
+
+    .check {
+        color: #137333;
+        font-weight: bold;
+    }
+
+    .warning {
+        color: #b06000;
+        font-weight: bold;
+    }
+
+    ul, ol {
+        margin-top: 8px;
+    }
+
+    .role {
+        display: inline-block;
+        width: 44%;
+        vertical-align: top;
+        margin: 1%;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+    }
+
+    @media(max-width: 700px) {
+        .container {
+            padding: 20px;
+        }
+
+        .role {
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Практична робота №2</h1>
+
+<h2>Комп'ютерне моделювання в еру Data Science</h2>
+
+<div class="info">
+    <strong>Тривалість:</strong> приблизно 25 хвилин<br>
+    <strong>Формат:</strong> робота в парах<br>
+    <strong>Середовище:</strong> Google Sheets<br>
+    <strong>Результат:</strong> таблиця, діаграма, математична модель та перевірка її точності
+</div>
+
+<h2>🎯 Мета роботи</h2>
+
+<p>
+Навчитися використовувати табличний процесор для аналізу реальних даних,
+побудови простої математичної моделі та перевірки того,
+наскільки добре модель описує реальність.
+</p>
+
+<h2>🧠 Коротко про Data Science</h2>
+
+<p>
+<strong>Data Science</strong> — це робота з даними для пошуку закономірностей,
+отримання висновків і побудови прогнозів.
+</p>
+
+<p>Спрощено процес можна представити так:</p>
+
+<div class="success">
+    <strong>Дані → аналіз → модель → перевірка → висновок</strong>
+</div>
+
+<p>
+У нашій роботі ми спробуємо визначити, чи пов'язана
+<strong>температура повітря</strong> з кількістю проданого морозива.
+</p>
+
+<p>
+Комп'ютер побудує математичну модель на основі реальних даних.
+Потім ми перевіримо, наскільки добре ця модель описує кожне спостереження.
+</p>
+
+<h2>👥 Робота в парах</h2>
+
+<div class="role">
+    <strong>👨‍💻 Учень 1</strong>
+    <ul>
+        <li>створює таблицю;</li>
+        <li>вводить дані;</li>
+        <li>створює діаграму;</li>
+        <li>працює з моделлю.</li>
+    </ul>
+</div>
+
+<div class="role">
+    <strong>🔎 Учень 2</strong>
+    <ul>
+        <li>перевіряє введені дані;</li>
+        <li>контролює формули;</li>
+        <li>аналізує результати;</li>
+        <li>робить висновок.</li>
+    </ul>
+</div>
+
+<div class="important">
+    <strong>Важливо:</strong> усю роботу виконуємо безпосередньо в Google Sheets.
+    Ніяких окремих документів створювати не потрібно.
+</div>
+
+
+<!-- КРОК 1 -->
+<div class="step">
+    <div class="step-title">Крок 1. Відкрийте Google Sheets</div>
+
+    <p>
+        Відкрийте Google Sheets і створіть нову порожню електронну таблицю.
+    </p>
+
+    <p>
+        Назвіть її:
+    </p>
+
+    <div class="formula">
+        Практична робота №2 — Data Science
+    </div>
+</div>
+
+
+<!-- КРОК 2 -->
+<div class="step">
+    <div class="step-title">Крок 2. Створіть таблицю з даними</div>
+
+    <p>
+        Уведіть у таблицю такі дані:
+    </p>
+
+    <table>
+        <tr>
+            <th>День</th>
+            <th>Температура °C</th>
+            <th>Реклама</th>
+            <th>Продано морозива</th>
+        </tr>
+
+        <tr><td>Пн</td><td>18</td><td>Ні</td><td>42</td></tr>
+        <tr><td>Вт</td><td>20</td><td>Так</td><td>58</td></tr>
+        <tr><td>Ср</td><td>22</td><td>Ні</td><td>55</td></tr>
+        <tr><td>Чт</td><td>24</td><td>Так</td><td>78</td></tr>
+        <tr><td>Пт</td><td>26</td><td>Ні</td><td>72</td></tr>
+        <tr><td>Сб</td><td>28</td><td>Так</td><td>120</td></tr>
+        <tr><td>Нд</td><td>30</td><td>Ні</td><td>105</td></tr>
+        <tr><td>Пн</td><td>21</td><td>Так</td><td>68</td></tr>
+        <tr><td>Вт</td><td>25</td><td>Ні</td><td>70</td></tr>
+        <tr><td>Ср</td><td>29</td><td>Так</td><td>115</td></tr>
+    </table>
+
+    <p>
+        Заголовки повинні бути в <strong>1-му рядку</strong>,
+        а дані — у рядках <strong>2–11</strong>.
+    </p>
+</div>
+
+
+<!-- КРОК 3 -->
+<div class="step">
+    <div class="step-title">Крок 3. Перевірте дані</div>
+
+    <p>Перевірте разом із напарником:</p>
+
+    <ul>
+        <li>температура записана як число;</li>
+        <li>кількість проданого морозива записана як число;</li>
+        <li>немає пропущених значень;</li>
+        <li>дані розташовані саме в рядках 2–11.</li>
+    </ul>
+
+    <p>
+        Для побудови нашої моделі головними будуть два стовпці:
+        <strong>Температура</strong> та <strong>Продано морозива</strong>.
+    </p>
+</div>
+
+
+<!-- КРОК 4 -->
+<div class="step">
+    <div class="step-title">Крок 4. Побудуйте діаграму</div>
+
+    <p>
+        Потрібно показати, як змінюється кількість продажів
+        залежно від температури.
+    </p>
+
+    <ol>
+        <li>Виділіть діапазон <strong>B1:B11</strong>.</li>
+        <li>Затисніть <strong>Ctrl</strong>.</li>
+        <li>Додатково виділіть <strong>D1:D11</strong>.</li>
+        <li>Оберіть <strong>Вставка → Діаграма</strong>.</li>
+    </ol>
+</div>
+
+
+<!-- КРОК 5 -->
+<div class="step">
+    <div class="step-title">Крок 5. Змініть тип діаграми</div>
+
+    <p>
+        У редакторі діаграм знайдіть <strong>Тип діаграми</strong>.
+    </p>
+
+    <p>
+        Оберіть:
+    </p>
+
+    <div class="formula">
+        Точкова діаграма (Scatter chart)
+    </div>
+
+    <p>
+        Точки повинні показувати залежність:
+    </p>
+
+    <div class="success">
+        <strong>Температура → кількість проданого морозива</strong>
+    </div>
+</div>
+
+
+<!-- КРОК 6 -->
+<div class="step">
+    <div class="step-title">Крок 6. Додайте лінію тренду</div>
+
+    <p>
+        У редакторі діаграми відкрийте:
+    </p>
+
+    <p>
+        <strong>Налаштувати → Ряди → Лінія тренду</strong>
+    </p>
+
+    <p>
+        Оберіть тип:
+    </p>
+
+    <div class="formula">
+        Лінійна
+    </div>
+
+    <p>
+        Лінія тренду — це математична модель,
+        яка намагається описати загальну закономірність між даними.
+    </p>
+</div>
+
+
+<!-- КРОК 7 -->
+<div class="step">
+    <div class="step-title">Крок 7. Покажіть рівняння моделі</div>
+
+    <p>
+        У налаштуваннях лінії тренду знайдіть параметр
+        <strong>Мітка</strong>.
+    </p>
+
+    <p>
+        Оберіть:
+    </p>
+
+    <div class="formula">
+        Використовувати рівняння
+    </div>
+
+    <p>
+        На діаграмі з'явиться приблизно таке рівняння:
+    </p>
+
+    <div class="success">
+        <strong>y ≈ 5,93x − 65,75</strong>
+    </div>
+
+    <p>
+        Це і є наша математична модель.
+    </p>
+</div>
+
+
+<!-- КРОК 8 -->
+<div class="step">
+    <div class="step-title">Крок 8. Покажіть R²</div>
+
+    <p>
+        У налаштуваннях лінії тренду увімкніть:
+    </p>
+
+    <div class="formula">
+        Показати R²
+    </div>
+
+    <p>
+        Для наших початкових даних значення буде приблизно:
+    </p>
+
+    <div class="success">
+        <strong>R² ≈ 0,82</strong>
+    </div>
+
+    <p>
+        Чим ближче R² до <strong>1</strong>, тим краще модель
+        описує наявні дані.
+    </p>
+
+    <p>
+        У нашому випадку модель досить добре описує загальну
+        залежність між температурою та продажами,
+        але не пояснює кожне значення ідеально.
+    </p>
+</div>
+
+
+<!-- КРОК 9 -->
+<div class="step">
+    <div class="step-title">Крок 9. Створіть стовпці для прогнозу</div>
+
+    <p>
+        У клітинках <strong>E1</strong> та <strong>F1</strong>
+        створіть заголовки:
+    </p>
+
+    <table>
+        <tr>
+            <th>E1</th>
+            <th>F1</th>
+        </tr>
+        <tr>
+            <td>Прогноз моделі</td>
+            <td>Помилка</td>
+        </tr>
+    </table>
+
+    <p>
+        Тепер у нас буде можливість порівняти:
+    </p>
+
+    <div class="success">
+        <strong>реальний результат ↔ результат математичної моделі</strong>
+    </div>
+</div>
+
+
+<!-- КРОК 10 -->
+<div class="step">
+    <div class="step-title">Крок 10. Порахуйте прогноз для першого рядка</div>
+
+    <p>
+        У клітинку <strong>E2</strong> введіть формулу:
+    </p>
+
+    <div class="formula">
+        =TREND($D$2:$D$11;$B$2:$B$11;B2)
+    </div>
+
+    <p>
+        Натисніть <strong>Enter</strong>.
+    </p>
+
+    <p>
+        Формула означає:
+    </p>
+
+    <ul>
+        <li><strong>D2:D11</strong> — відомі результати продажів;</li>
+        <li><strong>B2:B11</strong> — відомі температури;</li>
+        <li><strong>B2</strong> — температура, для якої модель рахує прогноз.</li>
+    </ul>
+
+    <div class="important">
+        <strong>Важливо!</strong><br>
+        У Google Sheets з українською/європейською локаллю
+        між аргументами формули використовується <strong>;</strong>.
+    </div>
+</div>
+
+
+<!-- КРОК 11 -->
+<div class="step">
+    <div class="step-title">Крок 11. Розрахуйте прогноз для всіх даних</div>
+
+    <p>
+        Виділіть клітинку <strong>E2</strong>.
+    </p>
+
+    <p>
+        Потягніть маленький синій квадратик у правому нижньому куті
+        клітинки вниз до <strong>E11</strong>.
+    </p>
+
+    <p>
+        Google Sheets автоматично змінить:
+    </p>
+
+    <div class="formula">
+        B2 → B3 → B4 → ... → B11
+    </div>
+
+    <p>
+        Таким чином модель розрахує прогноз для кожного
+        з 10 реальних спостережень.
+    </p>
+</div>
+
+
+<!-- КРОК 12 -->
+<div class="step">
+    <div class="step-title">Крок 12. Порахуйте помилку</div>
+
+    <p>
+        Тепер порівняємо реальний результат із прогнозом моделі.
+    </p>
+
+    <p>
+        У клітинці <strong>F2</strong> введіть:
+    </p>
+
+    <div class="formula">
+        =ABS(D2-E2)
+    </div>
+
+    <p>
+        Натисніть <strong>Enter</strong>.
+    </p>
+
+    <p>
+        Потім перетягніть формулу з <strong>F2</strong> вниз до
+        <strong>F11</strong>.
+    </p>
+
+    <p>
+        Формула показує, на скільки одиниць прогноз відрізняється
+        від реального результату.
+    </p>
+
+    <div class="success">
+        Наприклад, якщо реально продали 42 морозива,
+        а модель передбачила 41, то помилка становить 1.
+    </div>
+</div>
+
+
+<!-- КРОК 13 -->
+<div class="step">
+    <div class="step-title">Крок 13. Знайдіть найбільшу помилку</div>
+
+    <p>
+        Подивіться на значення у стовпці <strong>F</strong>.
+    </p>
+
+    <p>
+        Знайдіть рядок, у якому помилка найбільша.
+    </p>
+
+    <p>
+        Обговоріть із напарником:
+    </p>
+
+    <ul>
+        <li>Чи означає велика помилка, що модель неправильна?</li>
+        <li>Чому модель не може точно передбачити кожен продаж?</li>
+        <li>Які інші фактори можуть впливати на продаж морозива?</li>
+    </ul>
+
+    <p>
+        Наприклад:
+        <strong>реклама, день тижня, місце продажу, кількість покупців,
+        свято, погода, знижки.</strong>
+    </p>
+</div>
+
+
+<!-- КРОК 14 -->
+<div class="step">
+    <div class="step-title">Крок 14. Створіть аномальне значення</div>
+
+    <p>
+        Тепер проведемо маленький експеримент із даними.
+    </p>
+
+    <p>
+        У рядок <strong>12</strong> додайте:
+    </p>
+
+    <table>
+        <tr>
+            <th>A12</th>
+            <th>B12</th>
+            <th>C12</th>
+            <th>D12</th>
+        </tr>
+
+        <tr>
+            <td>Чт</td>
+            <td>32</td>
+            <td>Так</td>
+            <td><strong>8</strong></td>
+        </tr>
+    </table>
+
+    <p>
+        Тобто при температурі <strong>32 °C</strong>
+        ми раптом отримали лише <strong>8 проданих морозив</strong>.
+    </p>
+
+    <p>
+        Подивіться, що відбулося з точкою на діаграмі.
+    </p>
+</div>
+
+
+<!-- КРОК 15 -->
+<div class="step">
+    <div class="step-title">Крок 15. Перевірте вплив аномалії</div>
+
+    <p>
+        Подивіться на лінію тренду після додавання значення
+        <strong>32 °C → 8 морозив</strong>.
+    </p>
+
+    <p>
+        Порівняйте її з попередньою моделлю.
+    </p>
+
+    <p>
+        Також подивіться, як змінилося значення <strong>R²</strong>.
+    </p>
+
+    <p>
+        Тепер змініть <strong>D12</strong> з:
+    </p>
+
+    <div class="formula">
+        8
+    </div>
+
+    <p>
+        на:
+    </p>
+
+    <div class="formula">
+        100
+    </div>
+
+    <p>
+        Знову подивіться на лінію тренду та R².
+    </p>
+
+    <div class="success">
+        <strong>Запитання:</strong>
+        що сталося з моделлю після зміни одного значення?
+    </div>
+
+    <p>
+        Це приклад того, чому в Data Science важливо перевіряти
+        якість даних та шукати <strong>аномалії</strong>.
+    </p>
+</div>
+
+
+<!-- КРОК 16 -->
+<div class="step">
+    <div class="step-title">Крок 16. Зробіть висновок</div>
+
+    <p>
+        Разом із напарником усно сформулюйте висновок:
+    </p>
+
+    <div class="success">
+        <p>
+            <strong>1.</strong> Чи спостерігається залежність між температурою
+            та продажами морозива?
+        </p>
+
+        <p>
+            <strong>2.</strong> Наскільки добре модель описує початкові дані?
+        </p>
+
+        <p>
+            <strong>3.</strong> Що показує величина R² ≈ 0,82?
+        </p>
+
+        <p>
+            <strong>4.</strong> Що сталося з моделлю після додавання
+            аномального значення?
+        </p>
+
+        <p>
+            <strong>5.</strong> Чому перед використанням моделі потрібно
+            перевіряти якість даних?
+        </p>
+    </div>
+</div>
+
+
+<h2>✅ Що повинно бути наприкінці роботи</h2>
+
+<ul>
+    <li>таблиця з 10 початковими спостереженнями;</li>
+    <li>точкова діаграма;</li>
+    <li>лінія тренду;</li>
+    <li>рівняння моделі приблизно <strong>y ≈ 5,93x − 65,75</strong>;</li>
+    <li><strong>R² ≈ 0,82</strong> для початкових даних;</li>
+    <li>стовпець <strong>Прогноз моделі</strong>;</li>
+    <li>стовпець <strong>Помилка</strong>;</li>
+    <li>експеримент з аномальним значенням;</li>
+    <li>короткий усний висновок.</li>
+</ul>
+
+
+<h2>💡 Головна ідея практичної</h2>
+
+<div class="success">
+
+    <p>
+        <strong>Ми не просто будуємо графік.</strong>
+    </p>
+
+    <p>
+        Ми даємо комп'ютеру реальні дані,
+        дозволяємо йому знайти закономірність,
+        отримуємо математичну модель,
+        перевіряємо її помилки
+        та досліджуємо, як неправильні або незвичайні дані
+        можуть вплинути на результат.
+    </p>
+
+    <p>
+        Це один із базових принципів роботи
+        <strong>Data Science</strong>.
+    </p>
+
+</div>
+
+</div>
+
+</body>
+</html>
