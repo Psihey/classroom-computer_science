@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEXcode VR — Disk Mover: сині та червоні диски</title>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#fff; --text:#172033; --muted:#5d687c;
+  --blue:#1976d2; --blue-soft:#eaf3ff; --red:#d83b3b; --red-soft:#fff0f0;
+  --green:#198754; --yellow:#f2b705; --border:#dce3ed;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+header{background:linear-gradient(135deg,#0d47a1,#1976d2);color:white;padding:42px 20px}
+.wrap{max-width:1050px;margin:auto;padding:0 18px}
+h1{font-size:clamp(30px,5vw,48px);margin:0 0 10px}
+h2{font-size:28px;margin-top:0}
+h3{font-size:21px}
+.subtitle{font-size:19px;max-width:820px;opacity:.95}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:7px 12px;border-radius:999px}
+section{margin:24px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;box-shadow:0 5px 18px rgba(30,50,80,.06)}
+.notice{border-left:6px solid var(--yellow);background:#fff9df}
+.blue{border-left:6px solid var(--blue);background:var(--blue-soft)}
+.red{border-left:6px solid var(--red);background:var(--red-soft)}
+.green{border-left:6px solid var(--green);background:#edf9f2}
+ol,ul{padding-left:24px}
+li{margin:8px 0}
+code,.block{font-family:Consolas,monospace}
+.block{display:block;background:#202733;color:#f4f7fb;border-radius:10px;padding:14px 16px;margin:10px 0;overflow:auto;white-space:pre}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-weight:700;font-size:14px}
+.pill-blue{background:#dcecff;color:#1257a3}.pill-red{background:#ffe0e0;color:#a62222}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.flow div{background:white;border:1px solid var(--border);border-radius:12px;padding:15px;text-align:center;font-weight:700}
+.arrow{text-align:center;font-size:25px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{border:1px solid var(--border);padding:10px;text-align:left}
+th{background:#eef2f7}
+.checklist label{display:block;padding:9px 0}
+input[type=checkbox]{transform:scale(1.2);margin-right:10px}
+a{color:#0d5bd7;font-weight:700}
+.small{color:var(--muted);font-size:14px}
+footer{padding:30px 0 50px;color:var(--muted)}
+@media(max-width:650px){.card{padding:19px} table{font-size:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🤖 Disk Mover</h1>
+    <div class="subtitle">Практична робота у VEXcode VR: запрограмуй робота так, щоб він самостійно переніс <b>3 сині диски</b> у синю зону, переїхав до червоної зони та переніс <b>3 червоні диски</b>.</div>
+    <div class="badges">
+      <span class="badge">45 хв</span>
+      <span class="badge">VEXcode VR</span>
+      <span class="badge">Blocks</span>
+      <span class="badge">Змінні + repeat</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section class="card notice">
+  <h2>🎯 Головне правило</h2>
+  <p><b>Не запускай програму після кожного етапу.</b> Спочатку побудуй <b>весь алгоритм від START до останнього червоного диска</b>, а вже потім запускай його.</p>
+  <p>Після натискання <b>Start</b> робот має сам виконати всю послідовність:</p>
+  <div class="flow">
+    <div>🔵 3 сині диски</div>
+    <div>➡️ Перехід до червоної зони</div>
+    <div>🔴 3 червоні диски</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>1. Що потрібно зробити</h2>
+  <ol>
+    <li>Відкрити <a href="https://vr.vex.com/" target="_blank">VEXcode VR</a>.</li>
+    <li>Створити Blocks-проєкт.</li>
+    <li>Відкрити Playground <b>Disk Mover</b>.</li>
+    <li>Створити змінну <code>MyDistance</code>.</li>
+    <li>Побудувати повний алгоритм за схемою нижче.</li>
+    <li>Запустити програму <b>одним стартом</b>.</li>
+  </ol>
+  <p class="small">Disk Mover використовує стандартного VR Robot та електромагніт для піднімання і відпускання дисків. Початкова позиція робота — (-800, -800), розмір поля — 2000 × 2000 мм.</p>
+</section>
+
+<section class="card blue">
+  <h2>2. 🔵 Частина А — забрати всі 3 сині диски</h2>
+  <p>Спочатку створюємо змінну:</p>
+  <span class="block">set MyDistance to 800</span>
+
+  <p>Далі використай <b>repeat 3</b>. Усередині циклу команди мають стояти <b>саме в такому порядку</b>:</p>
+
+  <div class="block">repeat 3
+    energize Magnet to boost
+    drive forward for MyDistance mm
+    turn right for 180 degrees
+    drive forward for MyDistance mm
+    stop driving
+    wait 1 seconds
+    energize Magnet to drop
+    turn right for 180 degrees
+    change MyDistance by 400</div>
+
+  <h3>Як працює змінна?</h3>
+  <table>
+    <tr><th>Диск</th><th>Значення MyDistance</th><th>Що робить робот</th></tr>
+    <tr><td>1-й 🔵</td><td>800 мм</td><td>Їде до першого диска і повертає його в синю зону</td></tr>
+    <tr><td>2-й 🔵</td><td>1200 мм</td><td>Їде далі до другого диска і повертає його</td></tr>
+    <tr><td>3-й 🔵</td><td>1600 мм</td><td>Їде до третього диска і повертає його</td></tr>
+  </table>
+
+  <p><b>Чому не написати три окремі команди?</b> Тому що змінна дозволяє використовувати одну й ту саму команду <code>drive forward for MyDistance</code>, а після кожного диска збільшувати відстань на 400 мм.</p>
+</section>
+
+<section class="card notice">
+  <h2>3. ⚠️ Важливий момент після синіх дисків</h2>
+  <p>Після третього повторення значення <code>MyDistance</code> уже змінилося:</p>
+  <span class="block">800 → 1200 → 1600 → 2000</span>
+  <p>Тому перед роботою з червоними дисками <b>обов'язково поверни змінну до 800</b>:</p>
+  <span class="block">set MyDistance to 800</span>
+  <p>Інакше робот почне їхати до першого червоного диска з неправильною відстанню.</p>
+</section>
+
+<section class="card red">
+  <h2>4. ➡️ Перехід до червоної зони</h2>
+  <p>Після завершення циклу синіх дисків робот має переїхати від синьої зони до червоної.</p>
+  <p>Команди:</p>
+  <div class="block">set MyDistance to 800
+turn right for 90 degrees
+drive forward for 800 mm
+turn left for 90 degrees</div>
+
+  <p>Після цих команд робот повинен опинитися біля <b>червоної зони</b> та дивитися в напрямку червоних дисків.</p>
+  <p class="small">В офіційному матеріалі VEX цей перехід описано як рух на 800 мм до наступної кольорової зони, після чого робот повертається, щоб дивитися на диски.</p>
+</section>
+
+<section class="card red">
+  <h2>5. 🔴 Частина Б — забрати всі 3 червоні диски</h2>
+  <p>Тепер використовуємо той самий принцип ще раз:</p>
+
+  <div class="block">repeat 3
+    energize Magnet to boost
+    drive forward for MyDistance mm
+    turn right for 180 degrees
+    drive forward for MyDistance mm
+    stop driving
+    wait 1 seconds
+    energize Magnet to drop
+    turn right for 180 degrees
+    change MyDistance by 400</div>
+
+  <p>Відстані будуть такими:</p>
+  <div class="flow">
+    <div>🔴 1-й → 800 мм</div>
+    <div>🔴 2-й → 1200 мм</div>
+    <div>🔴 3-й → 1600 мм</div>
+  </div>
+</section>
+
+<section class="card green">
+  <h2>6. 🧩 Повний алгоритм — зібрати ДО запуску</h2>
+  <p><b>Не розділяй цей код на окремі запуски.</b> Усе має бути одним стеком блоків.</p>
+
+  <div class="block">when started
+
+set MyDistance to 800
+
+repeat 3
+    energize Magnet to boost
+    drive forward for MyDistance mm
+    turn right for 180 degrees
+    drive forward for MyDistance mm
+    stop driving
+    wait 1 seconds
+    energize Magnet to drop
+    turn right for 180 degrees
+    change MyDistance by 400
+
+set MyDistance to 800
+
+turn right for 90 degrees
+drive forward for 800 mm
+turn left for 90 degrees
+
+repeat 3
+    energize Magnet to boost
+    drive forward for MyDistance mm
+    turn right for 180 degrees
+    drive forward for MyDistance mm
+    stop driving
+    wait 1 seconds
+    energize Magnet to drop
+    turn right for 180 degrees
+    change MyDistance by 400</div>
+</section>
+
+<section class="card">
+  <h2>7. 🧠 Перевір себе перед запуском</h2>
+  <div class="checklist">
+    <label><input type="checkbox"> Я створив змінну <code>MyDistance</code>.</label>
+    <label><input type="checkbox"> На початку <code>MyDistance = 800</code>.</label>
+    <label><input type="checkbox"> Для синіх дисків є <code>repeat 3</code>.</label>
+    <label><input type="checkbox"> Усередині циклу є <code>boost</code> і <code>drop</code>.</label>
+    <label><input type="checkbox"> Після кожного диска є <code>change MyDistance by 400</code>.</label>
+    <label><input type="checkbox"> Після синіх дисків я знову встановив <code>MyDistance = 800</code>.</label>
+    <label><input type="checkbox"> Є повний перехід до червоної зони.</label>
+    <label><input type="checkbox"> Для червоних дисків є другий <code>repeat 3</code>.</label>
+    <label><input type="checkbox"> Уся програма запускається одним натисканням Start.</label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>8. 🛠️ Якщо робот не виконав завдання</h2>
+  <ol>
+    <li><b>Не переписуй всю програму.</b> Перевір, на якому саме диску робот збився.</li>
+    <li>Перевір значення <code>MyDistance</code>: <b>800 → 1200 → 1600</b>.</li>
+    <li>Перевір, що після синього циклу є <code>set MyDistance to 800</code>.</li>
+    <li>Перевір порядок блоків: <b>взяти → розвернутися → повернутися → відпустити → розвернутися</b>.</li>
+    <li>Перевір, що в переході до червоної зони використано <b>800 мм</b>.</li>
+    <li>Перевір, що обидва цикли мають <b>repeat 3</b>.</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h2>🏁 Умова успішного виконання</h2>
+  <p>Програма вважається виконаною, якщо після одного натискання <b>Start</b> робот:</p>
+  <ol>
+    <li>переніс <b>3 сині диски</b> у синю зону;</li>
+    <li>самостійно переїхав до червоної зони;</li>
+    <li>переніс <b>3 червоні диски</b> у червону зону;</li>
+    <li>не потребував ручного керування між етапами.</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h2>⭐ Додаткове завдання</h2>
+  <p>Якщо основна програма працює:</p>
+  <p><b>Спробуй пояснити, навіщо програмі потрібна змінна <code>MyDistance</code>.</b></p>
+  <p>І друге питання: <b>що станеться, якщо після синіх дисків не виконати <code>set MyDistance to 800</code>?</b></p>
+</section>
+
+<section class="card">
+  <h2>📚 Корисні матеріали</h2>
+  <ul>
+    <li><a href="https://vr.vex.com/" target="_blank">Відкрити VEXcode VR</a></li>
+    <li><a href="https://api.vex.com/vr/home/playgrounds/disk_mover.html" target="_blank">Офіційна документація VEX — Disk Mover</a></li>
+    <li><a href="https://education.vex.com/stemlabs/cs/cs-level-1-vexcode-vr-blocks/moving-disks-with-loops/lesson-5-disk-mover-challenge-steps" target="_blank">Офіційне завдання VEX — Disk Mover Challenge</a></li>
+  </ul>
+</section>
+
+<footer>
+  <div class="wrap">
+    <b>VEXcode VR — Disk Mover</b><br>
+    Практична робота: змінні, цикли та алгоритми керування роботом.
+  </div>
+</footer>
+</main>
+</body>
+</html>
