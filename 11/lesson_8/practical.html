@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Скільки насправді? Перевіряю гіпотезу про свій екранний час</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --color-level-base: #2e7d32;
+  --color-level-standard: #1f5fbf;
+  --color-level-challenge: #7b3fb5;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --color-level-base: #7bd389;
+    --color-level-standard: #7aa8ff;
+    --color-level-challenge: #c49bff;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --color-level-base: #7bd389;
+  --color-level-standard: #7aa8ff;
+  --color-level-challenge: #c49bff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+}
+
+.level {
+  padding: var(--space-2);
+  border: 2px solid var(--level-color);
+  border-top-width: 6px;
+  border-radius: var(--radius);
+}
+
+.level h4 {
+  margin: 0 0 var(--space-1);
+  color: var(--level-color);
+}
+
+.level-base { --level-color: var(--color-level-base); }
+.level-standard { --level-color: var(--color-level-standard); }
+.level-challenge { --level-color: var(--color-level-challenge); }
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">11 КЛАС • ТЕОРІЯ + ПРАКТИКА</p>
+  <h1>Скільки насправді? Перевіряю гіпотезу про свій екранний час</h1>
+<p class="lesson-subtitle">Збираємо справжні дані з телефона, рахуємо їх у Google Таблицях і будуємо власний дашборд, щоб перевірити, чи правильно ми вгадали.</p></header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Знайти в налаштуваннях свого телефона статистику екранного часу за тиждень і перенести її в таблицю.</li>
+  <li>Порахувати в Google Таблицях суму й середнє за допомогою функцій SUM і AVERAGE.</li>
+  <li>Побудувати стовпчикову діаграму з назвою і підписами осей та за нею перевірити свою гіпотезу.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Дашборд — це одна панель, де кілька головних показників видно з першого погляду, як на приладовій панелі авто.</li>
+  <li>Відчуття часу часто обманює, а дані показують, як є насправді: гіпотезу перевіряють цифрами.</li>
+  <li>Формула в таблиці починається зі знака =, а SUM і AVERAGE рахують суму й середнє діапазону клітинок.</li>
+  <li>Стовпчикова діаграма з назвою і підписами осей допомагає порівняти дні й одразу побачити найбільший стовпчик.</li>
+  <li>Мої дані — мої: ділитися ними чи ні, вирішую я.</li>
+</ul>
+
+  <div class="theory"><h2>Частина 1. Що таке дашборд і що рахує телефон</h2>
+<p><strong>Дашборд</strong> (з англ. <em>dashboard</em> — приладова панель) — це одна сторінка або екран, де зібрано кілька головних показників. Мета дашборду — щоб усе важливе було видно <em>з першого погляду</em>. Приклади навколо тебе: панель авто, екран фітнес-браслета, статистика в Instagram для автора.</p>
+<p>Твій телефон уже веде дашборд про тебе. Він рахує <strong>3 головні метрики</strong> (метрика — це показник, який можна виміряти числом):</p>
+<ol>
+<li><strong>Екранний час</strong> — скільки хвилин екран був увімкнений і ти ним користувався.</li>
+<li><strong>Розблокування</strong> — скільки разів ти брав телефон до рук і вмикав його.</li>
+<li><strong>Сповіщення</strong> — скільки разів телефон тебе кликав.</li>
+</ol>
+<p><strong>Де знайти:</strong></p>
+<ul>
+<li><strong>Android:</strong> Налаштування → <em>Цифрове благополуччя та батьківський контроль</em> → натисни на діаграму. На деяких телефонах (наприклад, Xiaomi, Samsung) пункт може називатися трохи інакше, тоді введи в пошуку налаштувань слово «благополуччя» або «екранний час».</li>
+<li><strong>iPhone:</strong> Параметри → <em>Екранний час</em> → <em>Переглянути всю активність</em> → вкладка <em>Тиждень</em>.</li>
+</ul>
+<p><strong>Правило приватності:</strong> твої дані належать тобі. На уроці ти нікому не надсилаєш свої скриншоти. Якщо не хочеш працювати зі своїми даними, бери готовий набір від учителя: навичка буде та сама.</p>
+<h2>Частина 2. Формули: сума і середнє</h2>
+<p>У таблиці кожна клітинка має адресу: буква стовпця + номер рядка, наприклад <code>B2</code>. <strong>Діапазон</strong> <code>B2:B8</code> означає всі клітинки від B2 до B8, тобто 7 днів.</p>
+<p><strong>Формула завжди починається зі знака <code>=</code>.</strong> Без нього таблиця вважає написане звичайним текстом.</p>
+<table>
+<thead>
+<tr>
+<th>Що треба</th>
+<th>Формула</th>
+<th>Що вона робить</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Сума за тиждень</td>
+<td><code>=SUM(B2:B8)</code></td>
+<td>додає всі 7 чисел</td>
+</tr>
+<tr>
+<td>Середнє за день</td>
+<td><code>=AVERAGE(B2:B8)</code></td>
+<td>додає і ділить на кількість чисел</td>
+</tr>
+<tr>
+<td>Перевести в години</td>
+<td><code>=B10/60</code></td>
+<td>ділить хвилини на 60</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Розібраний приклад.</strong> Якщо в тебе по днях 250, 230, 280, 210, 320, 400, 380 хвилин:</p>
+<pre><code>=SUM(B2:B8)      → 2070 хвилин за тиждень
+=AVERAGE(B2:B8)  → 295,7 хвилини на день
+=B10/60          → 4,9 години на день
+</code></pre>
+<p><strong>Чому хвилини, а не «4 год 10 хв»?</strong> Таблиця не вміє додавати текст. Тому спершу переводимо: <code>4 год 10 хв = 4 × 60 + 10 = 250 хв</code>.</p>
+<p><strong>Типова пастка:</strong> ти пишеш <code>SUM(B2:B8)</code> без <code>=</code> і бачиш у клітинці той самий текст замість числа. Ще одна пастка — записати в клітинку <code>250 хв</code>: зі словом «хв» це вже текст, і сума його не порахує. Пиши тільки число.</p>
+<h2>Частина 3. Діаграма — дані, які видно</h2>
+<p>Сімдесят чисел важко порівняти очима, а сім стовпчиків — легко. Тому дашборди майже завжди мають діаграми.</p>
+<ul>
+<li><strong>Стовпчикова</strong> — щоб <em>порівняти</em> значення: дні тижня, класи, місяці. Найвищий стовпчик одразу показує «найтелефонніший» день.</li>
+<li><strong>Кругова</strong> — щоб показати <em>частини одного цілого</em>: яку частку часу забирає кожен застосунок.</li>
+</ul>
+<p><strong>Щоб діаграма була зрозумілою, їй потрібні:</strong></p>
+<ol>
+<li><strong>Назва</strong>, наприклад «Мій екранний час за тиждень».</li>
+<li><strong>Підпис горизонтальної осі</strong>: «День тижня».</li>
+<li><strong>Підпис вертикальної осі</strong> з одиницями: «Хвилини».</li>
+</ol>
+<p><strong>Навіщо це в житті?</strong> Так працюють аналітики в банках, магазинах і IT-компаніях: збирають дані, рахують підсумки і показують їх на дашборді, щоб ухвалити рішення. Сьогодні ти робиш те саме, тільки дані — про тебе.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Як дослідник перевіряє гіпотезу</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Гіпотеза: я вгадую свій час</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Збір: беру дані з телефона</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Обробка: SUM і AVERAGE</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Діаграма: бачу дні</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Висновок: прогноз чи факт</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Яку діаграму обрати</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Стовпчикова</h4><ul><li>Порівнює окремі значення</li><li>Приклад: хвилини по днях тижня</li><li>Найвищий стовпчик видно одразу</li><li>Осі: День тижня і Хвилини</li></ul></div>
+    <div class="scheme-column"><h4>Кругова</h4><ul><li>Показує частини одного цілого</li><li>Приклад: частка кожного застосунку</li><li>Найбільший сектор видно одразу</li><li>Осей немає, потрібні підписи секторів</li></ul></div>
+  </div>
+</figure>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%86%D0%B8%D1%84%D1%80%D0%BE%D0%B2%D0%B5+%D0%B1%D0%BB%D0%B0%D0%B3%D0%BE%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D1%87%D1%8F+android+%D1%8F%D0%BA+%D0%BF%D0%BE%D0%B4%D0%B8%D0%B2%D0%B8%D1%82%D0%B8%D1%81%D1%8F+%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%BD%D0%B8%D0%B9+%D1%87%D0%B0%D1%81+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Цифрове благополуччя на Android: як подивитися екранний час<span class="resource-hint">пошук на YouTube: «цифрове благополуччя android як подивитися екранний час українською»</span></span></a>
+
+<div class="resource-note">Коротке відео показує, де в Android знайти статистику за тиждень. Подивись, якщо не знайшов пункт меню під час пояснення.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=Apple+%D0%BF%D1%96%D0%B4%D1%82%D1%80%D0%B8%D0%BC%D0%BA%D0%B0+%D0%95%D0%BA%D1%80%D0%B0%D0%BD%D0%BD%D0%B8%D0%B9+%D1%87%D0%B0%D1%81+iPhone+%D0%BF%D0%B5%D1%80%D0%B5%D0%B3%D0%BB%D1%8F%D0%BD%D1%83%D1%82%D0%B8+%D0%B7%D0%B2%D1%96%D1%82+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Екранний час на iPhone: офіційна довідка Apple<span class="resource-hint">пошук у Google: «Apple підтримка Екранний час iPhone переглянути звіт українською»</span></span></a>
+
+<div class="resource-note">Офіційна інструкція Apple: де відкрити тижневий звіт і що означають підняття телефона та сповіщення.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D0%BF%D1%80%D0%B8%D0%BB%D0%B0%D0%B4%D0%BE%D0%B2%D0%B0+%D0%BF%D0%B0%D0%BD%D0%B5%D0%BB%D1%8C+%D0%B0%D0%B2%D1%82%D0%BE%D0%BC%D0%BE%D0%B1%D1%96%D0%BB%D1%8F+%D1%81%D0%BF%D1%96%D0%B4%D0%BE%D0%BC%D0%B5%D1%82%D1%80+%D0%B4%D0%B0%D1%82%D1%87%D0%B8%D0%BA%D0%B8" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати аналогію дашборду — знайти зображення<span class="resource-hint">пошук у Google Картинках: «приладова панель автомобіля спідометр датчики»</span></span></a>
+
+<div class="resource-note">Учень бачить спідометр, датчик пального і лампочки: лише кілька головних показників з усіх даних авто. Саме так працює будь-який дашборд.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D0%A6%D0%B8%D1%84%D1%80%D0%BE%D0%B2%D0%B5+%D0%B1%D0%BB%D0%B0%D0%B3%D0%BE%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D1%87%D1%8F+Android+%D1%81%D0%BA%D1%80%D0%B8%D0%BD%D1%88%D0%BE%D1%82+%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%BD%D0%B8%D0%B9+%D1%87%D0%B0%D1%81+%D0%B4%D1%96%D0%B0%D0%B3%D1%80%D0%B0%D0%BC%D0%B0" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати, як виглядає статистика в Android — знайти зображення<span class="resource-hint">пошук у Google Картинках: «Цифрове благополуччя Android скриншот екранний час діаграма»</span></span></a>
+
+<div class="resource-note">На скриншоті кругова діаграма часу за день і список застосунків. Учень дізнається, що шукати на своєму телефоні.</div>  </div>
+</div>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Дашборд — як приладова панель авто: водій не читає всі дані двигуна, він дивиться на швидкість, пальне і попереджувальні лампочки.</li>
+  <li>Метрики телефона — як фітнес-браслет: він рахує кроки за тебе, а телефон рахує хвилини і розблокування.</li>
+  <li>Середнє значення — як поділити піцу порівну: усі хвилини за тиждень збирають разом і ділять на 7 днів.</li>
+  <li>Гіпотеза і перевірка — як вгадати вагу кавуна, а потім поставити його на ваги.</li>
+  <li>Діапазон B2:B8 — як ряд сидінь у кінотеатрі: «з 2-го по 8-ме місце в ряду B».</li>
+</ul>
+
+</section>
+
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Завдання</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Дослідницьке завдання</p>
+    <h3>Практика 1. Збираю дані: мій тиждень у хвилинах</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://sheets.google.com" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Google Таблиці</span></a>
+
+<div class="resource-note">Тут ти відкриваєш копію шаблону від учителя і записуєш свої 7 днів у хвилинах.</div>  </div>
+</div>
+
+    <p><strong>Навіщо:</strong> дослідник починає зі збору даних. Без чесних цифр не перевірити жодну гіпотезу.</p>
+<p><strong>Підготовка:</strong> відкрий посилання на шаблон від учителя → <em>Файл</em> → <em>Створити копію</em>. Назви копію: <code>Екранний час_Прізвище</code>.</p>
+<p>Шаблон виглядає так:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>День</td>
+<td>Хвилини</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Пн</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Вт</td>
+<td></td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Нд</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Як перевести час у хвилини:</strong> години × 60 + хвилини. Наприклад, <code>3 год 25 хв = 3 × 60 + 25 = 205</code>.</p>
+<p><strong>Готовий набір даних</strong> (якщо не хочеш або не можеш брати свої):
+Пн 250, Вт 230, Ср 280, Чт 210, Пт 320, Сб 400, Нд 380. Топ-3: TikTok, Instagram, YouTube.</p>
+<p><strong>Як виглядає готова відповідь:</strong> у клітинках B2–B8 стоять 7 чисел без слів, а в D1–D4 записано топ-3 застосунки.</p>
+
+    <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p><strong>Крок за кроком:</strong></p>
+<ol>
+<li>Візьми телефон. <strong>Android:</strong> Налаштування → <em>Цифрове благополуччя</em> → натисни на діаграму. <strong>iPhone:</strong> Параметри → <em>Екранний час</em> → <em>Переглянути всю активність</em> → <em>Тиждень</em>.</li>
+<li>Знайди перший день тижня і подивись його час, наприклад <code>4 год 10 хв</code>.</li>
+<li>Порахуй: <code>4 × 60 + 10 = 250</code>.</li>
+<li>Клацни клітинку <strong>B2</strong> у таблиці й напиши тільки число <code>250</code>. Натисни Enter.</li>
+<li>Повтори для наступних днів у клітинках B3…B8.</li>
+<li>Не можеш знайти статистику? Скопіюй готовий набір даних з опису завдання.</li>
+</ol>
+<p><em>Підказка:</em> якщо день ще не закінчився, візьми попередній повний тиждень або попередні 7 днів.</p>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Заповни B2:B8 хвилинами за 7 днів. У клітинці <strong>D1</strong> напиши «Топ-3 застосунки», а в D2–D4 — їхні назви. У колонці <strong>C</strong> (заголовок «Розблокування» в C1) запиши, скільки разів ти розблоковував телефон кожного дня, якщо телефон це показує.</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Виконай стандартний рівень і додай колонку <strong>E</strong> «Сповіщення» з кількістю сповіщень по днях. Поруч із топ-3 застосунками в E2–E4 запиши, скільки хвилин за тиждень забрав кожен з них. Ці дані знадобляться для кругової діаграми.</p>
+</section>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Заповнена копія шаблону: 7 днів у хвилинах (B2:B8) і топ-3 застосунки. Учень пише в чат «Практика 1 — готово».</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Практика 1. Збираю дані: мій тиждень у хвилинах" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Практика 2. Рахую: сума, середнє і години</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=Google+%D0%A2%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D1%96+%D1%84%D1%83%D0%BD%D0%BA%D1%86%D1%96%D1%8F+SUM+AVERAGE+%D1%81%D1%83%D0%BC%D0%B0+%D1%81%D0%B5%D1%80%D0%B5%D0%B4%D0%BD%D1%94+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Функції SUM і AVERAGE у Google Таблицях<span class="resource-hint">пошук на YouTube: «Google Таблиці функція SUM AVERAGE сума середнє для початківців українською»</span></span></a>
+
+<div class="resource-note">Якщо формула не спрацювала, подивись, як вводять SUM і AVERAGE і виділяють діапазон мишкою.</div>  </div>
+</div>
+
+    <p><strong>Навіщо:</strong> 7 окремих чисел важко «відчути». Одне середнє число за день легко порівняти з прогнозом.</p>
+<p>Допиши в таблицю під днями:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9</td>
+<td>Сума за тиждень</td>
+<td><code>=SUM(B2:B8)</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td>Середнє за день</td>
+<td><code>=AVERAGE(B2:B8)</code></td>
+</tr>
+<tr>
+<td>11</td>
+<td>Середнє в годинах</td>
+<td><code>=B10/60</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Як виглядає готова відповідь</strong> (для готового набору): B9 = 2070, B10 ≈ 295,7, B11 ≈ 4,9.</p>
+
+    <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p><strong>Крок за кроком:</strong></p>
+<ol>
+<li>Клацни клітинку <strong>A9</strong>, напиши <code>Сума за тиждень</code>, Enter.</li>
+<li>Клацни <strong>B9</strong> і надрукуй рівно так: <code>=SUM(B2:B8)</code>. Натисни Enter. Має з'явитися число.</li>
+<li>Клацни <strong>A10</strong>, напиши <code>Середнє за день</code>.</li>
+<li>Клацни <strong>B10</strong> і надрукуй: <code>=AVERAGE(B2:B8)</code>. Enter.</li>
+<li>Клацни <strong>A11</strong>, напиши <code>Середнє в годинах</code>.</li>
+<li>Клацни <strong>B11</strong> і надрукуй: <code>=B10/60</code>. Enter.</li>
+</ol>
+<p><em>Підказка:</em> бачиш у клітинці текст формули замість числа? Перевір, чи стоїть на початку знак <code>=</code>. Бачиш помилку <code>#NAME?</code> — перевір, чи немає в назві функції кириличних літер.</p>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Зроби все, як у базовому рівні. Потім виділи B11 і натисни на панелі кнопку «Зменшити кількість десяткових знаків», щоб залишився 1 знак після коми. Перевір себе: поділи суму B9 на 7 на калькуляторі. Результат має збігтися з B10.</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Додай рядки:</p>
+<ul>
+<li><code>Максимум</code> — <code>=MAX(B2:B8)</code>;</li>
+<li><code>Мінімум</code> — <code>=MIN(B2:B8)</code>;</li>
+<li><code>Різниця з прогнозом</code> — твоє середнє в годинах мінус прогноз з початку уроку (прогноз запиши в окрему клітинку, наприклад D6).</li>
+</ul>
+<p>Якщо заповнював колонку «Розблокування», порахуй і для неї середнє. Подумай: скільки разів на годину неспання (≈16 год) ти береш телефон?</p>
+</section>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> У таблиці є рядки 9–11 із сумою, середнім і середнім у годинах, які рахуються формулами. Учень пише в чат своє середнє в годинах або «готово».</p>
+    <div class="answer-box">
+  <label for="answer-task-2">Твоя відповідь</label>
+  <textarea id="answer-task-2" data-answer="Завдання 2: Практика 2. Рахую: сума, середнє і години" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="task">
+    <p class="task-kind">Творче завдання</p>
+    <h3>Практика 3. Будую свій дашборд: стовпчикова діаграма</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%94%D0%BE%D0%B2%D1%96%D0%B4%D0%BA%D0%B0+Google+%D0%A2%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D1%96+%D0%B4%D0%BE%D0%B4%D0%B0%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F+%D1%82%D0%B0+%D1%80%D0%B5%D0%B4%D0%B0%D0%B3%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F+%D0%B4%D1%96%D0%B0%D0%B3%D1%80%D0%B0%D0%BC%D0%B8" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Довідка Google: як додати і налаштувати діаграму<span class="resource-hint">пошук у Google: «Довідка Google Таблиці додавання та редагування діаграми»</span></span></a>
+
+<div class="resource-note">Покрокова інструкція Google: як вставити діаграму, змінити тип і додати назви осей. Підійде, якщо загубився в меню.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D1%81%D1%82%D0%BE%D0%B2%D0%BF%D1%87%D0%B8%D0%BA%D0%BE%D0%B2%D0%B0+%D0%B4%D1%96%D0%B0%D0%B3%D1%80%D0%B0%D0%BC%D0%B0+Google+%D0%A2%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D1%96+%D0%B4%D0%BD%D1%96+%D1%82%D0%B8%D0%B6%D0%BD%D1%8F+%D0%BF%D1%80%D0%B8%D0%BA%D0%BB%D0%B0%D0%B4" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Зразок готової стовпчикової діаграми — знайти зображення<span class="resource-hint">пошук у Google Картинках: «стовпчикова діаграма Google Таблиці дні тижня приклад»</span></span></a>
+
+<div class="resource-note">Учень бачить, як виглядає готова діаграма з назвою і підписами осей, і може порівняти з нею свій результат.</div>  </div>
+</div>
+
+    <p><strong>Навіщо:</strong> на діаграмі «найтелефонніший» день видно за секунду. Так аналітики показують дані керівникам.</p>
+<p><strong>Як виглядає готова відповідь:</strong> 7 стовпчиків (Пн–Нд), зверху назва «Мій екранний час за тиждень», під горизонтальною віссю підпис «День тижня», біля вертикальної — «Хвилини». Поруч видно клітинки із сумою і середнім. Разом це і є твій дашборд.</p>
+
+    <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p><strong>Крок за кроком:</strong></p>
+<ol>
+<li>Виділи мишкою клітинки від <strong>A1</strong> до <strong>B8</strong> (тільки дні та хвилини, <strong>без</strong> суми й середнього).</li>
+<li>У меню вибери <em>Вставлення</em> → <em>Діаграма</em>.</li>
+<li>Праворуч відкриється редактор. У полі <em>Тип діаграми</em> вибери <strong>Стовпчикова діаграма</strong>.</li>
+<li>Перейди на вкладку <em>Налаштувати</em> → <em>Назви діаграми й осей</em>.</li>
+<li>У списку вибери <em>Назва діаграми</em> і надрукуй: <code>Мій екранний час за тиждень</code>.</li>
+<li>Вибери <em>Назва горизонтальної осі</em> і надрукуй: <code>День тижня</code>.</li>
+<li>Вибери <em>Назва вертикальної осі</em> і надрукуй: <code>Хвилини</code>.</li>
+<li>Перетягни діаграму мишкою так, щоб її було видно поруч з таблицею.</li>
+<li>Зроби скриншот екрана.</li>
+</ol>
+<p><em>Підказка:</em> бачиш велетенський зайвий стовпчик — ти виділив і рядок із сумою. Виділи діапазон заново: A1:B8.</p>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Побудуй стовпчикову діаграму з назвою і підписами осей, як у базовому рівні. Потім зміни колір стовпчиків: <em>Налаштувати</em> → <em>Серії</em> → <em>Колір заливки</em>. Подивись на діаграму і напиши під таблицею одне речення-висновок, наприклад: «Найбільше я в телефоні в суботу, найменше — у четвер».</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Зроби повний дашборд на одному екрані:</p>
+<ol>
+<li>Стовпчикова діаграма по днях (з назвою й осями).</li>
+<li><strong>Кругова діаграма</strong> топ-3 застосунків за хвилинами (діапазон D2:E4 з практики 1).</li>
+<li>Великим шрифтом виділи клітинку із середнім у годинах — це «спідометр» твого дашборду.</li>
+</ol>
+<p>Додай висновок: чи підтвердилася твоя гіпотеза і на скільки ти помилився.</p>
+</section>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Стовпчикова діаграма з назвою і підписами обох осей поруч з таблицею. Скриншот дашборду лишається в учня або надсилається вчителю за бажанням учня. Учень пише в чат «Практика 3 — готово».</p>
+    <div class="answer-box">
+  <label for="answer-task-3">Твоя відповідь</label>
+  <textarea id="answer-task-3" data-answer="Завдання 3: Практика 3. Будую свій дашборд: стовпчикова діаграма" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу знайти в налаштуваннях свого телефона статистику екранного часу за тиждень і перенести її в таблицю у хвилинах.</label></li>
+    <li><label><input type="checkbox"> Я можу порахувати в Google Таблицях суму й середнє за допомогою функцій SUM і AVERAGE.</label></li>
+    <li><label><input type="checkbox"> Я можу побудувати стовпчикову діаграму з назвою і підписами осей та за нею сказати, чи підтвердилася моя гіпотеза.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Яку формулу ти напишеш, щоб порахувати середнє в клітинках від B2 до B8? (а) SUM(B2:B8) (б) =AVERAGE(B2:B8) (в) =B2+B8<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Яку формулу ти напишеш, щоб порахувати середнє в клітинках від B2 до B8? (а) SUM(B2:B8) (б) =AVERAGE(B2:B8) (в) =B2+B8" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Яка діаграма найкраще порівнює екранний час по днях тижня? (а) стовпчикова (б) кругова (в) жодна<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Яка діаграма найкраще порівнює екранний час по днях тижня? (а) стовпчикова (б) кругова (в) жодна" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>На скільки годин твій прогноз відрізнився від реального середнього?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: На скільки годин твій прогноз відрізнився від реального середнього?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Експеримент на 1 день: чи можу я змінити свою цифру? <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%8F%D0%BA+%D0%B2%D1%81%D1%82%D0%B0%D0%BD%D0%BE%D0%B2%D0%B8%D1%82%D0%B8+%D1%82%D0%B0%D0%B9%D0%BC%D0%B5%D1%80+%D0%BB%D1%96%D0%BC%D1%96%D1%82+%D0%B4%D0%BB%D1%8F+%D0%B7%D0%B0%D1%81%D1%82%D0%BE%D1%81%D1%83%D0%BD%D0%BA%D1%83+android+iPhone+%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%BD%D0%B8%D0%B9+%D1%87%D0%B0%D1%81+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як встановити ліміт часу для застосунку<span class="resource-hint">пошук у Google: «як встановити таймер ліміт для застосунку android iPhone екранний час українською»</span></span></a>
+
+<div class="resource-note">Інструкція, як поставити обмеження на один застосунок. Знадобиться для рівнів «стандарт» і «виклик» домашнього завдання.</div>  </div>
+</div>
+
+  <p><strong>Навіщо:</strong> ти вже маєш дашборд. Тепер перевір, чи можеш ти впливати на свої дані, а не тільки дивитися на них.</p>
+<p><strong>Що зробити:</strong></p>
+<ol>
+<li>Вибери одну просту зміну на завтра. Наприклад: вимкнути сповіщення в одному застосунку, поставити ліміт або не брати телефон першу годину після пробудження.</li>
+<li>Наступного дня подивись свій екранний час за цей день.</li>
+<li>Допиши цей день у свою таблицю окремим рядком і порівняй його із середнім з уроку.</li>
+<li>Зроби скриншот таблиці з новим рядком. Свою статистику з телефона показувати не треба.</li>
+</ol>
+<p><strong>Як виглядає готова відповідь:</strong> скриншот таблиці з рядком «Експеримент: 230 хв» і одне речення: «Це на 66 хв менше за моє середнє».</p>
+<p>Хто працював з готовим набором даних, може взяти свій реальний день або уявний день із ліміту 2 години для TikTok і порахувати, наскільки зменшилося б середнє.</p>
+
+  <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p><strong>Крок за кроком:</strong></p>
+<ol>
+<li>Сьогодні ввечері вимкни сповіщення в одному застосунку. <strong>Android:</strong> Налаштування → Застосунки → вибери застосунок → Сповіщення → вимкни. <strong>iPhone:</strong> Параметри → Сповіщення → вибери застосунок → вимкни «Дозволити сповіщення».</li>
+<li>Післязавтра відкрий статистику і знайди час за вчорашній день.</li>
+<li>Переведи його в хвилини (години × 60 + хвилини).</li>
+<li>У таблиці в клітинці <strong>A13</strong> напиши <code>Експеримент</code>, у <strong>B13</strong> — число хвилин.</li>
+<li>Зроби скриншот таблиці.</li>
+</ol>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Постав <strong>ліміт часу</strong> на застосунок з першого місця твого топ-3 (Android: Цифрове благополуччя → Панель приладів → таймер застосунку; iPhone: Екранний час → Ліміти застосунків). Через день внеси результат у таблицю і в клітинці C13 порахуй формулою різницю: <code>=B13-B10</code>.</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Зроби стандартний рівень, а також додай день-експеримент на стовпчикову діаграму (розшир діапазон даних) і виділи його іншим кольором. Під таблицею напиши одне речення: яка зміна, на твою думку, працює найкраще і чому.</p>
+</section>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Уміння змінити одну звичку і перевірити результат цифрами використовують у спорті, фінансах і роботі. Так ти керуєш своїм часом сам, а не застосунки, які спеціально створені, щоб тебе втримати.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Експеримент на 1 день: чи можу я змінити свою цифру?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+</script>
+</body>
+</html>
