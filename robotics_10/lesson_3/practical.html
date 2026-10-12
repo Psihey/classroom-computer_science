@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Перша програма для плати: блимаючий маячок</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --color-level-base: #2e7d32;
+  --color-level-standard: #1f5fbf;
+  --color-level-challenge: #7b3fb5;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --color-level-base: #7bd389;
+    --color-level-standard: #7aa8ff;
+    --color-level-challenge: #c49bff;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --color-level-base: #7bd389;
+  --color-level-standard: #7aa8ff;
+  --color-level-challenge: #c49bff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+}
+
+.level {
+  padding: var(--space-2);
+  border: 2px solid var(--level-color);
+  border-top-width: 6px;
+  border-radius: var(--radius);
+}
+
+.level h4 {
+  margin: 0 0 var(--space-1);
+  color: var(--level-color);
+}
+
+.level-base { --level-color: var(--color-level-base); }
+.level-standard { --level-color: var(--color-level-standard); }
+.level-challenge { --level-color: var(--color-level-challenge); }
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">УРОК 1 З 10 • 10 КЛАС • ЧАСТИНА БАГАТОУРОЧНОЇ ТЕМИ</p>
+  <h1>Перша програма для плати: блимаючий маячок</h1>
+<p class="lesson-subtitle">Знайомимося з робототехнікою, платою Arduino і вперше програмуємо світлодіод у симуляторі Tinkercad.</p></header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Пояснити своїми словами, що таке робот і мікроконтролер (плата Arduino) і що він робить із програмою.</li>
+  <li>Зібрати в Tinkercad просту схему: плата Arduino, резистор і світлодіод.</li>
+  <li>Скласти з блоків програму блимання і змінити паузи так, щоб світлодіод блимав як маячок.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Робот — це пристрій, який сам отримує інформацію, вирішує і діє за програмою.</li>
+  <li>Мікроконтролер (плата Arduino) — маленький комп&#39;ютер, який виконує одну програму без кінця по колу.</li>
+  <li>Програма — це послідовність команд, які виконуються по черзі, згори вниз.</li>
+  <li>Блимання = увімкнути, зачекати, вимкнути, зачекати; швидкість задають паузи.</li>
+  <li>Tinkercad дозволяє зібрати схему і перевірити програму без справжніх деталей і без ризику щось спалити.</li>
+</ul>
+
+  <div class="theory"><h3>Що таке робототехніка</h3>
+<p><strong>Робототехніка</strong> — це галузь, яка вчить створювати пристрої, що працюють <em>самі</em>, за програмою. Робот — це не обов'язково залізна людина з фільмів. Робот — це будь-який пристрій, який:</p>
+<ol>
+<li><strong>отримує інформацію</strong> (кнопка, датчик світла, датчик руху);</li>
+<li><strong>вирішує</strong>, що робити (за програмою);</li>
+<li><strong>діє</strong> (вмикає світло, крутить мотор, подає звук).</li>
+</ol>
+<p>Світлофор, автоматичні двері в супермаркеті, пральна машина, робот-пилосос — усі вони працюють за цією схемою.</p>
+<h3>Мозок пристрою — мікроконтролер</h3>
+<p>У кожному такому пристрої є маленький комп'ютер — <strong>мікроконтролер</strong>. Він не має екрана чи клавіатури. Він уміє одне: виконувати програму, яку в нього записали, і керувати своїми <strong>виводами (пінами)</strong> — металевими контактами, на які можна подати струм або вимкнути його.</p>
+<p><strong>Arduino</strong> — це плата з мікроконтролером, яку придумали для навчання. На ній є пронумеровані піни: 0, 1, 2 … 13, а також контакти <strong>GND</strong> (мінус, «земля») і <strong>5V</strong> (плюс).</p>
+<h3>Як працює програма</h3>
+<p>Програма — це <strong>послідовність команд</strong>. Плата виконує їх по черзі, згори вниз. Коли команди закінчуються, плата <strong>починає знову з першої</strong> — і так без кінця, поки є живлення. Це називається <strong>цикл</strong>.</p>
+<p>Щоб світлодіод блимав, потрібні чотири команди:</p>
+<table>
+<thead>
+<tr>
+<th>Крок</th>
+<th>Команда</th>
+<th>Що відбувається</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>встановити пін 13 у HIGH</td>
+<td>світлодіод світиться</td>
+</tr>
+<tr>
+<td>2</td>
+<td>зачекати 1 с</td>
+<td>світло горить 1 секунду</td>
+</tr>
+<tr>
+<td>3</td>
+<td>встановити пін 13 у LOW</td>
+<td>світлодіод гасне</td>
+</tr>
+<tr>
+<td>4</td>
+<td>зачекати 1 с</td>
+<td>темно 1 секунду</td>
+</tr>
+</tbody>
+</table>
+<p><strong>HIGH</strong> означає «подати струм» (увімкнути), <strong>LOW</strong> — «зняти струм» (вимкнути).</p>
+<p>Щоб блимання стало швидким, як у маячка, зменшуємо паузи: наприклад, <strong>0.2 с</strong> замість 1 с.</p>
+<h3>Що таке Tinkercad</h3>
+<p><strong>Tinkercad</strong> — безкоштовний сайт, де можна зібрати схему з віртуальних деталей і запустити її. Плата, дроти й світлодіод там «справжні»: якщо з'єднати неправильно, світлодіод не засвітиться. Але нічого не згорить і нічого не треба купувати.</p>
+<h3>Навіщо це в житті</h3>
+<p>Так працюють аварійні вогні авто, маячки на високих будівлях і вежах, індикатори на зарядці телефону, новорічні гірлянди. Усі вони виконують ту саму ідею: увімкнути — зачекати — вимкнути — зачекати.</p>
+<h3>Типова пастка</h3>
+<p><strong>Забути другу паузу.</strong> Якщо після команди «вимкнути» немає «зачекати», плата одразу переходить на початок і знову вмикає світло. Світлодіод гасне на мільйонні частки секунди — око цього не бачить, і здається, що він просто світиться. Пам'ятай: <strong>пауза потрібна і після ввімкнення, і після вимкнення</strong>.</p>
+<p>Ще одна пастка — <strong>переплутати ніжки світлодіода</strong>. Довга ніжка (анод, плюс) з'єднується з піном, коротка (катод, мінус) — з GND. Якщо переплутати, світлодіод не засвітиться.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Як влаштований будь-який робот</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Датчик: отримує інформацію (кнопка, світло, рух)</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Мікроконтролер: вирішує за програмою</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Виконавчий пристрій: діє (світло, мотор, звук)</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Цикл програми блимання</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Пін 13 у HIGH: світло увімкнено</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Зачекати</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Пін 13 у LOW: світло вимкнено</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Зачекати</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Повернутися на початок</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Звичайна лампочка і світлодіод на Arduino</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Лампочка з вимикачем</h4><ul><li>Вмикає людина рукою</li><li>Немає програми</li><li>Світить, поки не вимкнуть</li><li>Не може сама блимати</li></ul></div>
+    <div class="scheme-column"><h4>Світлодіод на Arduino</h4><ul><li>Вмикає мікроконтролер</li><li>Працює за програмою</li><li>Вмикається і вимикається за розкладом</li><li>Може блимати з будь-якою швидкістю</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Як з&#39;єднати світлодіод з платою</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Пін 13 плати</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Резистор 220 Ом</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Довга ніжка світлодіода (анод)</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Коротка ніжка світлодіода (катод)</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Контакт GND плати</li>
+  </ol>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Ранкова рутина як програма</h4>
+    <p>Програма «Ранок»:</p>
+<ol>
+<li>Прокинутися</li>
+<li>Вмитися</li>
+<li>Поснідати</li>
+<li>Піти до школи</li>
+</ol>
+<p>Що буде, якщо поміняти місцями кроки 1 і 4?</p>
+
+    <div class="example-explanation"><ol>
+<li>Команди виконуються <strong>по черзі, згори вниз</strong>.</li>
+<li>Якщо поміняти кроки місцями, вийде дурниця: «піти до школи», а потім «прокинутися».</li>
+<li>Висновок: у програмі важливі не лише самі команди, а й <strong>їх порядок</strong>. Плата так само виконає команди саме в тому порядку, в якому ви їх поставили, навіть якщо він безглуздий.</li>
+</ol>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Повільне блимання світлодіода</h4>
+    <p>Блоки в Tinkercad:</p>
+<pre><code>встановити пін 13 у HIGH
+зачекати 1 с
+встановити пін 13 у LOW
+зачекати 1 с
+</code></pre>
+
+    <div class="example-explanation"><ol>
+<li>Плата подає струм на пін 13 — світлодіод засвітився.</li>
+<li>Плата чекає 1 секунду — світло горить.</li>
+<li>Плата знімає струм — світлодіод згас.</li>
+<li>Плата чекає 1 секунду — темно.</li>
+<li>Команди закінчилися, плата <strong>повертається до першої</strong>.</li>
+</ol>
+<p><strong>Результат:</strong> світлодіод світиться 1 с, гасне на 1 с, і так без кінця. Один повний цикл триває 2 секунди.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Помилка: забута пауза</h4>
+    <pre><code>встановити пін 13 у HIGH
+зачекати 1 с
+встановити пін 13 у LOW
+</code></pre>
+<p>Світлодіод не блимає, а просто світиться. Чому?</p>
+
+    <div class="example-explanation"><ol>
+<li>Плата вмикає світло і чекає 1 с.</li>
+<li>Плата вимикає світло.</li>
+<li>Паузи немає — плата <strong>одразу</strong> переходить на початок і знову вмикає світло.</li>
+<li>Світло вимкнене лише на мільйонні частки секунди — око цього не помічає.</li>
+</ol>
+<p><strong>Виправлення:</strong> додати в кінець блок «зачекати 1 с». Тоді вимкнений стан теж триватиме помітний час.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 4.</span> Нерівне блимання: короткий спалах і довга темрява</h4>
+    <pre><code>встановити пін 13 у HIGH
+зачекати 0.1 с
+встановити пін 13 у LOW
+зачекати 2 с
+</code></pre>
+
+    <div class="example-explanation"><ol>
+<li>Світло вмикається лише на 0.1 с — це короткий яскравий спалах.</li>
+<li>Потім 2 секунди темно.</li>
+<li>Цикл повторюється.</li>
+</ol>
+<p><strong>Результат:</strong> рідкісні короткі спалахи, як у індикатора режиму очікування на телевізорі чи датчика диму на стелі. Отже, паузи можна робити <strong>різними</strong> — так змінюється характер блимання, а не лише швидкість.</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%89%D0%BE+%D1%82%D0%B0%D0%BA%D0%B5+Arduino+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Що таке Arduino простими словами<span class="resource-hint">пошук на YouTube: «що таке Arduino пояснення для початківців українською»</span></span></a>
+
+<div class="resource-note">Коротке відео, щоб ще раз почути, що таке плата Arduino і для чого її використовують. Подивись, якщо щось було незрозуміло на уроці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=Arduino+Uno+R3+%D0%BF%D0%BB%D0%B0%D1%82%D0%B0+%D0%B7+%D0%BF%D1%96%D0%B4%D0%BF%D0%B8%D1%81%D0%B0%D0%BC%D0%B8+%D0%BF%D1%96%D0%BD%D1%96%D0%B2" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати, як виглядає плата Arduino Uno і де на ній піни — знайти зображення<span class="resource-hint">пошук у Google Картинках: «Arduino Uno R3 плата з підписами пінів»</span></span></a>
+
+<div class="resource-note">Учень побачить синю плату з рядами пронумерованих контактів, написами GND і 5V та роз&#39;ємом USB. Так легше знайти пін 13 і GND у Tinkercad.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D1%81%D0%B2%D1%96%D1%82%D0%BB%D0%BE%D0%B4%D1%96%D0%BE%D0%B4+%D0%B0%D0%BD%D0%BE%D0%B4+%D0%BA%D0%B0%D1%82%D0%BE%D0%B4+%D0%B4%D0%BE%D0%B2%D0%B3%D0%B0+%D0%BA%D0%BE%D1%80%D0%BE%D1%82%D0%BA%D0%B0+%D0%BD%D1%96%D0%B6%D0%BA%D0%B0+%D1%81%D1%85%D0%B5%D0%BC%D0%B0" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати будову світлодіода: довга і коротка ніжка — знайти зображення<span class="resource-hint">пошук у Google Картинках: «світлодіод анод катод довга коротка ніжка схема»</span></span></a>
+
+<div class="resource-note">Учень побачить, що одна ніжка світлодіода довша (анод, плюс), а друга коротша (катод, мінус). Це пояснює, чому світлодіод треба під&#39;єднувати правильним боком.</div>  </div>
+</div>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Мікроконтролер — як диригент оркестру: сам не грає, але точно каже, хто і коли має звучати.</li>
+  <li>Програма — як рецепт: кроки виконуються по черзі, і якщо пропустити крок, страва вийде іншою.</li>
+  <li>Цикл loop — як пісня на повторі в плеєрі: дограла до кінця і почалася спочатку.</li>
+  <li>Блок «зачекати» — як пауза між кадрами мультфільму: без неї око не встигає помітити зміну.</li>
+  <li>Резистор — як вузький кран на трубі: обмежує потік, щоб світлодіод не «захлинувся» струмом.</li>
+  <li>Пілот і штурман — як водій і навігатор у машині: один кермує, другий дивиться на карту і підказує поворот.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%81%D0%B2%D1%96%D1%82%D0%BB%D0%BE%D0%B4%D1%96%D0%BE%D0%B4+%D0%B0%D0%BD%D0%BE%D0%B4+%D0%BA%D0%B0%D1%82%D0%BE%D0%B4+%D1%80%D0%B5%D0%B7%D0%B8%D1%81%D1%82%D0%BE%D1%80+Arduino+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Світлодіод: анод, катод і навіщо резистор<span class="resource-hint">пошук у Google: «світлодіод анод катод резистор Arduino для початківців»</span></span></a>
+
+<div class="resource-note">Пояснює, чому в світлодіода дві різні ніжки і чому без резистора він може згоріти. Знадобиться на наступних уроках серії.</div>  </div>
+</div>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Завдання</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Блимаючий маячок на Arduino в Tinkercad</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.tinkercad.com" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Tinkercad — онлайн-симулятор схем</span></a>
+
+<div class="resource-note">Тут пара збирає схему з Arduino і світлодіодом та складає програму з блоків. Увійди, натисни «Створити» → «Схема» (Circuits).</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=Tinkercad+Circuits+Arduino+blink+LED+blocks+tutorial" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Блимання світлодіода в Tinkercad блоками<span class="resource-hint">пошук на YouTube: «Tinkercad Circuits Arduino blink LED blocks tutorial»</span></span></a>
+
+<div class="resource-note">Показує, як перетягнути плату і світлодіод, з&#39;єднати дротами і скласти блоки блимання. Корисно, якщо пара застрягла на кроці з дротами.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=Tinkercad+Arduino+LED+resistor+pin+13+circuit" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати готову схему зі світлодіодом у Tinkercad — знайти зображення<span class="resource-hint">пошук у Google Картинках: «Tinkercad Arduino LED resistor pin 13 circuit»</span></span></a>
+
+<div class="resource-note">Видно, як дріт іде від піна 13 через резистор до світлодіода, а від світлодіода — до GND. Це зразок, з яким пара звіряє свою схему.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> у парі зібрати в Tinkercad схему з платою Arduino, резистором і світлодіодом та запрограмувати її блоками так, щоб світлодіод блимав як маячок.</p>
+<p><strong>Результат:</strong> працююча симуляція, у якій світлодіод швидко й рівномірно блимає, і ви можете пояснити, які числа відповідають за швидкість.</p>
+<p><strong>Ролі:</strong></p>
+<ul>
+<li><strong>Пілот</strong> — керує мишкою і клавіатурою, робить лише те, що каже штурман.</li>
+<li><strong>Штурман</strong> — читає кроки вголос, перевіряє з'єднання і результат.</li>
+<li>Коли вчитель каже «Зміна!» (приблизно кожні 4 хвилини), ви міняєтеся місцями.</li>
+</ul>
+<p>Якщо заплутаєшся в блоках, скопіюй заготовку — це послідовність, яку треба зібрати.</p>
+<p><strong>Навіщо це в житті:</strong> саме так працюють аварійні вогні авто, маячки на вежах і будівлях, сигнальні вогні на вишках зв'язку.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Відкрити Tinkercad і створити схему</strong></p>
+        <p>Перейди на <code>tinkercad.com</code> і увійди (через Google-акаунт або за кодом класу, якщо його дав учитель). Натисни <strong>Створити</strong> → <strong>Схема</strong> (англ. <em>Circuit</em>).</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Відкрилося порожнє біле робоче поле, праворуч — панель із деталями.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Поставити плату Arduino</strong></p>
+        <p>У панелі праворуч знайди <strong>Arduino Uno R3</strong> (можна ввести «Arduino» в пошук над деталями). Перетягни плату мишкою на робоче поле.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> На полі лежить синя плата Arduino з рядами контактів.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Додати резистор і світлодіод</strong></p>
+        <p>Перетягни на поле <strong>Резистор</strong> і <strong>Світлодіод</strong> (англ. <em>Resistor</em>, <em>LED</em>). Клацни на резистор і у віконці параметрів зміни опір на <strong>220</strong> Ом.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Поруч із платою лежать резистор зі значенням 220 Ом і червоний світлодіод.</p>      </li>
+      <li>
+        <p class="step-title"><strong>З&#39;єднати дротами</strong></p>
+        <p>Дріт робиться так: клацни на один контакт, потім на інший.</p>
+<ol>
+<li>Пін <strong>13</strong> плати → один кінець резистора.</li>
+<li>Другий кінець резистора → <strong>довга (зігнута) ніжка</strong> світлодіода — анод.</li>
+<li><strong>Коротка (пряма) ніжка</strong> світлодіода — катод → контакт <strong>GND</strong> плати.</li>
+</ol>
+<p>Наведи мишку на ніжку світлодіода — з'явиться підпис «Анод» чи «Катод». Штурман перевіряє кожне з'єднання.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Утворився замкнений шлях: пін 13 → резистор → світлодіод → GND.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Відкрити блоки коду</strong></p>
+        <p>Натисни кнопку <strong>Код</strong> угорі праворуч. Переконайся, що вибрано режим <strong>Блоки</strong>. Там уже може бути готова програма — перетягни всі блоки в кошик (праворуч унизу), щоб почати з чистого поля.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Поле коду порожнє, ліворуч видно категорії блоків: Вивід, Керування тощо.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Скласти програму блимання</strong></p>
+        <p>Склади 4 блоки один під одним:</p>
+<ol>
+<li>Категорія <strong>Вивід</strong>: «встановити пін <strong>13</strong> у <strong>HIGH</strong>».</li>
+<li>Категорія <strong>Керування</strong>: «зачекати <strong>1</strong> с».</li>
+<li><strong>Вивід</strong>: «встановити пін <strong>13</strong> у <strong>LOW</strong>».</li>
+<li><strong>Керування</strong>: «зачекати <strong>1</strong> с».</li>
+</ol>
+<p>Блоки мають «приклеїтися» один до одного.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У полі коду — стовпчик із 4 блоків, як у заготовці.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Запустити симуляцію</strong></p>
+        <p>Натисни <strong>Почати моделювання</strong>. Спостерігайте за світлодіодом. Щоб змінити програму, натисни <strong>Зупинити моделювання</strong>.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Світлодіод світиться 1 секунду і гасне на 1 секунду, без кінця. Також блимає маленький вбудований світлодіод L на платі.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перетворити блимання на маячок</strong></p>
+        <p>Зупини симуляцію. В обох блоках «зачекати» зміни <strong>1</strong> на <strong>0.2</strong>. Запусти знову. Спробуйте ще 0.5 і 0.1 і оберіть, що найбільше схоже на маячок.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Світлодіод швидко й рівномірно блимає, як аварійний вогник. Пара може пояснити: менші числа — швидше блимання.</p>      </li>
+    </ol>
+    <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p><strong>З підказками.</strong> Не збирай зовнішній світлодіод: використай лише плату Arduino. Поставивши плату, відкрий <strong>Код</strong> → <strong>Блоки</strong> — там уже лежить готова програма блимання. Натисни <strong>Почати моделювання</strong> і подивись на маленький світлодіод <strong>L</strong> на платі. Потім знайди два блоки «зачекати» і зміни в них число <strong>1</strong> на <strong>0.2</strong>. Заготовка поруч показує, як мають виглядати блоки.</p>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Виконай усі 8 кроків самостійно: збери схему з резистором і світлодіодом, склади 4 блоки блимання, запусти симуляцію і підбери паузи для маячка. Поясни партнеру, чому без другої паузи світлодіод не блимає.</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Зроби <strong>подвійний спалах</strong>, як у маячка на вишці: два швидкі спалахи, потім довга пауза. Підказка: склади 8 блоків — увімкнути 0.1 с, вимкнути 0.1 с, увімкнути 0.1 с, вимкнути 1 с. Якщо встигнеш — додай другий світлодіод іншого кольору на пін 12, щоб світлодіоди блимали по черзі.</p>
+</section>
+</div>
+
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><p>Порядок блоків програми «Маячок»:</p>
+<pre><code>встановити пін 13 у HIGH      (Вивід)
+зачекати 1 с                  (Керування)  -&gt; змінити на 0.2
+встановити пін 13 у LOW       (Вивід)
+зачекати 1 с                  (Керування)  -&gt; змінити на 0.2
+</code></pre>
+<p>З'єднання:</p>
+<table>
+<thead>
+<tr>
+<th>Звідки</th>
+<th>Куди</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Пін 13 плати</td>
+<td>Резистор 220 Ом</td>
+</tr>
+<tr>
+<td>Резистор</td>
+<td>Довга ніжка світлодіода (анод)</td>
+</tr>
+<tr>
+<td>Коротка ніжка світлодіода (катод)</td>
+<td>GND плати</td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Працююча симуляція в Tinkercad, де світлодіод блимає як маячок; на перевірці пара показує її і називає, які числа в паузах обрала.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Блимаючий маячок на Arduino в Tinkercad" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу пояснити своїми словами, що таке робот і мікроконтролер і що плата робить із програмою.</label></li>
+    <li><label><input type="checkbox"> Я можу зібрати в Tinkercad схему з платою Arduino, резистором і світлодіодом.</label></li>
+    <li><label><input type="checkbox"> Я можу скласти з блоків програму блимання і змінити паузи, щоб світлодіод блимав як маячок.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Назви три частини будь-якого робота.<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Назви три частини будь-якого робота." rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Що робить плата Arduino, коли виконала останню команду програми?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Що робить плата Arduino, коли виконала останню команду програми?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Що змінити в програмі, щоб маячок блимав удвічі повільніше?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Що змінити в програмі, щоб маячок блимав удвічі повільніше?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Мисливець за маячками <span class="duration">≈ 10 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%8F%D0%BA+%D0%BF%D1%80%D0%B0%D1%86%D1%8E%D1%94+%D1%81%D0%B2%D1%96%D1%82%D0%BB%D0%BE%D1%84%D0%BE%D1%80+%D0%BA%D0%BE%D0%BD%D1%82%D1%80%D0%BE%D0%BB%D0%B5%D1%80+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як влаштований світлофор і хто ним керує<span class="resource-hint">пошук у Google: «як працює світлофор контролер пояснення»</span></span></a>
+
+<div class="resource-note">Допоможе для домашнього завдання: побачиш, що в світлофорі теж є мікроконтролер і програма з паузами.</div>  </div>
+</div>
+
+  <p>Знайди вдома чи на вулиці пристрої, які <strong>самі</strong> блимають або вмикаються світлом: зарядка, роутер, телевізор у режимі очікування, світлофор, аварійка авто, гірлянда, маячок на вежі.</p>
+<ol>
+<li>Спостерігай за одним таким вогником 10–20 секунд.</li>
+<li>Сфотографуй або зніми коротке відео (2–5 секунд).</li>
+<li>Скопіюй заготовку і запиши в неї, на твою думку, програму цього вогника з тих самих блоків, що були на уроці. Час пауз оціни приблизно, рахуючи «раз-і, два-і».</li>
+</ol>
+<p>Покажи фото і свою програму на наступному уроці.</p>
+
+  <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p>Знайди <strong>один</strong> блимаючий вогник, сфотографуй його і заповни заготовку: скільки приблизно секунд світиться і скільки — темно.</p>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Знайди <strong>два</strong> різні блимаючі вогники і для кожного запиши програму з 4 блоків з оціненими паузами. Порівняй: який блимає швидше?</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Знайди вогник зі <strong>складним</strong> ритмом (подвійний спалах, кілька кольорів, світлофор) і запиши його повну програму з усіма блоками. Якщо маєш доступ до Tinkercad — повтори його в симуляторі і сфотографуй екран.</p>
+</section>
+</div>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><table>
+<thead>
+<tr>
+<th>Що це за пристрій</th>
+<th>Скільки світиться</th>
+<th>Скільки темно</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>... с</td>
+<td>... с</td>
+</tr>
+</tbody>
+</table>
+<p>Моя програма для цього вогника:</p>
+<pre><code>встановити пін 13 у HIGH
+зачекати ... с
+встановити пін 13 у LOW
+зачекати ... с
+</code></pre>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Блимаючі вогники повсюди навколо нас: вони попереджають водіїв, показують, що пристрій заряджається або працює, позначають високі будівлі для літаків. Помітивши їх, ти побачиш, що за кожним стоїть маленька програма — така сама, як ти написав на уроці.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Мисливець за маячками" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>

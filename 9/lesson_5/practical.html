@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мій телефон під захистом</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --color-level-base: #2e7d32;
+  --color-level-standard: #1f5fbf;
+  --color-level-challenge: #7b3fb5;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --color-level-base: #7bd389;
+    --color-level-standard: #7aa8ff;
+    --color-level-challenge: #c49bff;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --color-level-base: #7bd389;
+  --color-level-standard: #7aa8ff;
+  --color-level-challenge: #c49bff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+.levels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-2) 0;
+}
+
+.level {
+  padding: var(--space-2);
+  border: 2px solid var(--level-color);
+  border-top-width: 6px;
+  border-radius: var(--radius);
+}
+
+.level h4 {
+  margin: 0 0 var(--space-1);
+  color: var(--level-color);
+}
+
+.level-base { --level-color: var(--color-level-base); }
+.level-standard { --level-color: var(--color-level-standard); }
+.level-challenge { --level-color: var(--color-level-challenge); }
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">9 КЛАС • ТЕОРІЯ + ПРАКТИКА</p>
+  <h1>Мій телефон під захистом</h1>
+<p class="lesson-subtitle">Налаштовуємо власний телефон, щоб він був безпечним, не розкривав зайвого про нас і менше шкодив здоров&#39;ю.</p></header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Скласти надійний пароль за правилом і розпізнати ознаки фішингу, шахрайства та фейку.</li>
+  <li>Перевірити на своєму телефоні блокування екрана й оновлення системи та вимкнути зайві дозволи застосунків.</li>
+  <li>Знайти свій екранний час, увімкнути захист очей і назвати правила здорового користування гаджетами.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Довгий пароль-фраза надійніший за короткий складний пароль, і для кожного сервісу потрібен свій пароль.</li>
+  <li>Фішинг тисне терміновістю і просить перейти за посиланням або назвати код. Перш ніж натискати, зупинись і перевір.</li>
+  <li>Застосунок має отримувати лише ті дозволи, які йому справді потрібні для роботи.</li>
+  <li>Чуже фото, текст чи музика мають автора: без дозволу їх не можна видавати за своє. Перш ніж поширювати новину, перевір її.</li>
+  <li>Здоров&#39;я в цифровому світі — це постава, відпочинок для очей і чесний погляд на свій екранний час.</li>
+</ul>
+
+  <div class="theory"><h2>1. Безпека: як захистити дані й акаунти</h2>
+<p><strong>Загрози.</strong></p>
+<ul>
+<li><strong>Вірус</strong> (шкідлива програма) — програма, яка без твого дозволу краде дані, показує рекламу або псує файли. Найчастіше потрапляє на телефон через застосунки з неофіційних сайтів і файли з чатів.</li>
+<li><strong>Фішинг</strong> — підроблене повідомлення чи сайт, схожий на справжній (банк, пошта, Instagram), який виманює пароль, код з SMS чи дані картки.</li>
+<li><strong>Шахрайство</strong> — обман заради грошей: «ти виграв iPhone, оплати доставку», «друг» просить терміново позичити гроші.</li>
+</ul>
+<p><strong>Приклад фішингу:</strong></p>
+<blockquote>
+<p>«Ваш акаунт буде ЗАБЛОКОВАНО через 24 години! Підтвердіть дані: instagrarn-help.com»</p>
+</blockquote>
+<p>Ознаки: тиск часом, великі літери, дивне посилання (<em>instagrarn</em> замість <em>instagram</em>: тут <code>rn</code> схоже на <code>m</code>), прохання ввести пароль.</p>
+<p><strong>Надійний пароль</strong> складається за правилом <strong>«фраза з 4 слів + цифри + символ»</strong>. Наприклад, <code>Kit-Yist-Syr-Vrantsi-27!</code> (цей приклад для себе не бери, придумай свій). Такий пароль довгий і його легко запам'ятати. Слабкі паролі — <code>12345678</code>, <code>qwerty</code>, ім'я та рік народження.</p>
+<p><strong>Що ще захищає:</strong></p>
+<ul>
+<li><strong>оновлення системи</strong> закривають дірки в захисті;</li>
+<li><strong>блокування екрана</strong> (PIN, відбиток, обличчя) не дасть чужим відкрити телефон;</li>
+<li><strong>антивірус</strong> шукає шкідливі програми, а <strong>резервна копія</strong> рятує фото й файли, якщо телефон загубився чи зламався. Їх налаштовують удома разом з батьками.</li>
+</ul>
+<p><strong>Типова пастка:</strong> один пароль на всі сайти. Злам одного сайту відкриває всі твої акаунти.</p>
+<h2>2. Етика: як поводитися в мережі</h2>
+<ul>
+<li><strong>Авторське право.</strong> Фото, музика, текст з інтернету мають автора. Брати їх можна, якщо автор дозволив (наприклад, ліцензія Creative Commons), і завжди треба вказувати джерело. Скопіювати чужий реферат і видати за свій — порушення.</li>
+<li><strong>Приватність.</strong> Не публікуй чужих фото, адрес і переписок без дозволу. Про себе теж не розповідай зайвого: домашня адреса, школа й геолокація в реальному часі допомагають чужим тебе знайти.</li>
+<li><strong>Мережевий етикет.</strong> Пиши так, як сказав би людині в очі. Не цькуй, не пиши капслоком («це КРИК»), не пересилай чужі скриншоти.</li>
+<li><strong>Фейки й маніпуляції.</strong> Фейк — неправдива новина, створена, щоб налякати чи розлютити. Перевір: хто автор? Чи пишуть про це інші надійні джерела? Чи немає закликів «терміново поширити»? Чи не змонтоване фото (його можна перевірити пошуком за картинкою)?</li>
+</ul>
+<h2>3. Здоров'я: як гаджети не шкодять тілу й психіці</h2>
+<ul>
+<li><strong>Постава.</strong> Тримай телефон на рівні очей, а не опускай голову. Нахил голови вперед сильно навантажує шию.</li>
+<li><strong>Очі.</strong> Правило <strong>20-20-20</strong>: кожні 20 хвилин дивись 20 секунд на предмет за 6 метрів (20 футів). Увечері вмикай нічний режим, він зменшує синє світло.</li>
+<li><strong>Цифровий баланс і залежність.</strong> Якщо телефон забирає сон, уроки й зустрічі з друзями, це сигнал. Допомагають статистика екранного часу, ліміти для застосунків і правило «без телефона за годину до сну».</li>
+</ul>
+<p><strong>Навіщо це все:</strong> ти щодня користуєшся телефоном. Кілька хвилин налаштувань зберігають твої акаунти, гроші, репутацію й здоров'я.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Отримав підозріле повідомлення: що робити</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Зупинись і не натискай одразу</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Перевір відправника й адресу посилання</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Шукай тиск: терміново, виграш, погроза</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Не вводь пароль і код з SMS</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Перевір через офіційний застосунок або спитай дорослого</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Слабкий і надійний пароль</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Слабкий пароль</h4><ul><li>Короткий: 6–8 знаків</li><li>Ім&#39;я, дата народження, 12345678, qwerty</li><li>Один на всі сайти</li><li>Записаний на папірці біля телефона</li></ul></div>
+    <div class="scheme-column"><h4>Надійний пароль</h4><ul><li>Фраза з 4 слів + цифри + символ</li><li>Понад 15–20 знаків</li><li>Свій для кожного важливого сервісу</li><li>Легко запам&#39;ятати тобі, важко вгадати іншим</li></ul></div>
+  </div>
+</figure>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%84%D1%96%D1%88%D0%B8%D0%BD%D0%B3+%D1%8F%D0%BA+%D1%80%D0%BE%D0%B7%D0%BF%D1%96%D0%B7%D0%BD%D0%B0%D1%82%D0%B8+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B4%D0%BB%D1%8F+%D1%88%D0%BA%D0%BE%D0%BB%D1%8F%D1%80%D1%96%D0%B2+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Що таке фішинг і як його розпізнати<span class="resource-hint">пошук на YouTube: «фішинг як розпізнати пояснення для школярів українською»</span></span></a>
+
+<div class="resource-note">Коротке відео з прикладами фішингових повідомлень і сайтів. Подивись, які ознаки обману там показують, і порівняй зі схемою з теорії.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%8F%D0%BA+%D1%80%D0%BE%D0%B7%D0%BF%D1%96%D0%B7%D0%BD%D0%B0%D1%82%D0%B8+%D1%84%D0%B5%D0%B9%D0%BA+%D1%83+%D0%BD%D0%BE%D0%B2%D0%B8%D0%BD%D0%B0%D1%85+%D0%BF%D0%BE%D1%80%D0%B0%D0%B4%D0%B8+%D0%B4%D0%BB%D1%8F+%D0%BF%D1%96%D0%B4%D0%BB%D1%96%D1%82%D0%BA%D1%96%D0%B2+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як перевірити, чи новина не фейк<span class="resource-hint">пошук у Google: «як розпізнати фейк у новинах поради для підлітків українською»</span></span></a>
+
+<div class="resource-note">Стаття з простими кроками перевірки новини: автор, джерела, емоційний тиск, пошук за картинкою. Допомагає з етичною частиною теми.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D0%BF%D1%80%D0%B8%D0%BA%D0%BB%D0%B0%D0%B4+%D1%84%D1%96%D1%88%D0%B8%D0%BD%D0%B3%D0%BE%D0%B2%D0%BE%D0%B3%D0%BE+SMS+%D0%BF%D0%BE%D0%B2%D1%96%D0%B4%D0%BE%D0%BC%D0%BB%D0%B5%D0%BD%D0%BD%D1%8F+%D0%BE%D0%B7%D0%BD%D0%B0%D0%BA%D0%B8+%D1%88%D0%B0%D1%85%D1%80%D0%B0%D0%B9%D1%81%D1%82%D0%B2%D0%B0" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Приклад фішингового повідомлення з ознаками обману — знайти зображення<span class="resource-hint">пошук у Google Картинках: «приклад фішингового SMS повідомлення ознаки шахрайства»</span></span></a>
+
+<div class="resource-note">На скриншоті видно типові ознаки фішингу: терміновість, підозріле посилання і прохання ввести дані. Учень вчиться помічати їх у реальних повідомленнях.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D0%BF%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D1%8C%D0%BD%D0%B0+%D0%BF%D0%BE%D1%81%D1%82%D0%B0%D0%B2%D0%B0+%D0%BF%D1%80%D0%B8+%D0%BA%D0%BE%D1%80%D0%B8%D1%81%D1%82%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%96+%D1%81%D0%BC%D0%B0%D1%80%D1%82%D1%84%D0%BE%D0%BD%D0%BE%D0%BC+%D1%81%D1%85%D0%B5%D0%BC%D0%B0+text+neck" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Правильна і неправильна постава з телефоном — знайти зображення<span class="resource-hint">пошук у Google Картинках: «правильна постава при користуванні смартфоном схема text neck»</span></span></a>
+
+<div class="resource-note">Схема показує, як нахил голови до телефона збільшує навантаження на шию і чому телефон краще тримати на рівні очей.</div>  </div>
+</div>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Пароль — це ключ від квартири: один ключ на всі двері небезпечний, бо хто знайде його, відчинить усе.</li>
+  <li>Фішинг — як незнайомець у формі листоноші, який просить ключі від дому, щоб «перевірити замок».</li>
+  <li>Дозволи застосунків — як запасні ключі, які ти роздав сусідам: варто знати, у кого вони є, і забрати зайві.</li>
+  <li>Оновлення системи — як латка на дірявому човні: розробники закривають дірки, через які можуть пролізти зловмисники.</li>
+  <li>Екранний час — як чек у магазині: поки не подивишся, здається, що витратив зовсім мало.</li>
+</ul>
+
+</section>
+
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Завдання</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Мій телефон під захистом: покрокове налаштування</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D1%96%D1%80%D0%BA%D0%B0+%D0%BD%D0%B0%D0%B4%D1%96%D0%B9%D0%BD%D0%BE%D1%81%D1%82%D1%96+%D0%BF%D0%B0%D1%80%D0%BE%D0%BB%D1%8F+%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD+password+strength+checker" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Онлайн-перевірка стійкості пароля<span class="resource-hint">пошук у Google: «перевірка надійності пароля онлайн password strength checker»</span></span></a>
+
+<div class="resource-note">Потрібна для кроку 3: вводиш лише вигаданий приклад пароля і бачиш, скільки часу знадобиться на його підбір. Справжні паролі туди не вводь.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%86%D0%B8%D1%84%D1%80%D0%BE%D0%B2%D0%B5+%D0%B1%D0%BB%D0%B0%D0%B3%D0%BE%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D1%87%D1%8F+android+%D1%8F%D0%BA+%D0%BF%D0%BE%D0%B4%D0%B8%D0%B2%D0%B8%D1%82%D0%B8%D1%81%D1%8F+%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%BD%D0%B8%D0%B9+%D1%87%D0%B0%D1%81+%D1%96%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BA%D1%86%D1%96%D1%8F+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Цифрове благополуччя на Android і Екранний час на iPhone<span class="resource-hint">пошук у Google: «цифрове благополуччя android як подивитися екранний час інструкція українською»</span></span></a>
+
+<div class="resource-note">Знадобиться, якщо на кроках 7–8 не вдається знайти статистику екранного часу чи ліміти застосунків на твоїй моделі телефона.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> за 25 хвилин зробити свій телефон безпечнішим і дружнім до здоров'я.</p>
+<p><strong>Що буде в результаті:</strong></p>
+<ul>
+<li>придуманий за правилом приклад надійного пароля, перевірений онлайн;</li>
+<li>перевірені блокування екрана й автоматичне оновлення;</li>
+<li>вимкнені зайві дозволи на геолокацію, камеру й мікрофон;</li>
+<li>знайдений реальний екранний час і порівняння зі здогадкою;</li>
+<li>увімкнений нічний режим або захист очей;</li>
+<li>заповнений чек-лист.</li>
+</ul>
+<p>Скопіюй заготовку чек-листа в нотатки телефона і відмічай кожен пункт. <strong>Важливо:</strong> справжні паролі нікуди не вводь і нікому не показуй.</p>
+<p><em>Назви пунктів меню на різних телефонах трохи відрізняються. Якщо не знаходиш, скористайся пошуком у Налаштуваннях (значок лупи) і введи ключове слово з інструкції.</em></p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Скопіюй чек-лист і внеси свої здогадки</strong></p>
+        <p>Натисни кнопку копіювання під заготовкою, відкрий застосунок <strong>Нотатки</strong> (або Google Keep) і встав текст. У рядки «Моя здогадка» впиши числа, які записав на початку уроку: години в телефоні на день і кількість застосунків з доступом до геолокації.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У нотатках є чек-лист з двома твоїми здогадками.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Склади приклад надійного пароля</strong></p>
+        <p>Придумай 4 не пов'язані між собою слова латиницею (наприклад, транслітом: kit, mist, sonce, chaynyk). З'єднай їх дефісом, кожне слово почни з великої літери, додай 2 цифри і символ у кінці. Шаблон: <code>Slovo-Slovo-Slovo-Slovo-00!</code></p>
+<p>Не використовуй своє ім'я, дату народження, кличку улюбленця чи номер школи.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Вигаданий пароль довжиною понад 15 знаків. Запиши його в чек-лист: це лише тренувальний приклад.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір пароль онлайн</strong></p>
+        <p>Відкрий у браузері сайт перевірки стійкості пароля (посилання є під завданням). Введи <strong>тренувальний</strong> пароль з кроку 2. Потім для порівняння введи <code>qwerty123</code>. Запиши в чек-лист, за скільки часу можна підібрати кожен із них.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Ти бачиш різницю: слабкий пароль підбирають миттєво, а фразу — роками чи століттями.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір блокування екрана</strong></p>
+        <p><strong>Android:</strong> Налаштування → Безпека (або «Екран блокування», «Пароль і безпека») → Блокування екрана.
+<strong>iPhone:</strong> Параметри → Face ID і код-пароль (або Touch ID і код-пароль).</p>
+<p>Подивись, який спосіб увімкнено. Якщо стоїть «Немає» або «Провести пальцем», порадься вдома з батьками і встанови PIN з 6 цифр або відбиток. PIN нікому не показуй.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Ти знаєш, який спосіб блокування має телефон, і відмітив це в чек-листі.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір автоматичне оновлення</strong></p>
+        <p><strong>Android:</strong> Налаштування → Система → Оновлення системи (або «Про телефон» → «Оновлення ПЗ»).
+<strong>iPhone:</strong> Параметри → Загальні → Оновлення ПЗ → Автоматичні оновлення.</p>
+<p>Переконайся, що автоматичне завантаження оновлень увімкнено (бажано лише через Wi-Fi). Встановлювати оновлення на уроці не треба.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Автооновлення увімкнено, і в чек-листі стоїть позначка.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Переглянь дозволи застосунків</strong></p>
+        <p><strong>Android:</strong> Налаштування → Конфіденційність → Менеджер дозволів (або «Дозволи застосунків») → Геодані (Місцезнаходження).
+<strong>iPhone:</strong> Параметри → Приватність і безпека → Служби локації.</p>
+<p>Порахуй, скільки застосунків мають доступ до геолокації, і запиши це число поруч зі здогадкою. Потім так само відкрий <strong>Камеру</strong> і <strong>Мікрофон</strong>.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Ти знаєш точну кількість застосунків з доступом до геолокації, камери й мікрофона.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Вимкни зайві дозволи</strong></p>
+        <p>Для кожного застосунку спитай себе: «Навіщо йому це?» Карти й таксі геолокація потрібна, а грі, ліхтарику чи калькулятору — ні. Для зайвих обери <strong>«Заборонити»</strong> або <strong>«Лише під час використання»</strong> (iPhone: «Ніколи» або «При використанні застосунку»). Вимкни щонайменше 2 зайві дозволи і запиши в чек-лист, у яких застосунків.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Щонайменше 2 зайві дозволи вимкнено, назви застосунків записано.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Подивись свій екранний час</strong></p>
+        <p><strong>Android:</strong> Налаштування → Цифрове благополуччя і батьківський контроль.
+<strong>iPhone:</strong> Параметри → Екранний час → Дивитися всі дії.</p>
+<p>Знайди середній час на день за останній тиждень і застосунок, який забирає найбільше часу. Запиши обидва в чек-лист поруч зі здогадкою. Цифри — для тебе, показувати їх іншим не обов'язково.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Ти бачиш реальний екранний час і знаєш, наскільки він відрізняється від твоєї здогадки.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Увімкни захист очей і поміркуй про ліміт</strong></p>
+        <p><strong>Android:</strong> Налаштування → Екран (Дисплей) → Нічний режим / Захист зору / Комфорт для очей. Увімкни і постав розклад, наприклад з 21:00 до 7:00.
+<strong>iPhone:</strong> Параметри → Екран і яскравість → Night Shift → За розкладом.</p>
+<p>За бажанням: у Цифровому благополуччі (iPhone: Екранний час → Ліміти застосунків) постав ліміт для застосунку-лідера з кроку 8.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Екран став теплішим за розкладом, у чек-листі відмічено захист очей і, можливо, ліміт.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Підбий підсумок у чек-листі</strong></p>
+        <p>Перевір, що в чек-листі всі пункти мають позначку <code>[x]</code>. У рядку «Висновок» допиши одне речення: що тебе найбільше здивувало. Покажи чек-лист і нічний режим вчителю.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Повністю заповнений чек-лист і налаштований телефон.</p>      </li>
+    </ol>
+    <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p>Працюй за кроками разом із показом вчителя на дошці. Користуйся підказками:</p>
+<ul>
+<li>шаблон пароля: <code>Slovo-Slovo-Slovo-Slovo-00!</code>;</li>
+<li>не знаходиш пункт меню — введи в пошуку Налаштувань слово <strong>дозволи</strong>, <strong>екранний час</strong>, <strong>нічний режим</strong> або <strong>оновлення</strong>;</li>
+<li>достатньо вимкнути 2 зайві дозволи геолокації.</li>
+</ul>
+<p>Якщо немає телефона, працюй у парі: сусід виконує кроки, а ти читаєш інструкцію і заповнюєш чек-лист.</p>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Виконай усі 10 кроків самостійно за інструкцією і повністю заповни чек-лист. Перевір дозволи на геолокацію, камеру й мікрофон і вимкни всі зайві, а не лише 2.</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Зроби все, що на стандартному рівні, і додатково покращ результат:</p>
+<ul>
+<li>постав ліміт для застосунку-лідера за екранним часом і режим «Сон» або «Час відпочинку» (Android: Цифрове благополуччя → Режим сну; iPhone: Екранний час → Час спокою);</li>
+<li>знайди в налаштуваннях <strong>Перевірку безпеки</strong> (Android: Налаштування → Безпека і конфіденційність; iPhone: Приватність і безпека → Перевірка безпеки) і подивись, що вона радить;</li>
+<li>допоможи сусідові, який застряг на якомусь кроці.</li>
+</ul>
+</section>
+</div>
+
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><p><strong>Чек-лист «Мій телефон під захистом»</strong></p>
+<table>
+<thead>
+<tr>
+<th>Пункт</th>
+<th>Моя здогадка</th>
+<th>Реально / результат</th>
+<th>Готово</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Годин у телефоні на день</td>
+<td></td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Застосунків з доступом до геолокації</td>
+<td></td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Мій тренувальний пароль за правилом</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Час підбору мого пароля / <code>qwerty123</code></td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Спосіб блокування екрана</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Автооновлення увімкнено</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Вимкнені дозволи (у яких застосунків)</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Застосунок-лідер за екранним часом</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Нічний режим / захист очей за розкладом</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Ліміт для застосунку (за бажанням)</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Висновок (1 речення):</strong></p>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Заповнений чек-лист у нотатках телефона і увімкнений нічний режим, показані вчителю на етапі перевірки.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Мій телефон під захистом: покрокове налаштування" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу скласти надійний пароль за правилом і назвати ознаки фішингу, шахрайства та фейку.</label></li>
+    <li><label><input type="checkbox"> Я можу перевірити на своєму телефоні блокування екрана й оновлення системи та вимкнути зайві дозволи застосунків.</label></li>
+    <li><label><input type="checkbox"> Я можу знайти свій екранний час, увімкнути захист очей і назвати правила здорового користування гаджетами.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Назви дві ознаки, за якими можна впізнати фішингове повідомлення.<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Назви дві ознаки, за якими можна впізнати фішингове повідомлення." rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Якому застосунку на твоєму телефоні ти сьогодні забрав дозвіл і чому він був зайвим?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Якому застосунку на твоєму телефоні ти сьогодні забрав дозвіл і чому він був зайвим?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Що означає правило 20-20-20?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Що означає правило 20-20-20?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Допоможи рідним захистити телефон <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%8F%D0%BA+%D0%B7%D0%B0%D1%85%D0%B8%D1%81%D1%82%D0%B8%D1%82%D0%B8+%D1%81%D0%BC%D0%B0%D1%80%D1%82%D1%84%D0%BE%D0%BD+%D0%BD%D0%B0%D0%BB%D0%B0%D1%88%D1%82%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F+%D0%B1%D0%B5%D0%B7%D0%BF%D0%B5%D0%BA%D0%B8+%D0%BF%D0%BE%D1%80%D0%B0%D0%B4%D0%B8+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як налаштувати безпеку телефона батькам<span class="resource-hint">пошук у Google: «як захистити смартфон налаштування безпеки поради українською»</span></span></a>
+
+<div class="resource-note">Підказки для домашнього: що перевірити на телефоні батьків і як пояснити це простими словами.</div>  </div>
+</div>
+
+  <p>Сьогодні ти налаштував свій телефон. Удома допоможи так само захистити телефон когось із рідних (мами, тата, бабусі, старшого брата) — з їхнього дозволу.</p>
+<p>Скопіюй заготовку, перевір з рідною людиною пункти зі списку і відміть, що зробили. Сфотографуй або заскринь один результат, наприклад увімкнений нічний режим чи вимкнений дозвіл (без особистих даних). Принеси на наступний урок.</p>
+
+  <div class="levels">
+  <section class="level level-base"><h4><span aria-hidden="true">🟢</span> Базовий</h4><p>Перевір з рідною людиною 2 пункти: чи заблоковано екран і чи увімкнено нічний режим. Шлях у меню такий самий, як на уроці; якщо не знаходиш, скористайся пошуком у Налаштуваннях.</p>
+</section>
+  <section class="level level-standard"><h4><span aria-hidden="true">🔵</span> Стандартний</h4><p>Перевір 4 пункти: блокування екрана, автооновлення, дозволи на геолокацію (вимкніть зайві) і нічний режим. Поясни рідній людині, навіщо кожен пункт, своїми словами.</p>
+</section>
+  <section class="level level-challenge"><h4><span aria-hidden="true">🟣</span> Виклик</h4><p>Зроби все, що на стандартному рівні, а також покажи рідній людині приклад фішингового повідомлення (знайди в інтернеті або згадай реальне) і разом знайдіть у ньому 3 ознаки обману. Якщо ви ще не налаштували резервну копію фото (Google Фото або iCloud), перевірте, чи вона увімкнена.</p>
+</section>
+</div>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><p><strong>Захищаємо телефон рідних</strong></p>
+<p>Чий телефон: ____</p>
+<table>
+<thead>
+<tr>
+<th>Пункт</th>
+<th>Було</th>
+<th>Зробили</th>
+<th>Готово</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Блокування екрана</td>
+<td></td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Автооновлення</td>
+<td></td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Зайві дозволи на геолокацію</td>
+<td></td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Нічний режим</td>
+<td></td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Фішинг: 3 ознаки обману (виклик)</td>
+<td>—</td>
+<td></td>
+<td>[ ]</td>
+</tr>
+<tr>
+<td>Резервна копія фото (виклик)</td>
+<td></td>
+<td></td>
+<td>[ ]</td>
+</tr>
+</tbody>
+</table>
+<p>Що найбільше здивувало рідну людину: ____</p>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Шахраї найчастіше обманюють старших людей через телефон. Твоя допомога захищає гроші й дані твоєї родини, а ти вчишся пояснювати безпеку іншим.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Допоможи рідним захистити телефон" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>
