@@ -1,0 +1,1559 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Таблиця ознак обману: розбираємо 4 фішингові повідомлення</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">10 КЛАС • ПОКРОКОВА ПРАКТИЧНА</p>
+  <h1>Таблиця ознак обману: розбираємо 4 фішингові повідомлення</h1>
+<p class="lesson-subtitle">Дізнаємося, як захищене наше спілкування в інтернеті, і вчимося за 30 секунд розпізнавати шахрайське повідомлення.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Пояснити простими словами, що таке наскрізне шифрування, і назвати, у яких месенджерах воно ввімкнене за замовчуванням.</li>
+  <li>Перевірити повідомлення за 5 кроками й знайти в ньому щонайменше 3 ознаки фішингу.</li>
+  <li>Пояснити, як двофакторна автентифікація захищає акаунт і чому код із SMS не можна нікому пересилати.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Наскрізне шифрування означає, що прочитати повідомлення можуть лише відправник і отримувач. Навіть сервіс, через який воно йде, бачить лише «шифр».</li>
+  <li>Signal і WhatsApp шифрують усі чати наскрізно за замовчуванням. У Telegram звичайні чати зберігаються на серверах Telegram, а наскрізно шифруються лише секретні чати.</li>
+  <li>Фішинг — це повідомлення-приманка, яке хоче виманити пароль, код, дані картки чи гроші.</li>
+  <li>Будь-яке підозріле повідомлення можна перевірити за 5 кроками: відправник, поспіх або погроза, адреса посилання, що просять, помилки й дивне оформлення.</li>
+  <li>Двофакторна автентифікація рятує акаунт навіть після крадіжки пароля, але лише доки ти нікому не передав код.</li>
+</ul>
+
+  <div class="theory"><h3>Якими програмами ми спілкуємося</h3>
+<p>Програмні засоби комунікації — це програми й сервіси, через які люди обмінюються повідомленнями, файлами, голосом і відео. Їх є чотири основні види:</p>
+<table>
+<thead>
+<tr>
+<th>Вид</th>
+<th>Приклади</th>
+<th>Для чого найчастіше</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Месенджери</td>
+<td>Signal, WhatsApp, Telegram, Viber</td>
+<td>Швидкі повідомлення, голосові, фото</td>
+</tr>
+<tr>
+<td>Електронна пошта</td>
+<td>Gmail, Outlook, Ukr.net</td>
+<td>Офіційні листи, документи, реєстрація на сайтах</td>
+</tr>
+<tr>
+<td>Відеоконференції</td>
+<td>Zoom, Google Meet</td>
+<td>Онлайн-уроки, зустрічі, співбесіди</td>
+</tr>
+<tr>
+<td>Соцмережі</td>
+<td>Instagram, Facebook, TikTok</td>
+<td>Публікації для багатьох людей, коментарі</td>
+</tr>
+</tbody>
+</table>
+<h3>Що таке наскрізне шифрування</h3>
+<p><strong>Шифрування</strong> — це перетворення повідомлення на набір незрозумілих символів, який може прочитати лише той, хто має ключ.</p>
+<p><strong>Наскрізне шифрування</strong> (англійською end-to-end encryption, E2EE) — це коли повідомлення шифрується ще на твоєму телефоні, а розшифровується лише на телефоні отримувача. По дорозі воно проходить через сервери компанії, але компанія бачить лише «шифр», а не текст.</p>
+<p>Як це працює покроково:</p>
+<ol>
+<li>Ти пишеш «Привіт» і натискаєш «Надіслати».</li>
+<li>Твій телефон шифрує текст ключем, який є лише в телефоні друга.</li>
+<li>Сервер пересилає незрозумілий набір символів.</li>
+<li>Телефон друга розшифровує його, і друг бачить «Привіт».</li>
+</ol>
+<h3>Signal, WhatsApp і Telegram: у чому різниця</h3>
+<ul>
+<li><strong>Signal</strong> і <strong>WhatsApp</strong> шифрують наскрізно <strong>усі</strong> чати й дзвінки <strong>за замовчуванням</strong>, тобто нічого вмикати не треба.</li>
+<li><strong>Telegram</strong> у звичайних чатах шифрує повідомлення лише на шляху між тобою і сервером Telegram. На сервері вони зберігаються, і компанія технічно має до них доступ. Саме тому чати відкриваються на будь-якому новому пристрої. Наскрізне шифрування є лише в <strong>секретних чатах</strong>: їх треба створити вручну, вони працюють лише між двома людьми і лише на тому пристрої, де їх створили. Групові чати Telegram наскрізно не шифруються.</li>
+</ul>
+<p>Це не означає, що Telegram «поганий»: він зручний, але для приватних розмов краще обирати секретний чат або інший месенджер.</p>
+<h3>Фішинг: як шахраї виманюють дані</h3>
+<p><strong>Фішинг</strong> (від англійського fishing — риболовля) — це повідомлення, яке видає себе за банк, службу доставки, друга чи соцмережу, щоб ти сам віддав пароль, код, дані картки чи гроші.</p>
+<p><strong>5 кроків перевірки будь-якого повідомлення:</strong></p>
+<ol>
+<li><strong>Хто відправник?</strong> Чи справжня адреса пошти чи номер?</li>
+<li><strong>Чи є поспіх або погроза?</strong> «Терміново», «за 2 години», «акаунт видалять».</li>
+<li><strong>Яка адреса посилання?</strong> Чи це справді сайт компанії?</li>
+<li><strong>Що просять?</strong> Пароль, код із SMS, CVV-код картки, гроші.</li>
+<li><strong>Чи є помилки й дивне оформлення?</strong> Помилки в словах, ВЕЛИКІ ЛІТЕРИ, звернення «шановний клієнте» без імені.</li>
+</ol>
+<p>Якщо знайшов хоча б 2 ознаки, то це майже напевно фішинг.</p>
+<h3>Як читати адресу посилання</h3>
+<p>Головне в адресі — <strong>домен</strong>: частина між <code>https://</code> і першою косою рискою <code>/</code>. Читай його <strong>справа наліво</strong>. Наприклад:</p>
+<pre><code>https://privat24.ua.login-check.top/card
+</code></pre>
+<p>Домен тут закінчується на <code>login-check.top</code>, отже сайт належить невідомо кому, а <code>privat24.ua</code> на початку — лише маскування. Справжній сайт банку закінчувався б на <code>privat24.ua</code>.</p>
+<h3>Двофакторна автентифікація</h3>
+<p><strong>Двофакторна автентифікація (2FA)</strong> — це вхід в акаунт за двома доказами: те, що ти <strong>знаєш</strong> (пароль), і те, що ти <strong>маєш</strong> (телефон, на який приходить код). Навіть якщо шахрай украв пароль, без коду він не зайде. Але якщо ти сам перешлеш йому код, захист зникає.</p>
+<h3>Цифровий етикет</h3>
+<ul>
+<li>Не пиши все ВЕЛИКИМИ ЛІТЕРАМИ: це сприймається як крик.</li>
+<li>Не пересилай чужі фото й повідомлення без дозволу.</li>
+<li>У відеоконференції вимикай мікрофон, коли не говориш.</li>
+<li>Не надсилай друзям «ланцюжкові» повідомлення та непровірені посилання.</li>
+</ul>
+<h3>Типова пастка</h3>
+<p><strong>«Це ж пише мій друг, отже все безпечно».</strong> Шахраї часто зламують акаунт друга і пишуть з нього всім контактам. Якщо «друг» терміново просить гроші чи код, <strong>зателефонуй йому</strong> звичайним дзвінком і перепитай. Друге правило: справжній банк, пошта чи соцмережа <strong>ніколи</strong> не просять пароль, CVV-код чи код із SMS.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">5 кроків перевірки підозрілого повідомлення</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Хто відправник</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Чи є поспіх або погроза</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Яка адреса посилання</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Що просять: пароль, код, гроші</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Чи є помилки й дивне оформлення</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Вердикт: 2 і більше ознак — фішинг</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Як працює наскрізне шифрування</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Ти пишеш повідомлення</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Твій телефон шифрує його</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Сервер передає лише шифр</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Телефон друга розшифровує</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Друг читає текст</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Telegram: звичайний чат і секретний чат</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Звичайний (хмарний) чат</h4><ul><li>Шифрування лише між тобою і сервером</li><li>Повідомлення зберігаються на серверах Telegram</li><li>Видно на всіх твоїх пристроях</li><li>Працює в групах і каналах</li><li>Увімкнений за замовчуванням</li></ul></div>
+    <div class="scheme-column"><h4>Секретний чат</h4><ul><li>Наскрізне шифрування</li><li>Повідомлення лише на двох пристроях</li><li>Працює лише на одному пристрої</li><li>Лише для двох людей, без груп</li><li>Треба створити вручну</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Справжнє повідомлення і фішинг</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Справжнє повідомлення</h4><ul><li>Адреса чи домен компанії</li><li>Спокійний тон, без погроз</li><li>Посилання веде на офіційний сайт</li><li>Ніколи не просить пароль чи код</li><li>Звертається на ім&#39;я</li></ul></div>
+    <div class="scheme-column"><h4>Фішинг</h4><ul><li>Схожа, але чужа адреса</li><li>Терміново, інакше заблокують</li><li>Домен із зайвими словами чи літерами</li><li>Просить пароль, код, CVV, гроші</li><li>Шановний клієнте, помилки, ВЕЛИКІ ЛІТЕРИ</li></ul></div>
+  </div>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Як прочитати адресу посилання і знайти справжній сайт</h4>
+    <p>Три посилання з повідомлень:</p>
+<pre><code>1) https://privat24.ua/cards
+2) https://privat24.ua.login-check.top/cards
+3) https://www.privat-24-ua.com/cards
+</code></pre>
+<p>Яке з них справді веде на сайт банку?</p>
+
+    <div class="example-explanation"><ol>
+<li>Відкидаємо <code>https://</code> і все, що після першої коси риски <code>/</code>.</li>
+<li>Залишається домен: <code>privat24.ua</code>, <code>privat24.ua.login-check.top</code>, <code>www.privat-24-ua.com</code>.</li>
+<li>Читаємо кожен справа наліво:
+<ul>
+<li><code>privat24.ua</code> — сайт банку в зоні <code>.ua</code>. <strong>Справжній.</strong></li>
+<li><code>...login-check.top</code> — сайт <code>login-check.top</code>, а <code>privat24.ua</code> спереду — маскування. <strong>Фішинг.</strong></li>
+<li><code>privat-24-ua.com</code> — зовсім інший сайт із рисками і зоною <code>.com</code>. <strong>Фішинг.</strong></li>
+</ul>
+</li>
+</ol>
+<p>Результат: справжнє лише перше посилання. Правило: важливо, <strong>чим домен закінчується</strong>, а не що в ньому є.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Розбір листа «від Дії» за 5 кроками (показує вчитель)</h4>
+    <pre><code>Від: Дія &lt;info@diia-gov-ua.online&gt;
+Тема: УВАГА! Ваш цифровий паспорт буде анульовано
+
+Шановний користувач!
+Ваш цифровий паспорт не пройшов перевірку. Якщо не оновите
+дані протягом 3 годин, документ буде анульовано.
+Оновити дані: https://diia.gov.ua.update-id.online/login
+Для входу введіть номер картки та код із SMS.
+</code></pre>
+
+    <div class="example-explanation"><ol>
+<li><strong>Відправник:</strong> домен <code>diia-gov-ua.online</code>, а справжній — <code>diia.gov.ua</code>. Ознака є.</li>
+<li><strong>Поспіх або погроза:</strong> «протягом 3 годин», «буде анульовано», «УВАГА!». Ознака є.</li>
+<li><strong>Адреса посилання:</strong> домен закінчується на <code>update-id.online</code>, отже це не Дія. Ознака є.</li>
+<li><strong>Що просять:</strong> номер картки і код із SMS. Державний сервіс таких даних листом не просить. Ознака є.</li>
+<li><strong>Оформлення:</strong> «Шановний користувач» без імені, ВЕЛИКІ ЛІТЕРИ в темі. Ознака є.</li>
+</ol>
+<p>Результат: 5 ознак із 5, це фішинг. Що робити: нічого не натискати, відкрити застосунок Дія самостійно і перевірити, чи є там якесь повідомлення.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Як двофакторна автентифікація рятує акаунт</h4>
+    <p>Шахрай дізнався пароль Олі від Instagram (він злився з іншого сайту, де Оля використовувала той самий пароль). У Олі ввімкнена двофакторна автентифікація з кодом у SMS.</p>
+
+    <div class="example-explanation"><ol>
+<li>Шахрай вводить логін і правильний пароль.</li>
+<li>Instagram просить ще й код, який надсилає на телефон <strong>Олі</strong>.</li>
+<li>Шахрай коду не має, отже <strong>не може зайти</strong>. Акаунт у безпеці.</li>
+<li>Тоді шахрай пише Олі: «Привіт, тобі випадково прийшов мій код, перешли, будь ласка».</li>
+<li>Якщо Оля перешле код, шахрай зайде і змінить пароль. Якщо ні, захист спрацював.</li>
+</ol>
+<p>Висновок: 2FA захищає, навіть коли пароль украли, але <strong>лише доки код ніхто не отримав від тебе</strong>. Також Олі варто змінити пароль і не використовувати однаковий пароль на різних сайтах.</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D0%BD%D0%B0%D1%81%D0%BA%D1%80%D1%96%D0%B7%D0%BD%D0%B5+%D1%88%D0%B8%D1%84%D1%80%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F+%D1%89%D0%BE+%D1%86%D0%B5+%D0%BF%D1%80%D0%BE%D1%81%D1%82%D0%B8%D0%BC%D0%B8+%D1%81%D0%BB%D0%BE%D0%B2%D0%B0%D0%BC%D0%B8+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Що таке наскрізне шифрування — пояснення<span class="resource-hint">пошук на YouTube: «наскрізне шифрування що це простими словами українською»</span></span></a>
+
+<div class="resource-note">Коротке відео, яке на анімації показує, як повідомлення шифрується на одному телефоні й розшифровується на іншому. Подивись, якщо аналогія з сейфом залишилась незрозумілою.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%81%D0%B5%D0%BA%D1%80%D0%B5%D1%82%D0%BD%D0%B8%D0%B9+%D1%87%D0%B0%D1%82+Telegram+%D1%87%D0%B8%D0%BC+%D0%B2%D1%96%D0%B4%D1%80%D1%96%D0%B7%D0%BD%D1%8F%D1%94%D1%82%D1%8C%D1%81%D1%8F+%D0%B2%D1%96%D0%B4+%D0%B7%D0%B2%D0%B8%D1%87%D0%B0%D0%B9%D0%BD%D0%BE%D0%B3%D0%BE+%D0%BD%D0%B0%D1%81%D0%BA%D1%80%D1%96%D0%B7%D0%BD%D0%B5+%D1%88%D0%B8%D1%84%D1%80%D1%83%D0%B2%D0%B0%D0%BD%D0%BD%D1%8F" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Секретні чати Telegram: чим вони відрізняються від звичайних<span class="resource-hint">пошук у Google: «секретний чат Telegram чим відрізняється від звичайного наскрізне шифрування»</span></span></a>
+
+<div class="resource-note">Пояснює, як створити секретний чат і чому звичайні чати Telegram зберігаються на сервері. Допоможе зрозуміти різницю між Telegram і Signal чи WhatsApp.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=end-to-end+encryption+diagram+simple" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати схему наскрізного шифрування — знайти зображення<span class="resource-hint">пошук у Google Картинках: «end-to-end encryption diagram simple»</span></span></a>
+
+<div class="resource-note">Учень побачить два телефони і сервер між ними, де повідомлення виглядає як набір символів. Схема показує, що розшифрувати текст може лише отримувач.</div>  </div>
+</div>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Наскрізне шифрування — це лист у сейфі, ключ від якого є лише в отримувача. Листоноша несе сейф, але відкрити його не може.</li>
+  <li>Звичайний чат у Telegram — це лист, який листоноша везе в закритій машині, але на пошті його зберігають і пошта має ключ. Секретний чат — це вже сейф із ключем лише в отримувача.</li>
+  <li>Фішинг — це риболовля: шахрай закидає наживку (страх, поспіх, «вигідну пропозицію») і чекає, хто клюне.</li>
+  <li>Двофакторна автентифікація — це двері з двома замками: ключ (пароль) і код домофону, який щоразу новий і приходить лише тобі на телефон.</li>
+  <li>Адреса сайту схожа на поштову адресу, яку читають справа наліво: спочатку країна і місто (кінець адреси), а вже потім вулиця. Головне — що стоїть перед першою косою рискою.</li>
+  <li>Цифровий етикет — це ті самі правила ввічливості, що й у житті: не кричати (не писати все ВЕЛИКИМИ ЛІТЕРАМИ), не пересилати чуже без дозволу, не дзвонити по відео без попередження.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D1%84%D1%96%D1%88%D0%B8%D0%BD%D0%B3%D0%BE%D0%B2%D0%B5+SMS+%D0%BF%D0%BE%D1%81%D0%B8%D0%BB%D0%BA%D0%B0+%D0%BF%D1%80%D0%B8%D0%BA%D0%BB%D0%B0%D0%B4+%D1%81%D0%BA%D1%80%D0%B8%D0%BD%D1%88%D0%BE%D1%82" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати приклад справжнього фішингового SMS — знайти зображення<span class="resource-hint">пошук у Google Картинках: «фішингове SMS посилка приклад скриншот»</span></span></a>
+
+<div class="resource-note">Учень побачить, як виглядає реальне шахрайське SMS про посилку на екрані телефона. Це допомагає впізнати таке повідомлення в житті.</div>  </div>
+</div>
+
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Таблиця ознак обману: перевіряємо 4 підозрілі повідомлення</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%BA%D1%96%D0%B1%D0%B5%D1%80%D0%BF%D0%BE%D0%BB%D1%96%D1%86%D1%96%D1%8F+%D0%BE%D0%B7%D0%BD%D0%B0%D0%BA%D0%B8+%D1%84%D1%96%D1%88%D0%B8%D0%BD%D0%B3%D1%83+%D1%8F%D0%BA+%D1%80%D0%BE%D0%B7%D0%BF%D1%96%D0%B7%D0%BD%D0%B0%D1%82%D0%B8+%D1%88%D0%B0%D1%85%D1%80%D0%B0%D0%B9%D1%81%D1%8C%D0%BA%D0%B5+%D0%BF%D0%BE%D0%B2%D1%96%D0%B4%D0%BE%D0%BC%D0%BB%D0%B5%D0%BD%D0%BD%D1%8F" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Ознаки фішингових повідомлень: поради кіберполіції<span class="resource-hint">пошук у Google: «кіберполіція ознаки фішингу як розпізнати шахрайське повідомлення»</span></span></a>
+
+<div class="resource-note">Список ознак шахрайських повідомлень від кіберполіції України. Можна звірити з ним свою таблицю, якщо сумніваєшся в якійсь ознаці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=URL+structure+domain+subdomain+path+diagram" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати, з яких частин складається адреса сайту — знайти зображення<span class="resource-hint">пошук у Google Картинках: «URL structure domain subdomain path diagram»</span></span></a>
+
+<div class="resource-note">Учень побачить адресу, розділену на частини з підписами. Це допомагає знайти справжній домен у підозрілому посиланні.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> навчитися перевіряти будь-яке повідомлення за 5 кроками і знаходити ознаки обману.</p>
+<p><strong>Що буде в результаті:</strong> заповнена таблиця, де для кожного з 4 повідомлень позначені знайдені ознаки, вердикт і що ти зробиш у такій ситуації. Ця таблиця — твоя особиста пам'ятка, за якою можна перевірити будь-яке підозріле повідомлення в житті.</p>
+<p><strong>Важливо:</strong> усі адреси в повідомленнях вигадані. <strong>Не вводь їх у браузер і не намагайся відкрити.</strong></p>
+<p>Скопіюй заготовку і виконуй кроки по черзі.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Скопіюй заготовку і прочитай 5 кроків перевірки</strong></p>
+        <p>Натисни кнопку «Копіювати» біля заготовки і встав її в текстовий документ (або візьми роздруковану заготовку). Прочитай 5 рядків таблиці: <strong>відправник, поспіх або погроза, адреса посилання, що просять, помилки й оформлення</strong>. Саме ці 5 питань ти ставитимеш до кожного повідомлення.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Перед тобою 4 повідомлення і порожня таблиця з 5 рядками перевірки та рядками «Вердикт» і «Що я зроблю».</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір повідомлення 1 (лист від банку)</strong></p>
+        <p>Прочитай повідомлення 1 і пройди 5 кроків:</p>
+<ol>
+<li><strong>Відправник:</strong> подивись на частину адреси після <code>@</code>. Справжній домен банку — <code>privat24.ua</code>. Чи збігається?</li>
+<li><strong>Поспіх:</strong> знайди слова про час і погрози.</li>
+<li><strong>Посилання:</strong> відкинь <code>http://</code> і все після першої <code>/</code>. Прочитай домен справа наліво. Чим він закінчується?</li>
+<li><strong>Що просять:</strong> знайди, які дані треба ввести.</li>
+<li><strong>Оформлення:</strong> пошукай помилки в словах і ВЕЛИКІ ЛІТЕРИ.</li>
+</ol>
+<p>У стовпчику «Повідомлення 1» коротко (2–5 слів) запиши знайдену ознаку або постав «—», якщо її немає.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Стовпчик «Повідомлення 1» заповнений: знайдено 4–5 ознак (наприклад, «чужий домен privat24-bezpeka.com», «2 години, заблокують», «просять CVV»).</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір повідомлення 2 (SMS про посилку)</strong></p>
+        <p>Прочитай повідомлення 2 і так само пройди 5 кроків.</p>
+<p>Підказки:</p>
+<ul>
+<li>Звідки прийшло SMS: від назви компанії чи від звичайного мобільного номера?</li>
+<li>Справжній сайт Нової пошти — <code>novaposhta.ua</code>. Чим закінчується домен у посиланні?</li>
+<li>Подумай: чи чекаєш ти посилку і чи нормально платити за доставку через посилання з SMS?</li>
+</ul>
+<p>Заповни стовпчик «Повідомлення 2».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Стовпчик «Повідомлення 2» заповнений: звичайний номер, термін «до 23:59», домен delivery-check.top, просять оплатити (тобто ввести дані картки).</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір повідомлення 3 (друг просить гроші)</strong></p>
+        <p>Прочитай повідомлення 3. Це найхитріший випадок: ім'я відправника справжнє, бо шахрай <strong>зламав акаунт друга</strong>.</p>
+<p>Підказки:</p>
+<ul>
+<li>Чи схоже, що так пише твій друг? Чому він «не може говорити»?</li>
+<li>Що він просить: гроші? код? Навіщо комусь твій код із Telegram?</li>
+<li>Чия це картка і куди веде посилання на «голосування»?</li>
+</ul>
+<p>Заповни стовпчик «Повідомлення 3».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Стовпчик «Повідомлення 3» заповнений: дивний стиль друга, «терміново, не можу говорити», підозріле посилання на голосування, просять гроші і код із Telegram.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір повідомлення 4 (акаунт заблокують)</strong></p>
+        <p>Прочитай повідомлення 4. Дуже уважно подивись на домен: прочитай його <strong>по одній літері</strong>. Справжній — <code>instagram.com</code>. Порівняй: <code>i-n-s-t-a-g-r-a-m</code> і те, що написано в листі. Чи немає там двох літер, які разом схожі на одну?</p>
+<p>Заповни стовпчик «Повідомлення 4».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Стовпчик «Повідомлення 4» заповнений: домен instagrarn (rn замість m), «24 години, видалять», просять пароль і код із SMS.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Напиши вердикт і що ти зробиш</strong></p>
+        <p>Для кожного повідомлення порахуй знайдені ознаки. Правило: <strong>2 і більше ознак — фішинг.</strong> У рядку «Вердикт» напиши «фішинг» або «справжнє».</p>
+<p>У рядку «Що я зроблю» обери одну дію з цього списку і запиши її:</p>
+<ul>
+<li>видалю і нічого не натискатиму;</li>
+<li>зателефоную в банк за номером зі звороту картки;</li>
+<li>перевірю посилку в застосунку перевізника;</li>
+<li>зателефоную другові звичайним дзвінком;</li>
+<li>зайду в застосунок соцмережі сам, а не за посиланням.</li>
+</ul>
+
+<p class="step-result"><strong>Має вийти:</strong> У кожному стовпчику є вердикт «фішинг» і конкретна безпечна дія.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Познач свої 3 головні ознаки</strong></p>
+        <p>Подивись на всю таблицю: які ознаки трапились у <strong>всіх або майже всіх</strong> повідомленнях? Під таблицею, у рядку «Мої 3 головні ознаки обману», запиши 3 ознаки, за якими ти найшвидше впізнаєш фішинг.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Готова пам&#39;ятка: заповнена таблиця і 3 головні ознаки внизу, наприклад «поспіх і погроза», «чужий домен», «просять код або пароль».</p>      </li>
+    </ol>
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><p><strong>Повідомлення 1. Лист від банку</strong></p>
+<pre><code>Від: Служба безпеки ПриватБанку &lt;security@privat24-bezpeka.com&gt;
+Тема: ТЕРМІНОВО! Підозріла операція по вашій картці
+
+Шановний кліенте!
+Ми виявили спробу списання 8 450 грн з вашої картки. Якщо це
+були не ви, протягом 2 годин підтвердіть дані картки, інакше
+картку буде заблоковано назавжди.
+Підтвердити: http://privat24.ua-verify.online/card
+Вкажіть номер картки, термін дії та CVV-код.
+</code></pre>
+<p><strong>Повідомлення 2. SMS про посилку</strong></p>
+<pre><code>Від: +380 93 418 27 55
+Nova Poshta: Ваша посилка #UA5583 затримана на складі через
+неповну адресу. Оплатіть доставку 29 грн до 23:59 сьогодні,
+інакше посилку повернуть відправнику:
+novaposhta-ua.delivery-check.top
+</code></pre>
+<p><strong>Повідомлення 3. Месенджер: друг просить гроші</strong></p>
+<pre><code>Від: Максим Коваль (є у твоїх контактах)
+Привіт!! Терміново потрібна допомога, зараз не можу говорити.
+Скинь 1500 грн на цю картку 4441 1111 2222 3333, ввечері
+поверну. І ще проголосуй за мою сестру в конкурсі:
+vote-konkurs2024.site
+Тобі прийде код у Телеграм, перешли його мені, це для голосування.
+</code></pre>
+<p><strong>Повідомлення 4. Лист: акаунт заблокують</strong></p>
+<pre><code>Від: Instagram Support &lt;no-reply@instagrarn-help.com&gt;
+Тема: Ваш акаунт буде видалено через 24 години
+
+Дорогий користувач,
+ми отримали скаргу на порушення авторських прав у вашій
+публікації. Якщо ви не оскаржите рішення протягом 24 годин,
+ваш акаунт буде остаточно видалено.
+Оскаржити: https://instagrarn-help.com/appeal
+Для підтвердження власника введіть логін, пароль і код з SMS.
+</code></pre>
+<p><strong>Таблиця ознак обману</strong></p>
+<table>
+<thead>
+<tr>
+<th>Крок перевірки</th>
+<th>Повідомлення 1 (банк)</th>
+<th>Повідомлення 2 (посилка)</th>
+<th>Повідомлення 3 (друг)</th>
+<th>Повідомлення 4 (акаунт)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Хто відправник і що з ним не так</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2. Поспіх або погроза</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3. Адреса посилання (домен)</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>4. Що просять: пароль, код, гроші, дані картки</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5. Помилки й дивне оформлення</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Вердикт: фішинг чи справжнє</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Що я зроблю</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Мої 3 головні ознаки обману:</strong></p>
+<ol>
+<li></li>
+<li></li>
+<li></li>
+</ol>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Заповнена таблиця ознак для 4 повідомлень із вердиктами, безпечними діями і 3 головними ознаками обману внизу.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Таблиця ознак обману: перевіряємо 4 підозрілі повідомлення" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: П&#39;яте повідомлення: фішинг чи справжнє?</h3>
+    <p>Ти вже вмієш знаходити фішинг. Тепер складніший випадок: перевір за тими самими 5 кроками повідомлення, яке <strong>може бути справжнім</strong>. Додай до таблиці шостий стовпчик «Повідомлення 5» і заповни його.</p>
+<pre><code>Від: Google &lt;no-reply@accounts.google.com&gt;
+Тема: Сповіщення системи безпеки
+
+Олено, у ваш обліковий запис виконано вхід із нового пристрою
+Windows. Якщо це були ви, нічого робити не потрібно. Якщо ні,
+перевірте активність облікового запису: відкрийте налаштування
+Google-акаунта у своєму браузері.
+</code></pre>
+<ol>
+<li>Пройди 5 кроків і порахуй ознаки.</li>
+<li>Напиши вердикт.</li>
+<li>Напиши, як <strong>безпечно</strong> перевірити, чи справжнє повідомлення, не натискаючи нічого в листі.</li>
+</ol>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: П&#39;яте повідомлення: фішинг чи справжнє?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу пояснити простими словами, що таке наскрізне шифрування, і назвати, у яких месенджерах воно ввімкнене за замовчуванням.</label></li>
+    <li><label><input type="checkbox"> Я можу перевірити повідомлення за 5 кроками й знайти в ньому щонайменше 3 ознаки фішингу.</label></li>
+    <li><label><input type="checkbox"> Я можу пояснити, як двофакторна автентифікація захищає акаунт і чому код із SMS не можна нікому пересилати.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>У якому месенджері, Signal чи Telegram, усі чати шифруються наскрізно без додаткових налаштувань?<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: У якому месенджері, Signal чи Telegram, усі чати шифруються наскрізно без додаткових налаштувань?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Назви 3 ознаки, за якими ти впізнаєш фішингове повідомлення.<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Назви 3 ознаки, за якими ти впізнаєш фішингове повідомлення." rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Тобі пише «підтримка»: «Перешли код із SMS, щоб розблокувати акаунт». Що ти зробиш і чому?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Тобі пише «підтримка»: «Перешли код із SMS, щоб розблокувати акаунт». Що ти зробиш і чому?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Захисти свій акаунт і знайди справжній фішинг <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://phishingquiz.withgoogle.com" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">💻</span><span class="resource-text">Google Phishing Quiz — тренажер розпізнавання фішингу</span></a>
+
+<div class="resource-note">Онлайн-тренажер від Google: показує листи, а ти вирішуєш, фішинг це чи ні. Наприкінці бачиш пояснення кожної ознаки. Можна вибрати українську мову інтерфейсу, якщо вона доступна.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%8F%D0%BA+%D1%83%D0%B2%D1%96%D0%BC%D0%BA%D0%BD%D1%83%D1%82%D0%B8+%D0%B4%D0%B2%D0%BE%D0%B5%D1%82%D0%B0%D0%BF%D0%BD%D1%83+%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D1%96%D1%80%D0%BA%D1%83+WhatsApp+Telegram+%D1%85%D0%BC%D0%B0%D1%80%D0%BD%D0%B8%D0%B9+%D0%BF%D0%B0%D1%80%D0%BE%D0%BB%D1%8C+%D1%96%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BA%D1%86%D1%96%D1%8F+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Як увімкнути двофакторну автентифікацію в месенджерах<span class="resource-hint">пошук на YouTube: «як увімкнути двоетапну перевірку WhatsApp Telegram хмарний пароль інструкція українською»</span></span></a>
+
+<div class="resource-note">Покрокова інструкція, де в налаштуваннях WhatsApp і Telegram вмикається другий рівень захисту. Знадобиться для домашнього завдання.</div>  </div>
+</div>
+
+  <ol>
+<li><strong>Увімкни другий рівень захисту</strong> в одному месенджері, яким користуєшся (5–7 хв):
+<ul>
+<li><strong>WhatsApp:</strong> Налаштування → Обліковий запис → Двоетапна перевірка → Увімкнути (придумай PIN-код).</li>
+<li><strong>Telegram:</strong> Налаштування → Конфіденційність → Двоетапна перевірка або Хмарний пароль.</li>
+<li><strong>Signal:</strong> Налаштування → Обліковий запис → Блокування реєстрації.
+Не надсилай вчителеві ні PIN, ні пароль. Достатньо назвати, де ти ввімкнув захист.</li>
+</ul>
+</li>
+<li><strong>Знайди справжнє підозріле повідомлення</strong> (5–8 хв): у своїй пошті (папка «Спам»), SMS або месенджері. Якщо такого немає, попроси рідних показати шахрайське повідомлення, яке вони отримували. <strong>Нічого в ньому не натискай.</strong> Сфотографуй або зроби знімок екрана, <strong>зафарбуй</strong> свої особисті дані (ім'я, номер, адресу).</li>
+<li>Скопіюй заготовку і заповни її.</li>
+</ol>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><table>
+<thead>
+<tr>
+<th>Питання</th>
+<th>Моя відповідь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>У якому месенджері я ввімкнув(-ла) другий рівень захисту</td>
+<td></td>
+</tr>
+<tr>
+<td>Звідки підозріле повідомлення (пошта, SMS, месенджер)</td>
+<td></td>
+</tr>
+<tr>
+<td>Ознака 1 (яка і де видно)</td>
+<td></td>
+</tr>
+<tr>
+<td>Ознака 2 (яка і де видно)</td>
+<td></td>
+</tr>
+<tr>
+<td>Ознака 3 (яка і де видно)</td>
+<td></td>
+</tr>
+<tr>
+<td>Що я з ним зробив(-ла)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Шахраї щодня надсилають тисячі фейкових SMS про посилки й повідомлень зі зламаних акаунтів. Увімкнений другий рівень захисту і звичка перевіряти повідомлення за 5 кроками реально бережуть твої гроші й акаунти, а також акаунти твоїх рідних.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Захисти свій акаунт і знайди справжній фішинг" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>

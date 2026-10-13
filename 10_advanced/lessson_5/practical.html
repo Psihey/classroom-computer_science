@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анкета «Картка гравця»: змінні, типи даних і input() у Python</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">10 ПРОФІЛЬНИЙ КЛАС • ПОКРОКОВА ПРАКТИЧНА</p>
+  <h1>Анкета «Картка гравця»: змінні, типи даних і input() у Python</h1>
+<p class="lesson-subtitle">Пишемо програму, яка питає ім&#39;я, вік і улюблену гру, рахує вік у місяцях і днях та виводить картку гравця в рамці.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Створити змінні й зберегти в них текст і числа</li>
+  <li>Отримати дані від користувача через input() і перетворити текст у число за допомогою int()</li>
+  <li>Написати програму-анкету, яка обчислює вік у місяцях і днях та гарно виводить результат</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Змінна — це назва, за якою програма запам&#39;ятовує значення: name = &#39;Оля&#39;.</li>
+  <li>Тип даних визначає, що можна робити зі значенням: str — текст, int — ціле число.</li>
+  <li>input() завжди повертає текст (str), навіть якщо користувач увів цифри.</li>
+  <li>int() перетворює текст із цифр у число, і тільки після цього з ним можна рахувати.</li>
+  <li>&#39;15&#39; + &#39;1&#39; дає &#39;151&#39; (склеювання тексту), а 15 + 1 дає 16 (додавання чисел).</li>
+</ul>
+
+  <div class="theory"><h3>Що таке змінна</h3>
+<p><strong>Змінна</strong> — це назва, під якою програма запам'ятовує якесь значення. Уяви коробку з наліпкою: на наліпці написано <code>age</code>, а всередині лежить число <code>15</code>. Коли програмі знадобиться вік, вона просто «загляне в коробку» за назвою.</p>
+<p>Змінну створюють знаком <code>=</code> (це не «дорівнює», а «поклади в»):</p>
+<pre><code class="language-python">name = 'Оля'
+age = 15
+</code></pre>
+<p>Правила для назв змінних: латинські літери, цифри і знак <code>_</code>; назва не починається з цифри; великі й малі літери різні (<code>Name</code> і <code>name</code> — дві різні змінні). Давай зрозумілі назви: <code>age</code> краще, ніж <code>a</code>.</p>
+<h3>Типи даних: текст і числа</h3>
+<p>Кожне значення має <strong>тип</strong>. Сьогодні нам потрібні два:</p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Що це</th>
+<th>Приклад</th>
+<th>Що з ним можна робити</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td>рядок, текст</td>
+<td><code>'Оля'</code>, <code>'15'</code></td>
+<td>склеювати <code>+</code>, повторювати <code>*</code></td>
+</tr>
+<tr>
+<td><code>int</code></td>
+<td>ціле число</td>
+<td><code>15</code>, <code>365</code></td>
+<td>рахувати: <code>+ - * /</code></td>
+</tr>
+</tbody>
+</table>
+<p>Текст завжди береться в лапки. <code>'15'</code> у лапках — це текст із двох символів, а <code>15</code> без лапок — число. Дізнатися тип можна функцією <code>type()</code>: <code>type('15')</code> покаже <code>&lt;class 'str'&gt;</code>, а <code>type(15)</code> — <code>&lt;class 'int'&gt;</code>.</p>
+<h3>Як працює input()</h3>
+<p>Функція <code>input()</code> зупиняє програму і чекає, поки користувач щось надрукує й натисне Enter. Текст у дужках — це питання, яке побачить користувач:</p>
+<pre><code class="language-python">name = input('Як тебе звати? ')
+</code></pre>
+<p><strong>Головне правило:</strong> <code>input()</code> <em>завжди</em> повертає текст (<code>str</code>). Навіть якщо ти ввів <code>15</code>, у змінній буде <code>'15'</code> — текст.</p>
+<h3>Як перетворити текст у число</h3>
+<p>Щоб рахувати, текст треба перетворити функцією <code>int()</code>:</p>
+<pre><code class="language-python">age = int(input('Скільки тобі років? '))
+months = age * 12
+print('Місяців:', months)
+</code></pre>
+<p>Спочатку виконується <code>input()</code> (отримуємо <code>'15'</code>), потім <code>int()</code> (отримуємо <code>15</code>), потім результат кладеться у змінну <code>age</code>.</p>
+<h3>Навіщо це в житті</h3>
+<p>Будь-яка реєстрація на сайті, профіль у грі чи анкета в застосунку працює саме так: програма питає дані, зберігає їх у змінних, щось обчислює (наприклад, перевіряє, чи тобі вже є 13 років) і гарно показує результат.</p>
+<h3>Типова пастка</h3>
+<p>Якщо забути <code>int()</code>, Python не завжди видасть помилку — іноді він тихо зробить не те:</p>
+<pre><code class="language-python">age = input('Вік? ')   # ввели 15
+print(age * 12)
+</code></pre>
+<p>Результат буде <code>151515151515151515151515</code> — текст <code>'15'</code>, повторений 12 разів! А <code>age + 1</code> взагалі дасть помилку <code>TypeError</code>. <strong>Як уникнути:</strong> якщо з відповіддю треба рахувати — одразу загортай <code>input()</code> в <code>int()</code>. Якщо ж ввести не цифри (наприклад, «п'ятнадцять»), <code>int()</code> видасть помилку <code>ValueError</code> — це означає, що текст не можна перетворити в число.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Шлях даних в анкеті</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Користувач вводить 15</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">input() повертає текст &#39;15&#39;</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">int() перетворює в число 15</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">age = 15</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">months = age * 12 = 180</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">print() показує результат</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Текст і число: у чому різниця</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>str (текст)</h4><ul><li>Пишеться в лапках: &#39;15&#39;, &#39;Оля&#39;</li><li>&#39;15&#39; + &#39;1&#39; = &#39;151&#39; (склеювання)</li><li>&#39;=&#39; * 5 = &#39;=====&#39; (повторення)</li><li>Так повертає input()</li><li>Для імені, гри, міста</li></ul></div>
+    <div class="scheme-column"><h4>int (ціле число)</h4><ul><li>Пишеться без лапок: 15, 365</li><li>15 + 1 = 16 (додавання)</li><li>15 * 12 = 180 (множення)</li><li>Отримуємо через int(input())</li><li>Для віку, кількості, балів</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Як Python виконує age = int(input(&#39;Вік? &#39;))</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Показує питання Вік?</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Чекає, поки натиснуть Enter</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">input() віддає текст</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">int() робить з тексту число</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Число кладеться у змінну age</li>
+  </ol>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Склеювання тексту і додавання чисел</h4>
+    <pre><code class="language-python">print('15' + '1')
+print(15 + 1)
+print(type('15'))
+print(type(15))
+</code></pre>
+
+    <div class="example-explanation"><ol>
+<li><code>'15' + '1'</code> — обидва значення в лапках, тобто текст. Для тексту <code>+</code> означає «приклеїти»: виходить <code>151</code>.</li>
+<li><code>15 + 1</code> — обидва числа, <code>+</code> додає: виходить <code>16</code>.</li>
+<li><code>type('15')</code> показує <code>&lt;class 'str'&gt;</code> — це рядок.</li>
+<li><code>type(15)</code> показує <code>&lt;class 'int'&gt;</code> — це ціле число.</li>
+</ol>
+<p><strong>Висновок:</strong> лапки змінюють тип, а тип змінює, що робить <code>+</code>.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Пастка: забули int()</h4>
+    <pre><code class="language-python">age = input('Скільки тобі років? ')
+print(age * 2)
+print(age + 1)
+</code></pre>
+<p>Користувач вводить <code>16</code>.</p>
+
+    <div class="example-explanation"><ol>
+<li><code>input()</code> повертає текст <code>'16'</code>, і він лежить у <code>age</code>.</li>
+<li><code>age * 2</code> — текст, помножений на число, повторюється: друкується <code>1616</code>. Помилки немає, але результат неправильний.</li>
+<li><code>age + 1</code> — спроба додати текст і число. Python зупиняється з помилкою <code>TypeError: can only concatenate str (not &quot;int&quot;) to str</code>.</li>
+</ol>
+<p><strong>Виправлення:</strong> <code>age = int(input('Скільки тобі років? '))</code>. Тоді <code>age * 2</code> = <code>32</code>, а <code>age + 1</code> = <code>17</code>.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Маленька програма: години сну за тиждень</h4>
+    <pre><code class="language-python">name = input('Як тебе звати? ')
+hours = int(input('Скільки годин ти спиш за ніч? '))
+week = hours * 7
+print('-' * 25)
+print(name, 'спить за тиждень', week, 'годин')
+print('-' * 25)
+</code></pre>
+<p>Користувач вводить <code>Max</code> і <code>8</code>.</p>
+
+    <div class="example-explanation"><ol>
+<li><code>name</code> отримує текст <code>'Max'</code> — з ним не рахуємо, тому <code>int()</code> не потрібен.</li>
+<li><code>hours</code> отримує число <code>8</code>, бо <code>input()</code> загорнуто в <code>int()</code>.</li>
+<li><code>week = hours * 7</code> — обчислення: <code>56</code>.</li>
+<li><code>'-' * 25</code> малює лінію з 25 рисок.</li>
+<li><code>print()</code> через кому склеює все з пробілами й сам перетворює число на текст.</li>
+</ol>
+<p>Результат:</p>
+<pre><code>-------------------------
+Max спить за тиждень 56 годин
+-------------------------
+</code></pre>
+<p>Так само ти побудуєш свою анкету на практичній.</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://pythontutor.com" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">💻</span><span class="resource-text">Python Tutor — візуалізація змінних</span></a>
+
+<div class="resource-note">Встав код з прикладу «Години сну» і натискай Next: побачиш, як після кожного рядка з&#39;являються змінні та їхні значення. Допомагає зрозуміти, що лежить у «коробці».</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D0%B7%D0%BC%D1%96%D0%BD%D0%BD%D1%96+%D1%82%D0%B8%D0%BF%D0%B8+%D0%B4%D0%B0%D0%BD%D0%B8%D1%85+input+int+python+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Відео: змінні та input() у Python<span class="resource-hint">пошук на YouTube: «змінні типи даних input int python для початківців українською»</span></span></a>
+
+<div class="resource-note">Коротке відео для тих, хто пропустив урок або хоче ще раз почути пояснення про input() та int(). Дивись 5–10 хвилин і повтори приклади в Thonny.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=Thonny+variables+panel+screenshot" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати панель змінних у Thonny — знайти зображення<span class="resource-hint">пошук у Google Картинках: «Thonny variables panel screenshot»</span></span></a>
+
+<div class="resource-note">Учень побачить, що Thonny показує кожну змінну та її значення окремим рядком. Так видно, що у змінній після input() лежить текст у лапках, а після int() — число.</div>  </div>
+</div>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Змінна — як коробка з наліпкою: на наліпці назва (age), а всередині значення (15). Можна покласти в коробку інше значення, а наліпка лишиться та сама.</li>
+  <li>input() — як анкета на папері: усе, що людина вписала, — це просто написані символи. Щоб порахувати з ними, треба «прочитати» їх як число — це і робить int().</li>
+  <li>Типи даних — як одиниці виміру: не можна додати 5 кілограмів і 3 метри. Так само Python не додасть текст і число без перетворення.</li>
+  <li>Склеювання рядків — як складати таблички з цифрами: поставиш табличку «15» поруч з «1» — вийде «151», а не 16.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%82%D0%B8%D0%BF%D0%B8+%D0%B4%D0%B0%D0%BD%D0%B8%D1%85+python+str+int+%D0%BF%D0%B5%D1%80%D0%B5%D1%82%D0%B2%D0%BE%D1%80%D0%B5%D0%BD%D0%BD%D1%8F+%D1%82%D0%B8%D0%BF%D1%96%D0%B2+%D1%81%D1%82%D0%B0%D1%82%D1%82%D1%8F+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Стаття: типи даних str та int у Python<span class="resource-hint">пошук у Google: «типи даних python str int перетворення типів стаття українською»</span></span></a>
+
+<div class="resource-note">Довідка з прикладами перетворення типів: int(), str(), float(). Корисна, якщо хочеш розібратися, як перетворити число назад у текст.</div>  </div>
+</div>
+
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Програма-анкета «Картка гравця»</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://thonny.org" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Thonny — середовище для Python</span></a>
+
+<div class="resource-note">Офіційний сайт Thonny: звідси можна завантажити Portable-версію, щоб доробити анкету вдома. На уроці працюємо в уже встановленому Portable Thonny.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=ascii+art+box+text+console+python+print+border" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати приклад рамки з символів у консолі — знайти зображення<span class="resource-hint">пошук у Google Картинках: «ascii art box text console python print border»</span></span></a>
+
+<div class="resource-note">Учень побачить, як із простих символів можна зробити рамку навколо тексту. Саме так оформлюватиметься картка гравця на кроці 7.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> написати програму, яка питає в користувача ім'я, вік і улюблену гру, рахує, скільки приблизно місяців і днів він прожив, і виводить усе у вигляді картки гравця з рамкою.</p>
+<p><strong>Результат:</strong> файл <code>anketa.py</code>, який після запуску ставить 3 питання і показує таку картку (для віку 15):</p>
+<pre><code>==============================
+*       КАРТКА ГРАВЦЯ        *
+==============================
+Гравець: Оля
+Улюблена гра: Minecraft
+Вік (років): 15
+Вік (місяців): 180
+Вік (днів, приблизно): 5475
+==============================
+</code></pre>
+<p>Такі профілі гравців показують в онлайн-іграх і застосунках: програма бере дані з анкети і гарно їх показує. Виконуй кроки по черзі, після кожного запускай програму клавішею <strong>F5</strong> і звіряй результат. Якщо загубився — скопіюй заготовку.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Створи і збережи файл</strong></p>
+        <p>Відкрий Portable Thonny. Натисни <em>Файл → Новий</em> (або Ctrl+N). Одразу збережи файл: <em>Файл → Зберегти</em> (Ctrl+S), назва <code>anketa.py</code>. Увімкни панель змінних: <em>Вигляд → Змінні</em> (<em>View → Variables</em>).</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Порожній файл anketa.py відкрито у верхньому вікні, праворуч видно панель «Змінні».</p>      </li>
+      <li>
+        <p class="step-title"><strong>Виведи заголовок програми</strong></p>
+        <p>Напиши перший рядок і запусти програму (F5):</p>
+<pre><code class="language-python">print('Анкета гравця. Відповідай на питання.')
+</code></pre>
+
+<p class="step-result"><strong>Має вийти:</strong> Унизу в оболонці (Shell) з&#39;явився рядок «Анкета гравця. Відповідай на питання.»</p>      </li>
+      <li>
+        <p class="step-title"><strong>Запитай ім&#39;я</strong></p>
+        <p>Допиши під заголовком:</p>
+<pre><code class="language-python">name = input('Як тебе звати? ')
+print('Привіт,', name)
+</code></pre>
+<p>Запусти, у Shell надрукуй своє ім'я і натисни Enter. Зверни увагу на пробіл після знака питання в лапках — він потрібен, щоб відповідь не прилипала до питання.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Програма питає ім&#39;я і відповідає «Привіт, Оля». На панелі змінних з&#39;явилася змінна name зі значенням &#39;Оля&#39; в лапках — це текст (str).</p>      </li>
+      <li>
+        <p class="step-title"><strong>Запитай вік і перетвори його в число</strong></p>
+        <p>Допиши:</p>
+<pre><code class="language-python">age = int(input('Скільки тобі років? '))
+print(type(age))
+</code></pre>
+<p>Запусти, введи ім'я та вік цифрами. Перевір, що в дужках дві закривні дужки <code>))</code> — одна для <code>input</code>, друга для <code>int</code>.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Друкується &lt;class &#39;int&#39;&gt;. На панелі змінних age = 15 без лапок — це число. Якщо ввести літери, буде ValueError — це нормально, просто запусти ще раз і введи цифри.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Запитай улюблену гру</strong></p>
+        <p>Видали рядок <code>print(type(age))</code> (він був для перевірки). Допиши:</p>
+<pre><code class="language-python">game = input('Твоя улюблена гра? ')
+</code></pre>
+<p>Подумай: чи потрібен тут <code>int()</code>? (Ні — назва гри це текст.)</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Програма ставить три питання поспіль. На панелі змінних є name, age і game.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Порахуй вік у місяцях і днях</strong></p>
+        <p>Допиши обчислення:</p>
+<pre><code class="language-python">months = age * 12
+days = age * 365
+print(months, days)
+</code></pre>
+<p>Запусти і перевір на калькуляторі: вік × 12 і вік × 365.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Для віку 15 друкується 180 5475. Числа збігаються з калькулятором. Якщо вийшло щось на кшталт 151515…, значить, на кроці 4 забуто int().</p>      </li>
+      <li>
+        <p class="step-title"><strong>Виведи картку гравця з рамкою</strong></p>
+        <p>Видали рядок <code>print(months, days)</code> і допиши в кінець:</p>
+<pre><code class="language-python">print('=' * 30)
+print('*       КАРТКА ГРАВЦЯ        *')
+print('=' * 30)
+print('Гравець:', name)
+print('Улюблена гра:', game)
+print('Вік (років):', age)
+print('Вік (місяців):', months)
+print('Вік (днів, приблизно):', days)
+print('=' * 30)
+</code></pre>
+<p><code>'=' * 30</code> повторює символ <code>=</code> 30 разів — так малюється лінія.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Після трьох відповідей з&#39;являється картка в рамці з усіма даними, як у прикладі в описі.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір програму і збережи</strong></p>
+        <p>Запусти програму ще 2 рази з різними даними (наприклад, вік 10 і 16). Перевір на калькуляторі місяці й дні. Спробуй ввести вік словами — подивись на помилку і прочитай останній рядок повідомлення. Збережи файл (Ctrl+S).</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Програма правильно працює для різних віків. Ти знаєш, що ValueError означає «цей текст не перетворюється в число». Файл anketa.py збережено.</p>      </li>
+    </ol>
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><pre><code class="language-python"># Анкета «Картка гравця»
+print('Анкета гравця. Відповідай на питання.')
+
+# Крок 3: ім'я (текст)
+name = input('Як тебе звати? ')
+
+# Крок 4: вік (число!)
+age = 
+
+# Крок 5: улюблена гра (текст)
+game = 
+
+# Крок 6: обчислення
+months = 
+days = 
+
+# Крок 7: картка
+print('=' * 30)
+print('*       КАРТКА ГРАВЦЯ        *')
+print('=' * 30)
+
+print('=' * 30)
+</code></pre>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Файл anketa.py, який питає ім&#39;я, вік і улюблену гру та виводить картку гравця з рамкою і правильно обчисленими місяцями й днями. Показати вчителю картку на екрані.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Програма-анкета «Картка гравця»" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: Покращена картка: рік народження і години</h3>
+    <p>Додай у свою картку ще два рядки:</p>
+<ol>
+<li><strong>Рік народження (приблизно)</strong> — порахуй його з поточного року і віку. Поточний рік збережи у змінну <code>year = 2026</code>.</li>
+<li><strong>Прожито годин (приблизно)</strong> — дні помнож на 24.</li>
+</ol>
+<p>А ще запитай місто користувача і теж виведи його в картці. Подумай, які з нових змінних — текст, а які — числа.</p>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: Покращена картка: рік народження і години" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу створити змінну й пояснити, чим текст &#39;15&#39; відрізняється від числа 15</label></li>
+    <li><label><input type="checkbox"> Я можу отримати дані через input() і перетворити їх у число за допомогою int()</label></li>
+    <li><label><input type="checkbox"> Я можу написати анкету, яка рахує вік у місяцях і днях та виводить картку з рамкою</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Що надрукує print(&#39;7&#39; + &#39;3&#39;) і чому?<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Що надрукує print(&#39;7&#39; + &#39;3&#39;) і чому?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Яка змінна в твоїй анкеті була текстом, а яка — числом?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Яка змінна в твоїй анкеті була текстом, а яка — числом?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Що станеться, якщо забути int() перед input() для віку і помножити вік на 12?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Що станеться, якщо забути int() перед input() для віку і помножити вік на 12?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Картка для когось із рідних <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=online+python+compiler+input" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">💻</span><span class="resource-text">Онлайн-інтерпретатор Python<span class="resource-hint">пошук у Google: «online python compiler input»</span></span></a>
+
+<div class="resource-note">Якщо вдома немає Thonny, відкрий будь-який онлайн-інтерпретатор Python з підтримкою input(), встав код домашнього завдання і запусти.</div>  </div>
+</div>
+
+  <p>Зміни свою анкету так, щоб вона робила картку для когось із рідних або для домашнього улюбленця:</p>
+<ol>
+<li>Скопіюй заготовку (або відкрий свій <code>anketa.py</code>).</li>
+<li>Заміни третє питання на своє, наприклад «Улюблена страва?» чи «Порода?».</li>
+<li>Допиши обчислення: скільки приблизно <strong>тижнів</strong> прожила людина чи тварина (вік × 52).</li>
+<li>Запусти програму (у Thonny або в онлайн-інтерпретаторі Python), дай відповісти на питання рідній людині і <strong>сфотографуй чи зроби знімок екрана</strong> з готовою карткою.</li>
+</ol>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><pre><code class="language-python">print('Анкета. Відповідай на питання.')
+name = input('Як тебе звати? ')
+age = int(input('Скільки тобі років? '))
+favorite = input('Твоє питання тут? ')
+
+weeks = 
+
+print('=' * 30)
+print('*         КАРТКА             *')
+print('=' * 30)
+print('Ім’я:', name)
+print('Вік (років):', age)
+print('Вік (тижнів, приблизно):', weeks)
+print('=' * 30)
+</code></pre>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Анкети на сайтах, профілі в іграх і реєстрація в застосунках працюють так само: питають дані, рахують щось потрібне і показують результат. Ти щойно зробив маленьку версію такої програми для своєї родини.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Картка для когось із рідних" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>
