@@ -1,0 +1,1447 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Знеособлюємо таблицю даних</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">11 КЛАС • ПОКРОКОВА ПРАКТИЧНА</p>
+  <h1>Знеособлюємо таблицю даних</h1>
+<p class="lesson-subtitle">Робимо з анкети учнів безпечну таблицю для аналізу, у якій нікого не можна впізнати.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Розрізняти в таблиці прямі й непрямі ідентифікатори та пояснювати, чому це персональні дані.</li>
+  <li>Знеособлювати таблицю: видаляти прямі ідентифікатори, замінювати їх кодами й узагальнювати вік і місце проживання.</li>
+  <li>Будувати діаграму за знеособленими даними й перевіряти, чи можна в таблиці впізнати людину.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Персональні дані — це будь-які відомості, за якими людину можна впізнати прямо чи через поєднання кількох ознак.</li>
+  <li>Прямі ідентифікатори (ім&#39;я, телефон, адреса) видаляють, непрямі (вік, район, стать) узагальнюють.</li>
+  <li>Знеособлена таблиця зберігає користь для аналізу, але не дозволяє дізнатися, хто є хто.</li>
+  <li>Навіть без імені людину можна впізнати, якщо її поєднання ознак у таблиці єдине.</li>
+  <li>Дані для навчання ШІ мають бути зібрані зі згоди людей і очищені від персональних даних.</li>
+</ul>
+
+  <div class="theory"><h3>Що таке персональні дані</h3>
+<p><strong>Персональні дані</strong> — це будь-які відомості про людину, за якими її можна впізнати. Це не лише ім'я і прізвище. Номер телефону, адреса, дата народження, фото, номер учнівського квитка, навіть поєднання «вік + школа + улюблений гурток» — усе це може вказати на конкретну людину.</p>
+<p>В Україні діє <strong>Закон «Про захист персональних даних»</strong>. Він каже: обробляти дані людини можна лише з її згоди або з іншої законної підстави, і лише для зрозумілої мети. Подібні правила є в Європейському Союзі (GDPR).</p>
+<h3>Прямі і непрямі ідентифікатори</h3>
+<ul>
+<li><strong>Прямі ідентифікатори</strong> одразу називають людину: ім'я, прізвище, телефон, e-mail, точна адреса.</li>
+<li><strong>Непрямі ідентифікатори</strong> самі по собі не називають людину, але разом можуть її видати: вік, стать, район, школа, улюблений предмет.</li>
+</ul>
+<h3>Що таке знеособлення і як воно працює</h3>
+<p><strong>Знеособлення</strong> — це обробка таблиці так, щоб за нею не можна було впізнати людей, але можна було аналізувати дані. Покроково:</p>
+<ol>
+<li><strong>Зберегти оригінал окремо</strong> і працювати з копією.</li>
+<li><strong>Замінити людей кодами</strong>: замість «Олена Коваль» — <code>U001</code>.</li>
+<li><strong>Видалити прямі ідентифікатори</strong>: стовпці з іменами, телефонами, адресами.</li>
+<li><strong>Узагальнити непрямі ідентифікатори</strong>: точний вік 15 → група <code>15-17</code>, адреса → район.</li>
+<li><strong>Перевірити рідкісні значення</strong>: якщо в стовпці значення трапляється лише один раз, людину легко вгадати. Таке значення об'єднують з іншим.</li>
+</ol>
+<h3>Навіщо це в житті</h3>
+<p>Лікарні передають дані науковцям, щоб шукати нові ліки. Школи надсилають результати тестів для статистики. IT-компанії навчають штучний інтелект на мільйонах записів. Скрізь потрібні дані, але не потрібно знати, хто саме ця людина. Якщо дані не знеособити, вони можуть потрапити до шахраїв, рекламників чи просто стати причиною цькування.</p>
+<h3>Приклад одного рядка</h3>
+<p>Було:</p>
+<table>
+<thead>
+<tr>
+<th>Ім'я</th>
+<th>Телефон</th>
+<th>Вік</th>
+<th>Адреса</th>
+<th>Години в соцмережах</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Олена Коваль</td>
+<td>+380000000101</td>
+<td>15</td>
+<td>вул. Садова 4</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>Стало:</p>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Вікова група</th>
+<th>Район</th>
+<th>Години в соцмережах</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U001</td>
+<td>15-17</td>
+<td>Центральний</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>Для аналізу («скільки годин у соцмережах проводять старші учні?») цього достатньо, а хто така Олена — з таблиці не дізнатися.</p>
+<h3>Етика даних і ШІ</h3>
+<p>Штучний інтелект навчається на даних. Якщо в навчальних даних є імена й адреси, модель може їх «запам'ятати» і видати комусь. Тому етичне правило: збирай лише потрібне, питай згоди, знеособлюй перед аналізом.</p>
+<h3>Типова пастка</h3>
+<p><strong>Приховати стовпець — не означає видалити.</strong> Прихований стовпець у Google Таблицях чи Excel повертається двома кліками. Стовпець треба саме <strong>видалити</strong>. Друга пастка — формули: якщо вікова група рахується формулою з посиланням на стовпець віку, після видалення віку буде помилка. Спочатку перетвори формули на <strong>значення</strong>, а потім видаляй.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Як знеособити таблицю</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Зберегти оригінал окремо</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Додати коди замість людей</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Видалити прямі ідентифікатори</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Узагальнити вік і місце</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Перевірити рідкісні значення</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Аналізувати і будувати діаграми</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Прямі і непрямі ідентифікатори</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Прямі ідентифікатори — видаляємо</h4><ul><li>Ім&#39;я і прізвище</li><li>Номер телефону</li><li>Електронна пошта</li><li>Точна адреса</li><li>Номер документа</li></ul></div>
+    <div class="scheme-column"><h4>Непрямі ідентифікатори — узагальнюємо</h4><ul><li>Точний вік → вікова група</li><li>Адреса → район</li><li>Дата народження → рік</li><li>Рідкісне значення → об&#39;єднати з іншим</li><li>Стать, клас, школа — перевірити поєднання</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Шлях даних до штучного інтелекту</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Згода людей на збір</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Збір лише потрібних даних</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Знеособлення</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Перевірка на впізнаваність</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Навчання моделі ШІ</li>
+  </ol>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Знеособлення одного рядка</h4>
+    <table>
+<thead>
+<tr>
+<th>Ім'я</th>
+<th>Прізвище</th>
+<th>Телефон</th>
+<th>Вік</th>
+<th>Адреса</th>
+<th>Район</th>
+<th>Години</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Максим</td>
+<td>Бондар</td>
+<td>+380000000102</td>
+<td>16</td>
+<td>вул. Лісова 10</td>
+<td>Північний</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+
+    <div class="example-explanation"><ol>
+<li>Додаємо код <code>U002</code> — він заміняє людину.</li>
+<li>Видаляємо ім'я, прізвище, телефон, адресу — це прямі ідентифікатори.</li>
+<li>Вік 16 замінюємо групою <code>15-17</code>.</li>
+<li>Район залишаємо — він уже достатньо загальний.</li>
+</ol>
+<p>Результат: <code>U002 | 15-17 | Північний | 5</code>. Для аналізу годин у соцмережах цього досить, а хто такий Максим — невідомо.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Формула для вікової групи</h4>
+    <p>У стовпці B — вік. У новому стовпці пишемо формулу:</p>
+<pre><code>=IF(B2&lt;=14;&quot;12-14&quot;;&quot;15-17&quot;)
+</code></pre>
+<p>і протягуємо її вниз.</p>
+
+    <div class="example-explanation"><p>Функція <code>IF</code> (ЯКЩО) перевіряє умову <code>B2&lt;=14</code>.</p>
+<ul>
+<li>Якщо вік 14 або менше — у клітинці буде текст <code>12-14</code>.</li>
+<li>Інакше — <code>15-17</code>.</li>
+</ul>
+<p>Для віку 13 вийде <code>12-14</code>, для 16 — <code>15-17</code>. Якщо таблиця пише помилку, заміни <code>;</code> на <code>,</code> — це залежить від мовних налаштувань. Після цього формули треба перетворити на значення, інакше після видалення стовпця віку буде помилка <code>#REF!</code>.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Рідкісне значення видає людину</h4>
+    <p>Стовпець «Район» після знеособлення:</p>
+<p>Центральний — 6 разів, Північний — 5 разів, Приміський — 1 раз.</p>
+
+    <div class="example-explanation"><p>Імені немає, але в Приміському районі в таблиці лише одна людина. Однокласники одразу зрозуміють, хто це, і дізнаються все інше з її рядка (наприклад, скільки годин вона сидить у соцмережах).</p>
+<p>Рішення: об'єднати рідкісне значення з сусіднім (<code>Приміський</code> → <code>Північний</code>). Тепер у кожного району щонайменше 2 записи, і вгадати людину за районом не вийде.</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%97%D0%B0%D0%BA%D0%BE%D0%BD+%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D0%B8+%D0%9F%D1%80%D0%BE+%D0%B7%D0%B0%D1%85%D0%B8%D1%81%D1%82+%D0%BF%D0%B5%D1%80%D1%81%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%B8%D1%85+%D0%B4%D0%B0%D0%BD%D0%B8%D1%85+2297-VI+zakon.rada.gov.ua" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Закон України «Про захист персональних даних»<span class="resource-hint">пошук у Google: «Закон України Про захист персональних даних 2297-VI zakon.rada.gov.ua»</span></span></a>
+
+<div class="resource-note">Відкрий статтю 2 «Визначення термінів» і знайди означення персональних даних і знеособлення — це ті самі поняття, що на уроці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D0%BF%D0%B5%D1%80%D1%81%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D1%96+%D0%B4%D0%B0%D0%BD%D1%96+%D1%89%D0%BE+%D1%86%D0%B5+%D1%96+%D1%8F%D0%BA+%D0%B7%D0%B0%D1%85%D0%B8%D1%81%D1%82%D0%B8%D1%82%D0%B8+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Що таке персональні дані і як їх захистити<span class="resource-hint">пошук на YouTube: «персональні дані що це і як захистити пояснення українською»</span></span></a>
+
+<div class="resource-note">Коротке пояснення простими словами, які дані вважаються персональними і чому їх не можна передавати без згоди.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=pseudonymization+vs+anonymization+diagram" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати різницю між псевдонімізацією і анонімізацією — знайти зображення<span class="resource-hint">пошук у Google Картинках: «pseudonymization vs anonymization diagram»</span></span></a>
+
+<div class="resource-note">Учень побачить, як імена в таблиці замінюються кодами і як окремо зберігається ключ. Це пояснює, чому коди — лише перший крок, а не повна анонімність.</div>  </div>
+</div>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Знеособлення — як фото класу, на якому розмили обличчя: видно, скільки людей і що вони роблять, але не видно, хто саме.</li>
+  <li>Код учня замість імені — як номерок у гардеробі: за ним можна знайти куртку, але він нічого не каже про власника.</li>
+  <li>Вікова група замість точного віку — як сказати «я живу в Києві» замість повної адреси: правда, але знайти тебе за цим не вийде.</li>
+  <li>Унікальна комбінація ознак — як єдиний учень у класі в червоній куртці: імені не назвали, а всі знають, про кого мова.</li>
+</ul>
+
+</section>
+
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Знеособлена таблиця анкет і діаграма</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://docs.google.com/spreadsheets" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Google Таблиці</span></a>
+
+<div class="resource-note">Тут виконуєш практичну, якщо на комп&#39;ютері немає Excel: створи порожню таблицю і вставляй заготовку за кроком 1.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D1%96%D1%8F+AVERAGEIF+%D0%A1%D0%A0%D0%97%D0%9D%D0%90%D0%A7%D0%95%D0%A1%D0%9B%D0%98+Google+%D0%A2%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D1%96+Excel+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Функція AVERAGEIF у таблицях<span class="resource-hint">пошук на YouTube: «функція AVERAGEIF СРЗНАЧЕСЛИ Google Таблиці Excel українською»</span></span></a>
+
+<div class="resource-note">Допоможе на кроці 7, якщо незрозуміло, як порахувати середнє значення лише для однієї вікової групи.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> перетворити таблицю з анкетами учнів на безпечну версію, яку можна передати для аналізу чи навчання ШІ, і побудувати за нею діаграму.</p>
+<p><strong>Що буде в результаті:</strong> файл з двома аркушами: «Оригінал» (не передається) і «Знеособлена» — таблиця без імен, телефонів і адрес, з кодами, віковими групами і районами, плюс стовпчикова діаграма «Середні години в соцмережах за віковими групами».</p>
+<p>Скопіюй заготовку і виконуй кроки по черзі. Після кожного кроку перевір, чи вийшло так, як написано в результаті.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Вставити дані в таблицю</strong></p>
+        <ol>
+<li>Відкрий Google Таблиці (створи порожню таблицю) або Excel.</li>
+<li>Скопіюй заготовку кнопкою і встав у клітинку <strong>A1</strong>.</li>
+<li>Весь текст опиниться в стовпці A. Виділи стовпець A.</li>
+<li>Google Таблиці: <strong>Дані → Розділити текст на стовпці</strong>, роздільник <strong>Кома</strong>. Excel: <strong>Дані → Текст за стовпцями → З роздільниками → Кома → Готово</strong>.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Таблиця з 9 стовпців (Ім&#39;я … Години_в_соцмережах) і 13 рядків: заголовок і 12 учнів.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Зробити копію аркуша</strong></p>
+        <ol>
+<li>Перейменуй аркуш на <strong>Оригінал</strong> (подвійне клацання на назві аркуша внизу).</li>
+<li>Клацни правою кнопкою на назві аркуша → <strong>Створити копію</strong> (Excel: <strong>Перемістити або копіювати → Створити копію</strong>).</li>
+<li>Перейменуй копію на <strong>Знеособлена</strong>. Далі працюй лише на ній.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Два однакові аркуші: «Оригінал» і «Знеособлена».</p>      </li>
+      <li>
+        <p class="step-title"><strong>Додати коди учнів</strong></p>
+        <ol>
+<li>Клацни правою кнопкою на заголовку стовпця A → <strong>Вставити 1 стовпець ліворуч</strong>.</li>
+<li>У клітинці <strong>A1</strong> напиши <code>Код</code>.</li>
+<li>У <strong>A2</strong> напиши <code>U001</code>, у <strong>A3</strong> — <code>U002</code>.</li>
+<li>Виділи A2:A3 і потягни маленький квадратик у правому нижньому куті вниз до рядка 13.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> У стовпці A коди від U001 до U012, кожен учень має свій код.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Видалити прямі ідентифікатори</strong></p>
+        <ol>
+<li>Виділи стовпці <strong>Ім'я</strong>, <strong>Прізвище</strong>, <strong>Телефон</strong> (B, C, D) → права кнопка → <strong>Видалити стовпці</strong>.</li>
+<li>Знайди стовпець <strong>Адреса</strong> → права кнопка → <strong>Видалити стовпець</strong>.</li>
+<li><strong>Не приховуй</strong> стовпці — лише видаляй.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Залишилось 6 стовпців: Код, Вік, Стать, Район, Улюблений_предмет, Години_в_соцмережах (A–F).</p>      </li>
+      <li>
+        <p class="step-title"><strong>Замінити вік на вікову групу</strong></p>
+        <ol>
+<li>У клітинці <strong>G1</strong> напиши <code>Вікова_група</code>.</li>
+<li>У <strong>G2</strong> введи формулу:</li>
+</ol>
+<pre><code>=IF(B2&lt;=14;&quot;12-14&quot;;&quot;15-17&quot;)
+</code></pre>
+<p>(якщо з'явилася помилка — заміни <code>;</code> на <code>,</code>).
+3. Протягни G2 вниз до G13.
+4. Виділи G2:G13 → <strong>Копіювати</strong> → права кнопка → <strong>Спеціальна вставка → Лише значення</strong> (Excel: <strong>Вставити значення</strong>).
+5. Видали стовпець <strong>Вік</strong> (B).</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Точного віку більше немає. Стовпці: Код, Стать, Район, Улюблений_предмет, Години_в_соцмережах, Вікова_група (A–F), у F лише тексти 12-14 або 15-17 без помилок.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Прибрати рідкісний район</strong></p>
+        <ol>
+<li>Подивись на стовпець <strong>Район</strong> (C). Порахуй, скільки разів трапляється кожен район.</li>
+<li>Якщо якийсь район трапляється лише <strong>1 раз</strong>, людину легко впізнати.</li>
+<li>Заміни рідкісне значення <code>Приміський</code> на сусідній район <code>Північний</code>.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> У стовпці «Район» лише два значення: Центральний і Північний, кожне трапляється кілька разів.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Порахувати середні години для кожної групи</strong></p>
+        <ol>
+<li>У клітинці <strong>H1</strong> напиши <code>Група</code>, у <strong>I1</strong> — <code>Середні_години</code>.</li>
+<li>У <strong>H2</strong> напиши <code>12-14</code>, у <strong>H3</strong> — <code>15-17</code>.</li>
+<li>У <strong>I2</strong> введи:</li>
+</ol>
+<pre><code>=AVERAGEIF($F$2:$F$13;H2;$E$2:$E$13)
+</code></pre>
+<ol start="4">
+<li>Протягни I2 на I3. За потреби заміни <code>;</code> на <code>,</code>.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Маленька таблиця: для 12-14 середнє 2,2 години, для 15-17 — приблизно 4,43 години.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Побудувати діаграму</strong></p>
+        <ol>
+<li>Виділи діапазон <strong>H1:I3</strong>.</li>
+<li>Google Таблиці: <strong>Вставити → Діаграма</strong>, тип <strong>Стовпчикова</strong>. Excel: <strong>Вставлення → Гістограма</strong>.</li>
+<li>Назва діаграми: <code>Середні години в соцмережах за віковими групами</code>.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Стовпчикова діаграма з двома стовпцями: у групи 15-17 стовпець помітно вищий.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевірити себе за чек-листом</strong></p>
+        <p>Перевір аркуш «Знеособлена»:</p>
+<ul>
+<li>немає імен, прізвищ, телефонів, адрес (і прихованих стовпців теж);</li>
+<li>у кожного рядка є код U001–U012;</li>
+<li>немає точного віку, лише групи;</li>
+<li>кожен район трапляється щонайменше двічі;</li>
+<li>у таблиці немає помилок <code>#REF!</code>;</li>
+<li>діаграма має назву.</li>
+</ul>
+<p>Назви файл <code>Знеособлення_Прізвище</code> і покажи вчителю аркуш «Знеособлена».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Готова безпечна таблиця й діаграма, які можна передати для аналізу.</p>      </li>
+    </ol>
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><pre><code>Ім'я,Прізвище,Телефон,Вік,Стать,Адреса,Район,Улюблений_предмет,Години_в_соцмережах
+Олена,Коваль,+380000000101,15,ж,вул. Садова 4,Центральний,Інформатика,3
+Максим,Бондар,+380000000102,16,ч,вул. Лісова 10,Північний,Фізика,5
+Ірина,Ткачук,+380000000103,13,ж,вул. Шкільна 2,Центральний,Біологія,2
+Андрій,Мельник,+380000000104,17,ч,вул. Миру 7,Північний,Інформатика,4
+Софія,Кравець,+380000000105,14,ж,вул. Садова 15,Центральний,Історія,3
+Дмитро,Олійник,+380000000106,15,ч,вул. Лісова 22,Північний,Математика,6
+Анна,Шевчук,+380000000107,16,ж,вул. Миру 3,Центральний,Інформатика,4
+Богдан,Поліщук,+380000000108,13,ч,вул. Шкільна 9,Північний,Фізика,2
+Марія,Лисенко,+380000000109,17,ж,вул. Садова 1,Північний,Математика,5
+Тарас,Гнатюк,+380000000110,14,ч,вул. Миру 12,Центральний,Історія,3
+Вероніка,Савчук,+380000000111,12,ж,хутір Зелений 1,Приміський,Біологія,1
+Олег,Марченко,+380000000112,16,ч,вул. Лісова 5,Центральний,Математика,4
+</code></pre>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Файл «Знеособлення_Прізвище» з аркушами «Оригінал» і «Знеособлена»; на аркуші «Знеособлена» — таблиця без прямих ідентифікаторів і стовпчикова діаграма.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Знеособлена таблиця анкет і діаграма" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: Перевірка поєднань ознак</h3>
+    <p>Навіть коли кожен район трапляється кілька разів, людину можна впізнати за <strong>поєднанням</strong> ознак: вікова група + стать + район.</p>
+<ol>
+<li>У клітинці <strong>K1</strong> напиши <code>Скільки_таких</code>.</li>
+<li>У <strong>K2</strong> введи:</li>
+</ol>
+<pre><code>=COUNTIFS($F$2:$F$13;F2;$B$2:$B$13;B2;$C$2:$C$13;C2)
+</code></pre>
+<p>і протягни до K13.
+3. Знайди рядки, де результат <strong>1</strong>, — цих людей можна впізнати.
+4. Виріши, що прибрати (стовпець «Стать» чи «Район»), щоб у кожному рядку було щонайменше <strong>2</strong>. Перевір формулою ще раз.</p>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: Перевірка поєднань ознак" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу показати в таблиці прямі й непрямі ідентифікатори і пояснити, чому це персональні дані.</label></li>
+    <li><label><input type="checkbox"> Я можу знеособити таблицю: замінити людей кодами, видалити прямі ідентифікатори, узагальнити вік і район.</label></li>
+    <li><label><input type="checkbox"> Я можу побудувати діаграму за знеособленими даними і перевірити, чи можна в таблиці когось упізнати.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Назви два прямі і два непрямі ідентифікатори з сьогоднішньої таблиці.<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Назви два прямі і два непрямі ідентифікатори з сьогоднішньої таблиці." rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Чому недостатньо просто видалити стовпець з іменами?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Чому недостатньо просто видалити стовпець з іменами?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Навіщо дані знеособлюють перед навчанням штучного інтелекту?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Навіщо дані знеособлюють перед навчанням штучного інтелекту?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Мої дані в застосунку <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%B5%D1%82%D0%B8%D0%BA%D0%B0+%D1%88%D1%82%D1%83%D1%87%D0%BD%D0%BE%D0%B3%D0%BE+%D1%96%D0%BD%D1%82%D0%B5%D0%BB%D0%B5%D0%BA%D1%82%D1%83+%D0%BF%D0%B5%D1%80%D1%81%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D1%96+%D0%B4%D0%B0%D0%BD%D1%96+%D0%BD%D0%B0%D0%B2%D1%87%D0%B0%D0%BD%D0%BD%D1%8F+%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D0%B5%D0%B9+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як ШІ навчається на даних і де тут ризики<span class="resource-hint">пошук у Google: «етика штучного інтелекту персональні дані навчання моделей українською»</span></span></a>
+
+<div class="resource-note">Прочитай, звідки беруться дані для навчання ШІ і які проблеми з приватністю виникають, — це допоможе з домашнім завданням.</div>  </div>
+</div>
+
+  <ol>
+<li>Відкрий налаштування конфіденційності одного застосунку чи соцмережі, якою користуєшся (Instagram, TikTok, Telegram, Google тощо).</li>
+<li>Скопіюй заготовку і заповни її: які 3 види твоїх персональних даних збирає застосунок, які з них прямі ідентифікатори, а які — непрямі.</li>
+<li>Знайди одне налаштування, яке зменшує збір чи показ твоїх даних, і зроби скриншот цього налаштування.</li>
+</ol>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><table>
+<thead>
+<tr>
+<th>Вид даних, який збирає застосунок</th>
+<th>Прямий чи непрямий ідентифікатор</th>
+<th>Навіщо він застосунку</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Налаштування, яке захищає мої дані: ...</p>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Застосунки щодня збирають твої дані для реклами й навчання алгоритмів; уміння знайти і змінити налаштування конфіденційності — це реальний захист твоєї приватності.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Мої дані в застосунку" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>
