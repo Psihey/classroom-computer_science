@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEXcode VR — Wall Maze: парктронік</title>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#fff; --text:#172033; --muted:#5d687c;
+  --blue:#1976d2; --blue-soft:#eaf3ff; --red:#d83b3b; --red-soft:#fff0f0;
+  --green:#198754; --yellow:#f2b705; --border:#dce3ed;
+  --purple:#7b4bc4; --purple-soft:#f4eeff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+header{background:linear-gradient(135deg,#0d47a1,#1976d2);color:white;padding:42px 20px}
+.wrap{max-width:1050px;margin:auto;padding:0 18px}
+h1{font-size:clamp(30px,5vw,48px);margin:0 0 10px}
+h2{font-size:28px;margin-top:0}
+h3{font-size:21px}
+.subtitle{font-size:19px;max-width:820px;opacity:.95}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:7px 12px;border-radius:999px}
+section{margin:24px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;box-shadow:0 5px 18px rgba(30,50,80,.06)}
+.notice{border-left:6px solid var(--yellow);background:#fff9df}
+.blue{border-left:6px solid var(--blue);background:var(--blue-soft)}
+.red{border-left:6px solid var(--red);background:var(--red-soft)}
+.green{border-left:6px solid var(--green);background:#edf9f2}
+.purple{border-left:6px solid var(--purple);background:var(--purple-soft)}
+ol,ul{padding-left:24px}
+li{margin:8px 0}
+code,.block{font-family:Consolas,monospace}
+.block{display:block;background:#202733;color:#f4f7fb;border-radius:10px;padding:14px 16px;margin:10px 0;overflow:auto;white-space:pre}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;font-weight:700;font-size:14px}
+.pill-blue{background:#dcecff;color:#1257a3}.pill-red{background:#ffe0e0;color:#a62222}
+.pill-green{background:#d9f3e4;color:#11663d}.pill-purple{background:#e8dcff;color:#5a2fa0}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:16px 0}
+.flow div{background:white;border:1px solid var(--border);border-radius:12px;padding:15px;text-align:center;font-weight:700}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{border:1px solid var(--border);padding:10px;text-align:left}
+th{background:#eef2f7}
+.checklist label{display:block;padding:9px 0}
+input[type=checkbox]{transform:scale(1.2);margin-right:10px}
+a{color:#0d5bd7;font-weight:700}
+.small{color:var(--muted);font-size:14px}
+.preview{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+.preview svg{background:white;border:1px solid var(--border);border-radius:12px;max-width:100%;height:auto}
+.preview .txt{flex:1;min-width:240px}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:14px}
+.score div{background:white;border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center}
+.score .num{font-size:40px;font-weight:800;line-height:1.1}
+.num.b{color:var(--blue)}.num.p{color:var(--purple)}.num.g{color:var(--green)}
+.lang-switch{position:fixed;top:14px;right:14px;z-index:50;display:flex;background:white;border:1px solid var(--border);border-radius:999px;padding:4px;box-shadow:0 6px 20px rgba(20,40,80,.18)}
+.lang-switch button{border:0;background:transparent;font:700 15px Segoe UI,Arial,sans-serif;color:var(--muted);padding:8px 14px;border-radius:999px;cursor:pointer}
+.lang-switch button.active{background:var(--blue);color:white}
+.lang-note{display:none}
+body.uk .lang-note{display:block}
+footer{padding:30px 0 50px;color:var(--muted)}
+@media(max-width:650px){.card{padding:19px} table{font-size:14px}}
+.pill-yellow{background:#fff3c4;color:#8a6500}.pill-orange{background:#ffe2c7;color:#a5530a}
+</style>
+</head>
+<body>
+<div class="lang-switch" role="group" aria-label="Мова команд">
+  <button type="button" data-lang="en" class="active">🇬🇧 EN</button>
+  <button type="button" data-lang="uk">🇺🇦 UA</button>
+</div>
+<header>
+  <div class="wrap">
+    <h1>🅿️ Wall Maze: парктронік</h1>
+    <div class="subtitle">Практична робота у VEXcode VR: запрограмуй робота так, щоб він за допомогою <b>датчика відстані</b> сам гальмував перед стіною і зупинявся <b>за 50 мм</b> від неї, не торкаючись. Потім за цим принципом робот має пройти лабіринт до мітки <b>A</b>.</div>
+    <div class="badges">
+      <span class="badge">45 хв</span>
+      <span class="badge">VEXcode VR</span>
+      <span class="badge">Blocks</span>
+      <span class="badge">Distance + if / else + repeat until</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section class="card notice">
+  <h2>🎯 Головне правило</h2>
+  <p>У цьому уроці робот <b>не знає наперед</b>, скільки міліметрів їхати. Жодних <code>drive forward for 800 mm</code>. Відстань до стіни робот <b>вимірює сам</b> і вирішує, як швидко їхати.</p>
+  <p>Так працює парктронік в автомобілі: чим ближче перешкода, тим повільніше рух.</p>
+  <div class="flow">
+    <div>📏 Виміряти відстань</div>
+    <div>🤔 if / else — вибрати швидкість</div>
+    <div>🛑 Зупинитися за 50 мм</div>
+  </div>
+  <p>Спочатку <b>відлагодь паркування біля першої стіни</b>, а вже потім збирай увесь маршрут. Готовий маршрут запускається <b>одним Start</b>.</p>
+</section>
+
+<section class="card">
+  <h2>💯 Оцінювання</h2>
+  <div class="score">
+    <div><div class="num b">9</div>балів — <b>Завдання 1</b><br>робот доїхав до мітки A, паркуючись біля кожної стіни</div>
+    <div><div class="num p">+3</div>бали — <b>Завдання 2</b><br>самостійні покращення (залежно від результату)</div>
+    <div><div class="num g">12</div>балів — максимум</div>
+  </div>
+  <p class="small">Завдання 2 виконують ті, хто вже повністю зробив Завдання 1.</p>
+</section>
+
+<section class="card">
+  <h2>1. Що потрібно зробити</h2>
+  <ol>
+    <li>Відкрити <a href="https://vr.vex.com/" target="_blank">VEXcode VR</a>.</li>
+    <li>Створити Blocks-проєкт.</li>
+    <li>Відкрити Playground <b>Wall Maze</b>.</li>
+    <li>Знайти в категорії <b>Sensing</b> блок <code>FrontDistance distance in mm</code>.</li>
+    <li>Побудувати алгоритм паркування за кроками нижче.</li>
+    <li>Скласти маршрут до мітки <b>A</b> і запустити програму <b>одним стартом</b>.</li>
+  </ol>
+  <p class="small"><b>Мова команд:</b> кнопкою <b>EN / UA</b> у правому верхньому куті можна перемкнути всі команди на сторінці на українську — якщо в тебе VEXcode VR українською.</p>
+  <p class="small lang-note">⚠️ В українській версії VEXcode категорії називаються так: <b>Трансмісія</b> — рух, <b>Зондування</b> — датчики, <b>Логіка</b> — цикли, умови, таймер і змінні, <b>Консоль</b> — друк. Датчик відстані там називається <b>ПередняВідстань</b>.</p>
+  <p class="small">Wall Maze використовує стандартного VR Robot. Датчик відстані <b>FrontDistance</b> стоїть спереду робота і бачить перешкоди на відстані до 2000 мм. Розмір поля — 2000 × 2000 мм.</p>
+</section>
+
+<section class="card">
+  <h2>2. 👀 Як має працювати парктронік</h2>
+  <div class="preview">
+    <svg viewBox="0 0 640 230" width="560" role="img" aria-label="Зони швидкості перед стіною">
+      <rect x="20" y="70" width="220" height="70" fill="#d9f3e4"/>
+      <rect x="240" y="70" width="190" height="70" fill="#fff3c4"/>
+      <rect x="430" y="70" width="110" height="70" fill="#ffe2c7"/>
+      <rect x="540" y="70" width="40" height="70" fill="#ffe0e0"/>
+      <rect x="580" y="40" width="34" height="130" fill="#5d687c" rx="4"/>
+      <text x="597" y="30" font-size="16" fill="#5d687c" text-anchor="middle">стіна</text>
+      <g transform="translate(30,85)">
+        <rect width="70" height="40" rx="8" fill="#1976d2"/>
+        <rect x="70" y="12" width="10" height="16" fill="#0d47a1"/>
+        <text x="35" y="26" font-size="16" fill="white" text-anchor="middle" font-weight="700">ROBOT</text>
+      </g>
+      <text x="130" y="60" font-size="18" fill="#11663d" text-anchor="middle" font-weight="700">100 %</text>
+      <text x="335" y="60" font-size="18" fill="#8a6500" text-anchor="middle" font-weight="700">40 %</text>
+      <text x="485" y="60" font-size="18" fill="#a5530a" text-anchor="middle" font-weight="700">10 %</text>
+      <text x="560" y="60" font-size="18" fill="#a62222" text-anchor="middle" font-weight="700">🛑</text>
+      <line x1="20" y1="165" x2="580" y2="165" stroke="#5d687c" stroke-width="2"/>
+      <g font-size="15" fill="#5d687c" text-anchor="middle">
+        <line x1="240" y1="158" x2="240" y2="172" stroke="#5d687c" stroke-width="2"/><text x="240" y="192">400 мм</text>
+        <line x1="430" y1="158" x2="430" y2="172" stroke="#5d687c" stroke-width="2"/><text x="430" y="192">150 мм</text>
+        <line x1="540" y1="158" x2="540" y2="172" stroke="#5d687c" stroke-width="2"/><text x="540" y="192">50</text>
+        <text x="300" y="222">відстань до стіни, яку показує FrontDistance</text>
+      </g>
+    </svg>
+    <div class="txt">
+      <table>
+        <tr><th>Відстань до стіни</th><th>Швидкість</th></tr>
+        <tr><td>більше 400 мм</td><td><span class="pill pill-green">100 %</span></td></tr>
+        <tr><td>від 150 до 400 мм</td><td><span class="pill pill-yellow">40 %</span></td></tr>
+        <tr><td>від 50 до 150 мм</td><td><span class="pill pill-orange">10 %</span></td></tr>
+        <tr><td>50 мм і менше</td><td><span class="pill pill-red">стоп</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="card blue">
+  <h2>3. 📏 Крок 1 — простий стоп (без парктроніка)</h2>
+  <p>Спочатку найпростіший варіант: їхати, поки стіна не буде ближче ніж 50 мм.</p>
+  <div class="block">when started
+set drive velocity to 100 %
+drive forward
+wait until &lt; FrontDistance distance in mm &lt; 50 &gt;
+stop driving
+print FrontDistance distance in mm</div>
+  <p>Запусти і подивись у консоль (<b>Monitor / Print Console</b>): яку відстань показав датчик <b>після</b> зупинки?</p>
+  <p><b>Що ти маєш помітити:</b> на швидкості 100 % робот не встигає загальмувати і проскакує позначку 50 мм. Саме тому потрібен парктронік.</p>
+</section>
+
+<section class="card red">
+  <h2>4. 🤔 Крок 2 — дві зони: if / else</h2>
+  <p>Тепер робот <b>постійно</b> перевіряє відстань і вибирає швидкість. Видали блок <code>wait until</code> і збери цикл:</p>
+  <div class="block">drive forward
+repeat until &lt; FrontDistance distance in mm &lt; 50 &gt;
+    if &lt; FrontDistance distance in mm &gt; 400 &gt; then
+        set drive velocity to 100 %
+    else
+        set drive velocity to 10 %
+    drive forward
+stop driving</div>
+
+  <h3>Як це працює</h3>
+  <table>
+    <tr><th>Блок</th><th>Що робить</th></tr>
+    <tr><td><code>repeat until</code></td><td>Повторює все всередині, <b>доки</b> умова не стане правдою (стіна ближче 50 мм)</td></tr>
+    <tr><td><code>if … then</code></td><td>Якщо стіна <b>далеко</b> (більше 400 мм) — їдемо швидко</td></tr>
+    <tr><td><code>else</code></td><td>В <b>усіх інших</b> випадках — їдемо повільно</td></tr>
+    <tr><td><code>drive forward</code> в циклі</td><td>Застосовує нову швидкість щоразу, коли цикл повторюється</td></tr>
+  </table>
+  <p>Запусти. Робот має доїхати до стіни швидко, а останні 400 мм — повзти.</p>
+</section>
+
+<section class="card notice">
+  <h2>5. ⚠️ Крок 3 — три зони: if всередині else</h2>
+  <p>Дві зони працюють, але останні 400 мм на 10 % — це занадто довго. Додамо середню зону. Для цього в <code>else</code> вкладаємо <b>ще один</b> <code>if / else</code>:</p>
+  <div class="block">drive forward
+repeat until &lt; FrontDistance distance in mm &lt; 50 &gt;
+    if &lt; FrontDistance distance in mm &gt; 400 &gt; then
+        set drive velocity to 100 %
+    else
+        if &lt; FrontDistance distance in mm &gt; 150 &gt; then
+            set drive velocity to 40 %
+        else
+            set drive velocity to 10 %
+    drive forward
+stop driving</div>
+  <p><b>Чому перевіряємо тільки «&gt; 150», а не «між 150 і 400»?</b> Бо у внутрішній <code>if</code> робот потрапляє лише тоді, коли перша умова вже <b>не</b> виконалась — тобто відстань точно не більша за 400.</p>
+</section>
+
+<section class="card green">
+  <h2>6. 🗺️ Крок 4 — маршрут до мітки A</h2>
+  <p>Тепер у нас є готове «паркування». Маршрут до мітки <b>A</b> складається з трьох відрізків:</p>
+  <div class="flow">
+    <div>⬆️ до стіни → ⬅️ ліворуч</div>
+    <div>⬆️ до стіни → ⬅️ ліворуч</div>
+    <div>⬆️ до стіни → 🅰️ фініш</div>
+  </div>
+  <p>Перші два відрізки однакові: <b>паркування + поворот ліворуч</b>. Тому загортаємо їх у <code>repeat 2</code>, а третє паркування ставимо після циклу.</p>
+  <p class="small">Після кожного паркування робот стоїть за 50 мм від стіни — цього достатньо, щоб розвернутися на місці.</p>
+</section>
+
+<section class="card green">
+  <h2>7. 🧩 Повний алгоритм — зібрати ДО запуску</h2>
+  <p><b>Не розділяй цей код на окремі запуски.</b> Усе має бути одним стеком блоків.</p>
+  <div class="block">when started
+
+repeat 2
+    drive forward
+    repeat until &lt; FrontDistance distance in mm &lt; 50 &gt;
+        if &lt; FrontDistance distance in mm &gt; 400 &gt; then
+            set drive velocity to 100 %
+        else
+            if &lt; FrontDistance distance in mm &gt; 150 &gt; then
+                set drive velocity to 40 %
+            else
+                set drive velocity to 10 %
+        drive forward
+    stop driving
+    print FrontDistance distance in mm
+    turn left for 90 degrees
+
+drive forward
+repeat until &lt; FrontDistance distance in mm &lt; 50 &gt;
+    if &lt; FrontDistance distance in mm &gt; 400 &gt; then
+        set drive velocity to 100 %
+    else
+        if &lt; FrontDistance distance in mm &gt; 150 &gt; then
+            set drive velocity to 40 %
+        else
+            set drive velocity to 10 %
+    drive forward
+stop driving
+print FrontDistance distance in mm</div>
+  <p class="small">💡 Порада: щоб не збирати паркування двічі вручну, клацни правою кнопкою на блоці <code>drive forward</code> перед <code>repeat until</code> і вибери <b>Duplicate</b> — скопіюється весь стек під ним.</p>
+</section>
+
+<section class="card">
+  <h2>8. 🧠 Перевір себе перед запуском</h2>
+  <div class="checklist">
+    <label><input type="checkbox"> У програмі немає жодного <code>drive forward for … mm</code> — тільки датчик.</label>
+    <label><input type="checkbox"> Цикл паркування — <code>repeat until</code> з умовою <b>&lt; 50</b>.</label>
+    <label><input type="checkbox"> Усередині циклу є <code>if / else</code>, а в <code>else</code> — ще один <code>if / else</code>.</label>
+    <label><input type="checkbox"> Пороги: <b>400</b> → 100 %, <b>150</b> → 40 %, інакше → 10 %.</label>
+    <label><input type="checkbox"> Після циклу є <code>stop driving</code>.</label>
+    <label><input type="checkbox"> Перші два паркування стоять у <code>repeat 2</code> разом із поворотом <b>ліворуч на 90°</b>.</label>
+    <label><input type="checkbox"> Після кожного паркування в консоль друкується відстань.</label>
+    <label><input type="checkbox"> Уся програма запускається одним натисканням Start.</label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>9. 🛠️ Якщо робот поводиться не так</h2>
+  <table>
+    <tr><th>Що бачиш</th><th>Що перевірити</th></tr>
+    <tr><td>Робот врізається в стіну</td><td>Умова в <code>repeat until</code> — <b>менше</b> (&lt;) 50, а не більше (&gt;)</td></tr>
+    <tr><td>Робот взагалі не рушає з місця</td><td>Перед <code>repeat until</code> має бути <code>drive forward</code>, а умова не має бути перевернута</td></tr>
+    <tr><td>Робот весь час їде повільно</td><td>Перевір знак у першому <code>if</code>: стіна <b>більше (&gt;) 400</b> → 100 %</td></tr>
+    <tr><td>Швидкість не змінюється біля стіни</td><td>Забув <code>drive forward</code> <b>всередині</b> циклу, після <code>if / else</code></td></tr>
+    <tr><td>Після паркування робот їде далі</td><td>Забув <code>stop driving</code> після циклу</td></tr>
+    <tr><td>Робот повертає не туди</td><td>Поворот <b>ліворуч</b>, і він стоїть <b>всередині</b> <code>repeat 2</code>, після <code>stop driving</code></td></tr>
+    <tr><td>У консолі відстань значно менша за 50</td><td>Остання зона занадто швидка — зменш швидкість до 10 % або збільш поріг 150</td></tr>
+  </table>
+  <p><b>Не переписуй всю програму.</b> Знайди, на якому відрізку робот збився, і виправ тільки цю частину.</p>
+</section>
+
+<section class="card">
+  <h2>🏁 Умова успішного виконання (9 балів)</h2>
+  <p>Програма вважається виконаною, якщо після одного натискання <b>Start</b> робот:</p>
+  <ol>
+    <li>доїхав до мітки <b>A</b>, жодного разу не торкнувшись стіни;</li>
+    <li>перед кожною стіною <b>сповільнювався</b> — видно три різні швидкості;</li>
+    <li>зупинявся приблизно за <b>50 мм</b> від стіни (у консолі 40–60 мм);</li>
+    <li>у програмі використано <code>repeat until</code> і вкладений <code>if / else</code>, без жодної відстані «на око».</li>
+  </ol>
+  <h3>⭐ Питання до парктроніка</h3>
+  <p><b>Чому в Кроці 1 робот проскакував 50 мм, а з трьома зонами — ні?</b></p>
+  <p><b>Що станеться, якщо в першому <code>if</code> поставити поріг 100 замість 400?</b> Чи зупиниться робот вчасно?</p>
+</section>
+
+<section class="card purple">
+  <h2>10. ✍️ Завдання 2 — покращ свій парктронік (+3 бали)</h2>
+  <p>Тут немає готового коду — рішення знаходиш <b>сам</b>. Кожен пункт оцінюється окремо, можна робити в будь-якому порядку.</p>
+
+  <h3>🅱️ Пункт 1 — новий маршрут</h3>
+  <p>Склади маршрут від старту до мітки <b>B</b>. Використай свій алгоритм паркування — змінюються лише кількість відрізків і напрямки поворотів.</p>
+  <ul>
+    <li>Спочатку <b>подивись на лабіринт згори</b> і запиши в зошиті послідовність: «до стіни → ліворуч → до стіни → …».</li>
+    <li>Не на кожному повороті перед роботом буде стіна. Якщо треба повернути у відкритий прохід, подумай, як зупинитися там, де потрібно.</li>
+  </ul>
+
+  <h3>📐 Пункт 2 — плавне гальмування без if / else</h3>
+  <p>Справжні парктроніки та круїз-контроль гальмують <b>плавно</b>, а не «сходинками». Зроби так, щоб швидкість обчислювалась <b>формулою</b> з відстані — наприклад, <code>FrontDistance distance in mm / 4</code>.</p>
+  <ul>
+    <li>Подумай: яка буде швидкість на відстані 1500 мм? А на 60 мм? Чи це нормально?</li>
+    <li>Можливо, повністю без <code>if</code> не вийде. Знайди, де він все-таки потрібен.</li>
+  </ul>
+
+  <h3>⏱️ Пункт 3 — порівняння</h3>
+  <p>Додай <b>таймер</b>: на старті скинь його, а на фініші надрукуй у консоль час проходження та відстань до останньої стіни. Запусти обидві версії (сходинки і формулу) і запиши в зошит, яка <b>швидша</b> і яка <b>точніша</b>.</p>
+</section>
+
+<section class="card purple">
+  <h2>11. 💡 Підказки</h2>
+  <table>
+    <tr><th>Що потрібно</th><th>Де шукати</th></tr>
+    <tr><td>Ділення, множення</td><td><b>Operators</b> — блоки <code>( ) / ( )</code>, <code>( ) * ( )</code></td></tr>
+    <tr><td>Порівняння</td><td><b>Operators</b> — блоки <code>( ) &gt; ( )</code>, <code>( ) &lt; ( )</code></td></tr>
+    <tr><td>Таймер</td><td><b>Sensing</b> — <code>reset timer</code> і <code>timer in seconds</code></td></tr>
+    <tr><td>Друк кількох значень</td><td><b>Looks</b> — <code>print</code>, потім <code>set cursor to next row</code></td></tr>
+    <tr><td>Поточний напрямок робота</td><td><b>Drivetrain</b> — <code>drive heading in degrees</code></td></tr>
+  </table>
+  <p class="small">Швидкість у VEXcode задається у відсотках від 0 до 100. Подумай, що станеться, якщо формула дасть 375 % або 0 %.</p>
+</section>
+
+<section class="card">
+  <h2>🏁 Оцінювання Завдання 2 (до +3 балів)</h2>
+  <table>
+    <tr><th>Бал</th><th>Що потрібно</th></tr>
+    <tr><td><span class="pill pill-purple">+1</span></td><td>Робот доїхав до мітки <b>B</b> одним Start, не торкнувшись стін</td></tr>
+    <tr><td><span class="pill pill-purple">+1</span></td><td>Швидкість обчислюється <b>формулою</b> з відстані, робот плавно гальмує і зупиняється за ~50 мм</td></tr>
+    <tr><td><span class="pill pill-purple">+1</span></td><td>У консолі видно час і фінальну відстань; учень може пояснити, яка версія краща і <b>чому</b></td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2>📚 Корисні матеріали</h2>
+  <ul>
+    <li><a href="https://vr.vex.com/" target="_blank">Відкрити VEXcode VR</a></li>
+    <li><a href="https://api.vex.com/vr/home/playgrounds/wall_maze.html" target="_blank">Офіційна документація VEX — Wall Maze</a></li>
+    <li><a href="https://api.vex.com/vr/home/blocks/Sensing/distance.html" target="_blank">Блоки датчика відстані (Distance)</a></li>
+    <li><a href="https://api.vex.com/vr/home/blocks/index.html" target="_blank">Довідник блоків VEXcode VR</a></li>
+  </ul>
+</section>
+
+<footer>
+  <div class="wrap">
+    <b>VEXcode VR — Wall Maze</b><br>
+    Практична робота: датчик відстані, умови if / else, цикл repeat until.
+  </div>
+</footer>
+</main>
+<script>
+(function(){
+  var rules=[
+    /* звірено зі скріншотами VEXcode VR UA */
+    [/set drive velocity to (\d+) %/g,'встановити швидкість приводу на $1 %'],
+    [/drive forward for (\S+) mm/g,'диск вперед для $1 мм'],
+    [/drive forward/g,'диск вперед'],
+    [/stop driving/g,'зупинити керування'],
+    [/turn left for (\d+) degrees/g,'повернути ліво на $1 градус'],
+    [/turn right for (\d+) degrees/g,'повернути право на $1 градус'],
+    [/drive heading in degrees/g,'напрямок руху в градусах'],
+    [/FrontDistance distance in mm/g,'ПередняВідстань в мм'],
+    [/FrontDistance/g,'ПередняВідстань'],
+    [/repeat until/g,'повторювати до'],
+    [/if (.*) then/g,'якщо $1 то'],
+    [/^(\s*)else$/gm,'$1інше'],
+    [/if \/ else/g,'якщо / інше'],
+    [/reset timer/g,'скидання таймера'],
+    [/timer in seconds/g,'таймер у секундах'],
+    [/wait until/g,'зачекайте до'],
+    [/repeat (\d+)/g,'повторити $1'],
+    [/set cursor to next row/g,'встановити курсор на наступний рядок'],
+    [/^(\s*)print /gm,'$1друк '],
+    [/^print$/g,'друк'],
+    /* ще не звірено */
+    [/when started/g,'коли запущено']
+  ];
+  function toUk(t){rules.forEach(function(r){t=t.replace(r[0],r[1]);});return t;}
+  var els=[].slice.call(document.querySelectorAll('.block, code'));
+  els.forEach(function(el){el.setAttribute('data-en',el.textContent);});
+  var btns=[].slice.call(document.querySelectorAll('.lang-switch button'));
+  function apply(lang){
+    els.forEach(function(el){
+      var en=el.getAttribute('data-en');
+      el.textContent=lang==='uk'?toUk(en):en;
+    });
+    btns.forEach(function(b){b.classList.toggle('active',b.getAttribute('data-lang')===lang);});
+    document.body.classList.toggle('uk',lang==='uk');
+    try{localStorage.setItem('vexCmdLang',lang);}catch(e){}
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){apply(b.getAttribute('data-lang'));});});
+  var saved='en';
+  try{saved=localStorage.getItem('vexCmdLang')||'en';}catch(e){}
+  if(saved==='uk')apply('uk');
+})();
+</script>
+</body>
+</html>

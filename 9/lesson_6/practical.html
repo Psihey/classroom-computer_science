@@ -1,0 +1,1590 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Що таке бази даних і СУБД: як стрімінги знаходять і радять фільми</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">9 КЛАС • РОЗПОВІДЬ З ПОКАЗОМ</p>
+  <h1>Що таке бази даних і СУБД: як стрімінги знаходять і радять фільми</h1>
+<p class="lesson-subtitle">Дивимося, як кіносайти зберігають фільми, і відкриваємо справжню базу даних музичного магазину.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Пояснити своїми словами, що таке база даних і СУБД, і показати в таблиці запис і поле.</li>
+  <li>Відкрити готову базу даних, знайти в ній таблиці, записи й поля і виконати простий запит.</li>
+  <li>Навести приклади того, як бази даних працюють у стрімінгах та інших сервісах.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>База даних — впорядкований набір даних, у якому кожен запис має однакові поля.</li>
+  <li>Запис — це один об&#39;єкт (один фільм), поле — одна його властивість (рік, жанр, режисер).</li>
+  <li>СУБД — програма, яка керує базою даних: шукає, додає, змінює, видаляє, сортує й фільтрує записи.</li>
+  <li>Стрімінги зберігають у базах даних каталог фільмів, а також вашу історію переглядів і оцінки, і за цими даними радять фільми.</li>
+  <li>Щоб пошук і сортування працювали, дані в одному полі треба записувати однаково.</li>
+</ul>
+
+  <div class="theory"><h3>Що таке база даних</h3>
+<p><strong>Дані</strong> — це будь-які відомості, які можна записати й зберегти: назва фільму, рік, номер телефону, оцінка.</p>
+<p><strong>База даних (БД)</strong> — це дані, складені на комп'ютері <strong>за порядком</strong>: не купою, а за однаковими правилами. Наприклад, усі фільми, і про кожен відомо одне й те саме: назва, рік, жанр.</p>
+<p>Уявіть шафу з картками в бібліотеці. На кожній картці ті самі графи: назва, автор, рік. Шафа — це база даних, одна картка — <strong>запис</strong>, одна графа — <strong>поле</strong>.</p>
+<h3>Запис, поле, значення</h3>
+<p>Найпростіше уявити базу даних як таблицю:</p>
+<table>
+<thead>
+<tr>
+<th>Назва</th>
+<th>Рік</th>
+<th>Жанр</th>
+<th>Режисер</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Початок</td>
+<td>2010</td>
+<td>Фантастика</td>
+<td>Крістофер Нолан</td>
+</tr>
+<tr>
+<td>Тачки</td>
+<td>2006</td>
+<td>Мультфільм</td>
+<td>Джон Лассетер</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Запис</strong> — один рядок, тобто один фільм з усіма його даними.</li>
+<li><strong>Поле</strong> — один стовпець, тобто одна властивість, однакова для всіх записів (наприклад, <em>Рік</em>).</li>
+<li><strong>Значення</strong> — те, що стоїть у клітинці на перетині запису і поля (наприклад, <em>2010</em>).</li>
+</ul>
+<p>Майже завжди в кожного запису є свій <strong>номер</strong>, який більше ні в кого не повторюється. Відкрийте будь-який фільм на сайті TMDB і погляньте на адресу: там є число, наприклад <code>themoviedb.org/movie/27205</code>. Це номер фільму в базі — як номер у класному журналі.</p>
+<h3>Що таке СУБД</h3>
+<p><strong>СУБД (система керування базами даних)</strong> — це програма, яка працює з базою даних замість нас. Якщо база даних — це шафа з картками, то СУБД — бібліотекар, який у ній порядкує. Вона вміє:</p>
+<ol>
+<li><strong>шукати</strong> записи (знайти фільм за назвою);</li>
+<li><strong>додавати</strong> нові записи (вийшов новий фільм);</li>
+<li><strong>змінювати</strong> записи (оновити рейтинг);</li>
+<li><strong>видаляти</strong> записи;</li>
+<li><strong>сортувати</strong> (від найвищого рейтингу до найнижчого);</li>
+<li><strong>фільтрувати</strong> (показати лише комедії після 2020 року).</li>
+</ol>
+<p>Таких програм багато, наприклад SQLite — з нею ми сьогодні працюватимемо. Ви їх не бачите, але вони працюють «під капотом» майже кожного сайту й застосунку.</p>
+<h3>Навіщо це в житті</h3>
+<ul>
+<li><strong>Стрімінги</strong> (Netflix, MEGOGO, YouTube) зберігають у базі каталог фільмів, а ще вашу історію переглядів, оцінки й час перегляду. За цими даними вони радять, що подивитися далі.</li>
+<li><strong>Інтернет-магазини</strong> зберігають товари з полями ціна, розмір, колір. Фільтр «до 500 грн» — це робота СУБД.</li>
+<li><strong>Пошта, банки, електронний щоденник, лікарня</strong> — усюди бази даних.</li>
+</ul>
+<h3>Типова пастка</h3>
+<p>Дані в одному полі треба записувати <strong>однаково</strong>. Людина зрозуміє і <code>2010</code>, і <code>2010 р.</code>, а комп'ютер — ні: він не зможе правильно відсортувати такі записи. Тому в полі «Рік» — лише число, у полі «Назва» — лише назва.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Що відбувається, коли ви шукаєте фільм</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Ви вводите назву в пошук</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Сайт передає запит СУБД</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">СУБД шукає записи в базі даних</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">СУБД сортує знайдені записи</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Сайт показує результат</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">База даних і СУБД</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>База даних</h4><ul><li>Самі дані</li><li>Як шафа з картками</li><li>Складається із записів і полів</li><li>Приклад: усі фільми TMDB</li></ul></div>
+    <div class="scheme-column"><h4>СУБД</h4><ul><li>Програма, що працює з даними</li><li>Як бібліотекар</li><li>Шукає, додає, змінює, видаляє, сортує, фільтрує</li><li>Приклади: MySQL, PostgreSQL, SQLite</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Як стрімінг радить вам фільм</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Ви дивитесь і оцінюєте фільми</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Стрімінг записує це в базу даних</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Шукає людей зі схожими смаками</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Шукає фільми зі схожими жанрами й акторами</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Показує рекомендації на головній</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Будова таблиці бази даних</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Запис (рядок)</h4><ul><li>Один об&#39;єкт</li><li>Один фільм з усіма даними</li><li>Наприклад: Початок, 2010, Фантастика, Нолан</li></ul></div>
+    <div class="scheme-column"><h4>Поле (стовпець)</h4><ul><li>Одна властивість</li><li>Однакова для всіх записів</li><li>Наприклад: Рік — 2010, 2006, 2019</li></ul></div>
+  </div>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Один фільм як запис бази даних</h4>
+    <p>Сторінка фільму «Початок» у TMDB. На ній видно: назву, рік у дужках поруч із назвою (2010), жанри (Бойовик, Фантастика, Пригоди), оцінку користувачів у відсотках, режисера — Крістофер Нолан. Адреса сторінки: <code>themoviedb.org/movie/27205</code>.</p>
+
+    <div class="example-explanation"><ol>
+<li>Увесь фільм з усіма даними — це <strong>один запис</strong>.</li>
+<li>Назва, рік, жанр, рейтинг, режисер — <strong>поля</strong>.</li>
+<li>«2010» — <strong>значення</strong> поля Рік.</li>
+<li>Число 27205 в адресі — <strong>унікальний номер</strong> запису: за ним СУБД знаходить саме цей фільм, навіть якщо є інші фільми з такою самою назвою.</li>
+</ol>
+<p>У таблиці цей запис буде одним рядком:</p>
+<table>
+<thead>
+<tr>
+<th>Назва</th>
+<th>Рік</th>
+<th>Жанр</th>
+<th>Рейтинг</th>
+<th>Режисер</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Початок</td>
+<td>2010</td>
+<td>Фантастика</td>
+<td>84</td>
+<td>Крістофер Нолан</td>
+</tr>
+</tbody>
+</table>
+<p>Рейтинг тут — приклад, на сайті він може трохи змінюватися, бо користувачі постійно ставлять оцінки.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Як СУБД виконує фільтр і сортування</h4>
+    <p>Маленька база з 4 фільмів:</p>
+<table>
+<thead>
+<tr>
+<th>Назва</th>
+<th>Рік</th>
+<th>Жанр</th>
+<th>Рейтинг</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Фільм А</td>
+<td>2018</td>
+<td>Комедія</td>
+<td>70</td>
+</tr>
+<tr>
+<td>Фільм Б</td>
+<td>2021</td>
+<td>Комедія</td>
+<td>78</td>
+</tr>
+<tr>
+<td>Фільм В</td>
+<td>2022</td>
+<td>Драма</td>
+<td>85</td>
+</tr>
+<tr>
+<td>Фільм Г</td>
+<td>2023</td>
+<td>Комедія</td>
+<td>74</td>
+</tr>
+</tbody>
+</table>
+<p>Запит: «Покажи комедії, що вийшли після 2020 року, від найвищого рейтингу».</p>
+
+    <div class="example-explanation"><ol>
+<li><strong>Фільтр за жанром:</strong> СУБД залишає лише записи, де Жанр = Комедія. Залишаються А, Б, Г.</li>
+<li><strong>Фільтр за роком:</strong> з них лише ті, де Рік більше 2020. Залишаються Б (2021) і Г (2023).</li>
+<li><strong>Сортування за рейтингом від більшого:</strong> Б (78), потім Г (74).</li>
+</ol>
+<p>Результат: <strong>Фільм Б, Фільм Г</strong>. Саме це робить каталог MEGOGO чи TMDB, коли ви ставите галочки у фільтрах. Зверніть увагу: якби в одному рядку жанр був записаний як «комедія!!», а в іншому «Комедія», фільтр міг би пропустити запис.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Чому стрімінг радить саме цей фільм</h4>
+    <p>Ви за тиждень подивилися три фантастичні фільми до кінця і поставили їм «подобається». Ввечері відкриваєте застосунок, і на головній з'являється рядок «Бо ви дивилися Початок».</p>
+
+    <div class="example-explanation"><ol>
+<li>Кожен ваш перегляд і кожна оцінка записалися в базу даних як нові записи з полями: хто, що, коли, скільки хвилин, оцінка.</li>
+<li>СУБД знаходить інших користувачів, які дивилися ті самі фільми.</li>
+<li>Дивиться, що ще подобалося цим людям, і які фільми мають схожі поля: жанр, актори, режисер.</li>
+<li>Програма рекомендацій складає список, а сайт показує його вам.</li>
+</ol>
+<p>Без бази даних стрімінг нічого б не «пам'ятав» про вас і показував би всім однакову головну сторінку.</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.themoviedb.org/movie?language=uk" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Каталог фільмів TMDB з сортуванням і фільтрами</span></a>
+
+<div class="resource-note">Ліворуч є сортування (за популярністю, рейтингом, датою) і фільтри за жанром і роком. Спробуйте змінити сортування й подивитися, як СУБД переставляє записи.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%AF%D0%BA+%D0%BF%D1%80%D0%B0%D1%86%D1%8E%D1%94+%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0+%D1%80%D0%B5%D0%BA%D0%BE%D0%BC%D0%B5%D0%BD%D0%B4%D0%B0%D1%86%D1%96%D0%B9+Netflix+%D0%B4%D0%BE%D0%B2%D1%96%D0%B4%D0%BA%D0%BE%D0%B2%D0%B8%D0%B9+%D1%86%D0%B5%D0%BD%D1%82%D1%80" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як працює система рекомендацій Netflix (офіційна довідка українською)<span class="resource-hint">пошук у Google: «Як працює система рекомендацій Netflix довідковий центр»</span></span></a>
+
+<div class="resource-note">Netflix сам пояснює, які дані про вас зберігає в базі і як за ними підбирає фільми. Прочитайте розділ про те, що враховує система.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://megogo.net/ua/films" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">MEGOGO — каталог фільмів із фільтрами</span></a>
+
+<div class="resource-note">Український стрімінг: подивіться, як каталог фільтрує фільми за жанром і роком. Кожен фільтр — запит до бази даних.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%89%D0%BE+%D1%82%D0%B0%D0%BA%D0%B5+%D0%B1%D0%B0%D0%B7%D0%B0+%D0%B4%D0%B0%D0%BD%D0%B8%D1%85+%D1%96+%D0%A1%D0%A3%D0%91%D0%94+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Відео: що таке база даних і СУБД<span class="resource-hint">пошук на YouTube: «що таке база даних і СУБД пояснення для початківців українською»</span></span></a>
+
+<div class="resource-note">Коротке відео, якщо хочете ще раз почути пояснення про записи, поля і СУБД іншими словами.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D1%8F+%D0%B1%D0%B0%D0%B7%D0%B8+%D0%B4%D0%B0%D0%BD%D0%B8%D1%85+%D0%B7%D0%B0%D0%BF%D0%B8%D1%81+%D0%BF%D0%BE%D0%BB%D0%B5+%D1%81%D1%85%D0%B5%D0%BC%D0%B0" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати, що таблиця бази даних складається із записів (рядків) і полів (стовпців) — знайти зображення<span class="resource-hint">пошук у Google Картинках: «таблиця бази даних запис поле схема»</span></span></a>
+
+<div class="resource-note">Ви побачите таблицю, де один рядок підписано як запис, а один стовпець як поле. Це головна будова бази даних, яку ми сьогодні використовуємо.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D0%B1%D1%96%D0%B1%D0%BB%D1%96%D0%BE%D1%82%D0%B5%D1%87%D0%BD%D0%B8%D0%B9+%D0%BA%D0%B0%D1%80%D1%82%D0%BA%D0%BE%D0%B2%D0%B8%D0%B9+%D0%BA%D0%B0%D1%82%D0%B0%D0%BB%D0%BE%D0%B3+%D1%88%D0%B0%D1%84%D0%B0+%D0%B7+%D0%BA%D0%B0%D1%80%D1%82%D0%BA%D0%B0%D0%BC%D0%B8" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати бібліотечний картковий каталог як аналогію бази даних — знайти зображення<span class="resource-hint">пошук у Google Картинках: «бібліотечний картковий каталог шафа з картками»</span></span></a>
+
+<div class="resource-note">Ви побачите старий бібліотечний каталог: шухляди з картками, на яких однакові графи. Так виглядала база даних до комп&#39;ютерів.</div>  </div>
+</div>
+
+</section>
+
+<section class="block block-showcase">
+  <h2><span class="icon" aria-hidden="true">🖥️</span>Що ми розглядали на дошці</h2>
+  <p class="muted">Усе, що показував вчитель, — тут: відкрий і спробуй сам.</p>
+  <div class="resources">
+    <div class="resource">
+      <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D0%B1%D1%96%D0%B1%D0%BB%D1%96%D0%BE%D1%82%D0%B5%D1%87%D0%BD%D0%B8%D0%B9+%D0%BA%D0%B0%D1%80%D1%82%D0%BA%D0%BE%D0%B2%D0%B8%D0%B9+%D0%BA%D0%B0%D1%82%D0%B0%D0%BB%D0%BE%D0%B3+%D1%88%D0%B0%D1%84%D0%B0+%D0%B7+%D0%BA%D0%B0%D1%80%D1%82%D0%BA%D0%B0%D0%BC%D0%B8" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Шафа з картками і таблиця: будова бази даних<span class="resource-hint">пошук у Google Картинках: «бібліотечний картковий каталог шафа з картками»</span></span></a>
+
+<div class="resource-note">Бібліотечний каталог — це база даних до комп&#39;ютерів: картки з однаковими графами. Таблиця на комп&#39;ютері — те саме, тільки швидше.</div>    </div>
+    <div class="resource">
+      <a class="resource-link" href="https://www.themoviedb.org/?language=uk" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">TMDB: сторінка фільму як запис бази даних</span></a>
+
+<div class="resource-note">TMDB — відкрита кінобаза. Кожна сторінка фільму — це один запис з полями: назва, рік, жанр, рейтинг, режисер.</div>    </div>
+    <div class="resource">
+      <a class="resource-link" href="https://www.themoviedb.org/movie?language=uk" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">TMDB: каталог із сортуванням і фільтрами — робота СУБД</span></a>
+
+<div class="resource-note">Сортування і фільтри — головні інструменти СУБД. Кожне натискання — запит до бази даних.</div>    </div>
+    <div class="resource">
+      <a class="resource-link" href="https://megogo.net/ua/films" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">MEGOGO: каталог українського стрімінгу</span></a>
+
+<div class="resource-note">Український стрімінг теж зберігає фільми в базі даних і дає фільтрувати їх за жанром і роком.</div>    </div>
+    <div class="resource">
+      <a class="resource-link" href="https://help.netflix.com/uk/node/100639" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Netflix: як рекомендації спираються на базу даних</span></a>
+
+<div class="resource-note">Netflix радить фільми на основі даних про ваші перегляди й оцінки, які зберігаються в його базі даних.</div>    </div>
+    <div class="resource">
+      <a class="resource-link" href="https://sqlitebrowser.org/dl/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">DB Browser for SQLite: справжня база даних зсередини</span></a>
+
+<div class="resource-note">Програма, у якій ми відкриваємо готову базу даних і бачимо її таблиці, записи й поля.</div>    </div>
+  </div>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>База даних — як шафа з картками в бібліотеці: на кожній картці ті самі графи (назва, автор, рік), лише заповнені по-різному.</li>
+  <li>СУБД — як бібліотекар: сам ти шукатимеш книжку в шафі годину, а бібліотекар знає, де шукати, і знайде за хвилину.</li>
+  <li>Запис — як рядок у шкільному журналі про одного учня, поле — як стовпець «Дата народження» для всіх учнів.</li>
+  <li>Фільтр у каталозі — як сито: проходять лише ті фільми, які підходять під умову, наприклад «комедія, після 2020 року».</li>
+  <li>Рекомендації Netflix — як друг, який знає все, що ти дивився, і каже: «Тобі сподобався цей фільм, то глянь і ось той».</li>
+</ul>
+
+</section>
+
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Знайомство зі справжньою базою даних Chinook у DB Browser for SQLite</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://github.com/lerocha/chinook-database/releases" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">База даних Chinook — сторінка завантаження</span></a>
+
+<div class="resource-note">Звідси завантажуєш файл Chinook_Sqlite.sqlite (крок 1).</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://sqlitebrowser.org/dl/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">DB Browser for SQLite</span></a>
+
+<div class="resource-note">Програма, у якій відкриваєш базу. Якщо її немає на комп'ютері, скажи вчителю.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> відкрити справжню готову базу даних музичного магазину <strong>Chinook</strong> (схожа на iTunes чи Spotify), побачити її таблиці й структуру, знайти в ній записи й поля і виконати перші запити до неї.</p>
+<p><strong>Що треба знати перед роботою:</strong></p>
+<ul>
+<li><strong>SQL</strong> — це <strong>мова</strong>, якою ми «говоримо» з базою даних: «покажи», «знайди», «відсортуй». Слова в ній англійські, сьогодні ти просто скопіюєш два готові запити.</li>
+<li><strong>SQLite</strong> — це <strong>СУБД</strong>, тобто програма. Вона зберігає всю базу в <strong>одному файлі</strong> (у нас це <code>Chinook_Sqlite.sqlite</code>) і розуміє мову SQL.</li>
+<li><strong>DB Browser for SQLite</strong> — зручна програма з вікнами й кнопками, через яку ми відкриваємо файл SQLite і дивимося, що всередині.</li>
+</ul>
+<p><strong>Результат:</strong> відкрита база Chinook, заповнена заготовка про 6 таблиць бази і виконані 2 SQL-запити в DB Browser.</p>
+<p>Скопіюй заготовку: у неї записуєш, що знайшов у таблицях.</p>
+<p><strong>Важливо:</strong> сьогодні ми лише дивимося дані. Не натискай <strong>«Записати зміни»</strong> і не видаляй рядки.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Завантаж базу даних Chinook</strong></p>
+        <ol>
+<li>Відкрий у браузері сторінку <strong>github.com/lerocha/chinook-database/releases</strong>.</li>
+<li>В останньому випуску (Latest) розгорни список <strong>Assets</strong>.</li>
+<li>Натисни на файл <strong><code>Chinook_Sqlite.sqlite</code></strong>, щоб його завантажити.</li>
+<li>Перенеси файл із папки «Завантаження» у свою робочу папку (наприклад, <code>Документи\БД</code>).</li>
+</ol>
+<p>Не плутай його з файлами <code>.sql</code>: нам потрібен саме файл із закінченням <strong><code>.sqlite</code></strong>.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У твоїй папці є файл Chinook_Sqlite.sqlite розміром близько 1 МБ.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Відкрий базу в DB Browser for SQLite</strong></p>
+        <ol>
+<li>Запусти програму <strong>DB Browser for SQLite</strong> (ярлик на робочому столі або через «Пуск»).</li>
+<li>Натисни кнопку <strong>«Відкрити базу даних»</strong> (Open Database) або <strong>Ctrl+O</strong>.</li>
+<li>Знайди файл <code>Chinook_Sqlite.sqlite</code> і натисни <strong>«Відкрити»</strong>.</li>
+</ol>
+<p>Якщо програма англійською, кнопки називаються Open Database, Database Structure, Browse Data, Execute SQL.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Угорі вікна видно назву файлу Chinook_Sqlite.sqlite, а у вкладці «Структура бази даних» з&#39;явився список таблиць.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Подивись структуру бази: таблиці та поля</strong></p>
+        <p>Відкрий вкладку <strong>«Структура бази даних»</strong> (Database Structure).</p>
+<ol>
+<li>Розгорни рядок <strong>«Таблиці»</strong>. Порахуй, скільки там таблиць.</li>
+<li>Розгорни таблицю <strong>Track</strong> (трек, пісня), натиснувши стрілочку біля назви. Ти побачиш її <strong>поля</strong>: <code>TrackId</code>, <code>Name</code>, <code>AlbumId</code>, <code>GenreId</code>, <code>Composer</code>, <code>Milliseconds</code>, <code>UnitPrice</code> та інші.</li>
+<li>Біля кожного поля написано, <strong>що в ньому зберігається</strong>: <code>INTEGER</code> — ціле число, <code>NVARCHAR</code> — текст. Інші позначки поки можна не запам'ятовувати.</li>
+<li>Знайди поле з позначкою <strong>PRIMARY KEY</strong> — це унікальний номер запису, як номер фільму в адресі TMDB.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Ти знаєш, що в базі 11 таблиць, і бачиш поля таблиці Track.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Переглянь дані таблиць і заповни заготовку</strong></p>
+        <p>Відкрий вкладку <strong>«Перегляд даних»</strong> (Browse Data). Угорі є список <strong>«Таблиця»</strong> — обирай у ньому по черзі таблиці із заготовки: <code>Artist</code>, <code>Album</code>, <code>Track</code>, <code>Genre</code>, <code>Customer</code>, <code>Invoice</code>.</p>
+<p>Для кожної таблиці заповни рядок заготовки:</p>
+<ul>
+<li><strong>Що в ній один запис</strong> — один рядок таблиці (наприклад, у <code>Artist</code> — один виконавець);</li>
+<li><strong>3 поля</strong> — назви трьох стовпців (для <code>Artist</code> їх лише 2, тому запиши обидва);</li>
+<li><strong>Скільки записів</strong> — число внизу вікна, наприклад <code>1 - 50 of 275</code>. Тобі потрібне останнє число.</li>
+</ul>
+
+<p class="step-result"><strong>Має вийти:</strong> Заготовка заповнена для всіх 6 таблиць: що є записом, назви полів і кількість записів.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Знайди зв&#39;язок між таблицями за допомогою фільтра</strong></p>
+        <p>Тут видно, чим справжня база відрізняється від однієї таблиці: таблиці <strong>пов'язані</strong> між собою номерами.</p>
+<ol>
+<li>У «Перегляді даних» обери таблицю <strong>Artist</strong>. Під заголовком <code>Name</code> є порожня клітинка-фільтр. Впиши в неї <code>AC/DC</code>.</li>
+<li>Подивись, який <code>ArtistId</code> у цього виконавця.</li>
+<li>Обери таблицю <strong>Album</strong>. У фільтр під <code>ArtistId</code> впиши <code>=1</code> (знак «дорівнює» і число).</li>
+<li>Подивись, які альбоми залишилися.</li>
+<li>Очисти фільтри (видали текст у клітинках-фільтрах).</li>
+</ol>
+<p>Саме так СУБД «знає», чий це альбом: в альбомі записано не ім'я виконавця, а лише його номер.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Видно, що AC/DC має ArtistId = 1, а в таблиці Album у цього виконавця 2 альбоми.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Виконай перші запити мовою SQL</strong></p>
+        <p>Відкрий вкладку <strong>«Виконати SQL»</strong> (Execute SQL).</p>
+<ol>
+<li>У велике поле введи запит:</li>
+</ol>
+<pre><code class="language-sql">SELECT Name FROM Artist;
+</code></pre>
+<p>Запусти його кнопкою <strong>▶</strong> (або клавішею <strong>F5</strong> чи <strong>Ctrl+Enter</strong>). Запит означає: «вибери поле Name з таблиці Artist».</p>
+<ol start="2">
+<li>Зітри його і введи другий запит:</li>
+</ol>
+<pre><code class="language-sql">SELECT Name, Composer FROM Track WHERE GenreId = 1 LIMIT 10;
+</code></pre>
+<p>Запусти. Цей запит означає: «покажи назву і композитора треків, у яких жанр номер 1, але лише перші 10».</p>
+<ol start="3">
+<li>Відкрий таблицю <strong>Genre</strong> у «Перегляді даних» і перевір, що це за жанр номер 1.</li>
+</ol>
+<p>Команди SQL (<code>SELECT</code>, <code>FROM</code>, <code>WHERE</code>) — це <strong>мова</strong>, а виконує їх <strong>SQLite</strong> — СУБД, вбудована в DB Browser.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Перший запит показав список із 275 виконавців, другий — 10 треків жанру Rock з полями Name і Composer.</p>      </li>
+    </ol>
+    
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><table>
+<thead>
+<tr>
+<th>Таблиця</th>
+<th>Що в ній один запис</th>
+<th>3 поля</th>
+<th>Скільки записів</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Artist</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Album</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Track</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Genre</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Customer</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Invoice</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Покажи вчителю на екрані відкриту базу Chinook у DB Browser for SQLite з результатом другого SQL-запиту і заповнену заготовку про 6 таблиць.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Знайомство зі справжньою базою даних Chinook у DB Browser for SQLite" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу пояснити своїми словами, що таке база даних і що таке СУБД.</label></li>
+    <li><label><input type="checkbox"> Я можу показати у своїй таблиці один запис і одне поле.</label></li>
+    <li><label><input type="checkbox"> Я можу відкрити базу Chinook і знайти в ній таблиці, записи й поля.</label></li>
+    <li><label><input type="checkbox"> Я можу пояснити, чому дані в одному полі треба записувати однаково.</label></li>
+    <li><label><input type="checkbox"> Я можу назвати, які дані зберігає стрімінг і навіщо він їх використовує.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Що в таблиці Track бази Chinook є записом, а що полем? Наведи по одному прикладу.<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Що в таблиці Track бази Chinook є записом, а що полем? Наведи по одному прикладу." rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Чим база даних відрізняється від СУБД?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Чим база даних відрізняється від СУБД?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Назви одну базу даних, якою ти користуєшся щодня, і два її поля.<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Назви одну базу даних, якою ти користуєшся щодня, і два її поля." rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Знайди базу даних у своєму телефоні <span class="duration">≈ 10 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%BF%D1%80%D0%B8%D0%BA%D0%BB%D0%B0%D0%B4%D0%B8+%D0%B1%D0%B0%D0%B7+%D0%B4%D0%B0%D0%BD%D0%B8%D1%85+%D1%83+%D0%BF%D0%BE%D0%B2%D1%81%D1%8F%D0%BA%D0%B4%D0%B5%D0%BD%D0%BD%D0%BE%D0%BC%D1%83+%D0%B6%D0%B8%D1%82%D1%82%D1%96" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Приклади баз даних у повсякденному житті<span class="resource-hint">пошук у Google: «приклади баз даних у повсякденному житті»</span></span></a>
+
+<div class="resource-note">Допоможе, якщо не знаєте, яку базу даних обрати для домашнього завдання.</div>  </div>
+</div>
+
+  <p>Відкрий будь-який застосунок або сайт, яким ти користуєшся щодня: стрімінг, музику, інтернет-магазин, Нову пошту, електронний щоденник, контакти в телефоні.</p>
+<ol>
+<li>Зроби <strong>скриншот</strong> екрана, на якому видно кілька записів (список товарів, пісень, фільмів, посилок).</li>
+<li>Скопіюй заготовку і заповни її: назва сервісу, що в ньому є одним записом, і 3 поля цього запису.</li>
+<li>Напиши, яку одну дію СУБД ти там бачиш (пошук, сортування чи фільтр).</li>
+</ol>
+<p>Покажи скриншот і заготовку на наступному уроці.</p>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><table>
+<thead>
+<tr>
+<th>Питання</th>
+<th>Відповідь</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Назва сервісу</td>
+<td></td>
+</tr>
+<tr>
+<td>Що в ньому один запис</td>
+<td></td>
+</tr>
+<tr>
+<td>Поле 1</td>
+<td></td>
+</tr>
+<tr>
+<td>Поле 2</td>
+<td></td>
+</tr>
+<tr>
+<td>Поле 3</td>
+<td></td>
+</tr>
+<tr>
+<td>Дія СУБД, яку я бачу</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Бази даних оточують нас щодня: коли ви шукаєте товар, відстежуєте посилку чи вмикаєте пісню, саме СУБД знаходить потрібний запис. Хто розуміє, як вони влаштовані, швидше знаходить потрібне і краще розуміє, які дані про нього зберігають.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Знайди базу даних у своєму телефоні" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>
