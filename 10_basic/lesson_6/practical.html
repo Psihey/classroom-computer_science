@@ -1,0 +1,1545 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Детектори гальм: вимірюємо до і після</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">10 КЛАС • ЛИШЕ ПРАКТИКА</p>
+  <h1>Детектори гальм: вимірюємо до і після</h1>
+<p class="lesson-subtitle">Знаходимо, що сповільнює комп&#39;ютер, прибираємо зайве і доводимо результат цифрами.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Знайти в Диспетчері завдань програми автозавантаження, вирішити, які з них потрібні, і пояснити чому.</li>
+  <li>Виміряти вільне місце на диску C та відсоток зайнятої оперативної пам&#39;яті і звільнити їх безпечними засобами Windows.</li>
+  <li>Порівняти цифри «До» і «Після» та зробити висновок, чи допомогли дії.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Комп&#39;ютер гальмує, коли ресурсів не вистачає: зайняті пам&#39;ять, процесор або диск.</li>
+  <li>Програми в автозавантаженні запускаються разом з Windows і подовжують увімкнення, навіть якщо ти ними не користуєшся.</li>
+  <li>Вимикати з автозавантаження можна месенджери, лаунчери ігор і оновлювачі, але не антивірус і драйвери.</li>
+  <li>Коли на диску C менше 10–15% вільного місця, Windows працює повільніше: їй ніде зберігати тимчасові дані.</li>
+  <li>Будь-яку «оптимізацію» перевіряють цифрами до і після, а не на віру.</li>
+</ul>
+
+  <div class="theory"><h3>Чому комп'ютер гальмує</h3>
+<p>Комп'ютер має обмежені <strong>ресурси</strong>: процесор (рахує), оперативну пам'ять (тримає відкриті програми), диск (зберігає файли). Коли якогось ресурсу не вистачає, все починає працювати повільно. Найчастіші причини в звичайному домашньому комп'ютері такі:</p>
+<ul>
+<li><strong>забагато програм в автозавантаженні</strong> — вони запускаються самі разом з Windows;</li>
+<li><strong>мало вільного місця на диску C</strong> — Windows ніде зберігати тимчасові дані;</li>
+<li><strong>зайнята оперативна пам'ять</strong> — відкрито багато програм і вкладок браузера;</li>
+<li>рідше — віруси, перегрів, старий жорсткий диск.</li>
+</ul>
+<h3>Що таке автозавантаження</h3>
+<p>Коли ти встановлюєш, наприклад, Telegram, Steam чи Discord, вони часто самі додають себе в <strong>автозавантаження</strong>. Тепер щоразу, коли вмикається комп'ютер, Windows запускає їх одразу. Якщо таких програм 10–15, комп'ютер довго «прокидається», а пам'ять зайнята ще до того, як ти щось відкрив.</p>
+<h3>Як це перевірити покроково</h3>
+<ol>
+<li>Натисни <code>Ctrl + Shift + Esc</code> — відкриється <strong>Диспетчер завдань</strong>. Якщо він маленький, натисни «Докладніше».</li>
+<li>Відкрий вкладку <strong>«Автозавантаження»</strong> (у Windows 11 — <strong>«Програми автозавантаження»</strong>, значок спідометра зліва).</li>
+<li>Подивись на стовпчики <strong>«Стан»</strong> (Увімкнуто / Вимкнуто) і <strong>«Вплив на запуск»</strong> (Високий, Середній, Низький, Не виміряно).</li>
+<li>Для зайвої програми: клацни правою кнопкою → <strong>«Вимкнути»</strong>. Програма не видаляється, вона просто не стартує сама.</li>
+</ol>
+<h3>Що можна вимикати, а що ні</h3>
+<table>
+<thead>
+<tr>
+<th>Можна вимкнути</th>
+<th>Не чіпати</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Месенджери (Telegram, Discord, Viber)</td>
+<td>Антивірус, «Безпека Windows»</td>
+</tr>
+<tr>
+<td>Лаунчери ігор (Steam, Epic Games)</td>
+<td>Драйвери звуку (Realtek)</td>
+</tr>
+<tr>
+<td>Оновлювачі (Updater, Helper)</td>
+<td>Драйвери відеокарти, тачпада</td>
+</tr>
+<tr>
+<td>Хмари, якими не користуєшся</td>
+<td>Програми, назву яких не знаєш — спершу пошукай</td>
+</tr>
+</tbody>
+</table>
+<h3>Пам'ять і диск</h3>
+<ul>
+<li><strong>Оперативна пам'ять</strong>: Диспетчер завдань → «Продуктивність» → «Пам'ять». Якщо зайнято більше 80–85%, комп'ютер гальмує.</li>
+<li><strong>Диск</strong>: Провідник → «Цей ПК» → під диском C написано, скільки вільно. Тривожно, якщо смужка червона.</li>
+<li>Звільнити диск безпечно можна через <strong>«Очищення диска»</strong> або <strong>Параметри → Система → Пам'ять → Тимчасові файли</strong>.</li>
+</ul>
+<h3>Приклад</h3>
+<p>Комп'ютер вмикається 3 хвилини. В автозавантаженні 12 програм, з них 4 з високим впливом: Steam, Discord, Skype, Adobe Updater. Вимикаємо їх і пишемо причину: «Steam запускаю сам, коли граю». Після перезавантаження комп'ютер вмикається помітно швидше.</p>
+<h3>Типова пастка</h3>
+<p>Багато хто вимикає <strong>все підряд</strong> або ставить «програми-прискорювачі» з реклами. Вимкнений антивірус робить комп'ютер беззахисним, а «прискорювачі» самі сидять в автозавантаженні й гальмують систему. Правило просте: вимикай лише те, що впізнаєш, і <strong>записуй цифри до і після</strong>, щоб бачити, чи справді допомогло.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Як провести діагностику повільного комп&#39;ютера</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Помітити симптом</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Висунути гіпотезу</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Виміряти цифри До</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Прибрати зайве з поясненням</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Виміряти цифри Після</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Зробити висновок</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Автозавантаження: що робити з програмою</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Можна вимкнути</h4><ul><li>Месенджери: Telegram, Discord, Viber</li><li>Лаунчери ігор: Steam, Epic Games</li><li>Оновлювачі: Updater, Helper</li><li>Хмари, якими не користуєшся</li></ul></div>
+    <div class="scheme-column"><h4>Не чіпати</h4><ul><li>Антивірус, Безпека Windows</li><li>Драйвери звуку, наприклад Realtek</li><li>Драйвери відеокарти і тачпада</li><li>Невідомі програми, доки не перевірив назву</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Симптом і де шукати причину</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Довго вмикається: Диспетчер завдань, Автозавантаження</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Гальмує під час роботи: Продуктивність, Пам&#39;ять</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Не вистачає місця: Цей ПК, диск C</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Звільнити місце: Очищення диска або Тимчасові файли</li>
+  </ol>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Розбираємо список автозавантаження</h4>
+    <p>В автозавантаженні ноутбука такі програми:</p>
+<table>
+<thead>
+<tr>
+<th>Програма</th>
+<th>Стан</th>
+<th>Вплив на запуск</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Безпека Windows</td>
+<td>Увімкнуто</td>
+<td>Низький</td>
+</tr>
+<tr>
+<td>Realtek HD Audio Manager</td>
+<td>Увімкнуто</td>
+<td>Низький</td>
+</tr>
+<tr>
+<td>Steam</td>
+<td>Увімкнуто</td>
+<td>Високий</td>
+</tr>
+<tr>
+<td>Discord</td>
+<td>Увімкнуто</td>
+<td>Високий</td>
+</tr>
+<tr>
+<td>Microsoft Teams</td>
+<td>Увімкнуто</td>
+<td>Високий</td>
+</tr>
+<tr>
+<td>Adobe Updater</td>
+<td>Увімкнуто</td>
+<td>Середній</td>
+</tr>
+</tbody>
+</table>
+
+    <div class="example-explanation"><ol>
+<li><strong>Безпека Windows</strong> — захист, лишаємо: без неї комп'ютер беззахисний з першої секунди.</li>
+<li><strong>Realtek</strong> — драйвер звуку, лишаємо: може зникнути звук або керування навушниками.</li>
+<li><strong>Steam</strong> — вимикаємо: «Запускаю сам, коли граю».</li>
+<li><strong>Discord</strong> — вимикаємо: «Відкриваю лише ввечері для розмов з друзями».</li>
+<li><strong>Teams</strong> — вимикаємо, якщо уроки не щодня: «Потрібен лише на онлайн-уроках».</li>
+<li><strong>Adobe Updater</strong> — вимикаємо: «Оновлення перевіриться, коли я сам відкрию програму».</li>
+</ol>
+<p><strong>Результат:</strong> з 6 увімкнених програм лишилось 2, а з високим впливом — 0. Після перезавантаження Windows стартує помітно швидше.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Читаємо цифри пам&#39;яті та диска</h4>
+    <p>У Диспетчері завдань → «Продуктивність» → «Пам'ять» написано: <code>Використовується 6,9 ГБ з 8 ГБ</code>. У «Цей ПК» під диском C: <code>4,1 ГБ вільно з 118 ГБ</code>, смужка червона.</p>
+
+    <div class="example-explanation"><ol>
+<li>Пам'ять: 6,9 / 8 ≈ 0,86, тобто <strong>86%</strong> — це забагато, комп'ютер почне «замерзати».</li>
+<li>Диск: 4,1 / 118 ≈ 0,035, тобто лише <strong>3,5% вільно</strong> — критично мало, бо Windows потрібне місце для файлу підкачки та оновлень.</li>
+<li>Висновок: обидва «підозрювані» винні. План дій — закрити зайві програми й вкладки (пам'ять) і запустити Очищення диска (диск).</li>
+<li>Після дій записуємо нові цифри, наприклад <code>4,8 ГБ</code> пам'яті (60%) і <code>9,7 ГБ</code> вільно на диску — <strong>звільнено 5,6 ГБ</strong>.</li>
+</ol>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Закриваємо процес, який з&#39;їдає пам&#39;ять</h4>
+    <p>У Диспетчері завдань → вкладка «Процеси» → клацнули по заголовку «Пам'ять», щоб відсортувати. Зверху: <code>Google Chrome (25) — 2 100 МБ</code>, <code>Discord — 450 МБ</code>, <code>Провідник Windows — 90 МБ</code>.</p>
+
+    <div class="example-explanation"><ol>
+<li><strong>Chrome із 25 вкладками</strong> займає 2,1 ГБ. Краще закрити зайві вкладки в самому браузері, а не «вбивати» процес — так не загубиться потрібне.</li>
+<li><strong>Discord</strong> не потрібен на уроці: виділяємо → «Завершити завдання».</li>
+<li><strong>Провідник Windows</strong> — системний процес, закривати не можна: зникне панель завдань.</li>
+</ol>
+<p><strong>Результат:</strong> зайнята пам'ять зменшується на 1–2 ГБ одразу, без перезавантаження.</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=Microsoft+%D0%BF%D1%96%D0%B4%D1%82%D1%80%D0%B8%D0%BC%D0%BA%D0%B0+%D0%B2%D0%B8%D0%BC%D0%BA%D0%BD%D1%83%D1%82%D0%B8+%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%B8+%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%B2%D0%B0%D0%BD%D1%82%D0%B0%D0%B6%D0%B5%D0%BD%D0%BD%D1%8F+Windows+11+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як вимкнути програми автозавантаження в Windows<span class="resource-hint">пошук у Google: «Microsoft підтримка вимкнути програми автозавантаження Windows 11 українською»</span></span></a>
+
+<div class="resource-note">Офіційна інструкція Microsoft про вкладку автозавантаження: допомагає, якщо не можеш знайти її в Диспетчері завдань.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D0%B4%D0%B8%D1%81%D0%BF%D0%B5%D1%82%D1%87%D0%B5%D1%80+%D0%B7%D0%B0%D0%B2%D0%B4%D0%B0%D0%BD%D1%8C+windows+%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%B2%D0%B0%D0%BD%D1%82%D0%B0%D0%B6%D0%B5%D0%BD%D0%BD%D1%8F+%D0%BF%D0%B0%D0%BC%27%D1%8F%D1%82%D1%8C+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Диспетчер завдань для початківців<span class="resource-hint">пошук на YouTube: «диспетчер завдань windows автозавантаження пам&#39;ять пояснення для початківців українською»</span></span></a>
+
+<div class="resource-note">Коротке відео, де видно всі вкладки Диспетчера завдань, які ми використовуємо на уроці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=Windows+11+%D0%B4%D0%B8%D1%81%D0%BF%D0%B5%D1%82%D1%87%D0%B5%D1%80+%D0%B7%D0%B0%D0%B2%D0%B4%D0%B0%D0%BD%D1%8C+%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%B8+%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%B2%D0%B0%D0%BD%D1%82%D0%B0%D0%B6%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B2%D0%BF%D0%BB%D0%B8%D0%B2+%D0%BD%D0%B0+%D0%B7%D0%B0%D0%BF%D1%83%D1%81%D0%BA+%D1%81%D0%BA%D1%80%D1%96%D0%BD%D1%88%D0%BE%D1%82" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати, як виглядає вкладка автозавантаження в Windows 11 — знайти зображення<span class="resource-hint">пошук у Google Картинках: «Windows 11 диспетчер завдань програми автозавантаження вплив на запуск скріншот»</span></span></a>
+
+<div class="resource-note">Учень побачить список програм зі стовпчиками «Стан» і «Вплив на запуск» та кнопку «Вимкнути» — саме тут виконується головна частина практичної.</div>  </div>
+</div>
+
+</section>
+
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Автозавантаження — як ранкові збори: якщо перед виходом з дому треба зібрати 20 речей замість 5, ти запізнишся.</li>
+  <li>Оперативна пам&#39;ять — як робочий стіл: що більше на ньому відкритих зошитів, то важче знайти потрібний.</li>
+  <li>Заповнений диск — як шафа, набита до відмови: нову річ покласти нікуди, і доводиться довго перекладати старі.</li>
+  <li>Тимчасові файли — як чернетки після контрольної: колись були потрібні, а тепер лише займають місце.</li>
+  <li>Вимірювання до і після — як зважування до і після тренувань: без цифр не зрозуміти, чи був результат.</li>
+</ul>
+
+</section>
+
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Дослідницьке завдання</p>
+    <h3>Дослідження «Детектори гальм»: таблиця До / Після</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=Microsoft+%D0%BF%D1%96%D0%B4%D1%82%D1%80%D0%B8%D0%BC%D0%BA%D0%B0+%D0%B7%D0%B2%D1%96%D0%BB%D1%8C%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D0%BC%D1%96%D1%81%D1%86%D1%8F+%D0%BD%D0%B0+%D0%B4%D0%B8%D1%81%D0%BA%D1%83+Windows+%D0%BE%D1%87%D0%B8%D1%89%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B4%D0%B8%D1%81%D0%BA%D0%B0+%D1%82%D0%B8%D0%BC%D1%87%D0%B0%D1%81%D0%BE%D0%B2%D1%96+%D1%84%D0%B0%D0%B9%D0%BB%D0%B8" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Звільнення місця на диску в Windows<span class="resource-hint">пошук у Google: «Microsoft підтримка звільнення місця на диску Windows очищення диска тимчасові файли»</span></span></a>
+
+<div class="resource-note">Пояснює, які файли безпечно видаляти через Очищення диска і Тимчасові файли — корисно на кроці очищення.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=Windows+%D0%BE%D1%87%D0%B8%D1%89%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B4%D0%B8%D1%81%D0%BA%D0%B0+cleanmgr+%D1%82%D0%B8%D0%BC%D1%87%D0%B0%D1%81%D0%BE%D0%B2%D1%96+%D1%84%D0%B0%D0%B9%D0%BB%D0%B8+%D0%B2%D1%96%D0%BA%D0%BD%D0%BE+%D1%81%D0%BA%D1%80%D1%96%D0%BD%D1%88%D0%BE%D1%82" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати вікно Очищення диска з позначеними пунктами — знайти зображення<span class="resource-hint">пошук у Google Картинках: «Windows очищення диска cleanmgr тимчасові файли вікно скріншот»</span></span></a>
+
+<div class="resource-note">Видно список категорій файлів і скільки місця кожна займає — учень розуміє, що саме видаляє і скільки звільнить.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> з'ясувати цифрами, що сповільнює ваш комп'ютер, прибрати зайве і довести, що стало краще.</p>
+<p>Працюєте <strong>в парах</strong> за одним комп'ютером. Скопіюйте заготовку — у ній таблиця вимірювань і таблиця рішень по автозавантаженню.</p>
+<p><strong>Результат наприкінці:</strong> заповнена таблиця «До / Після» з трьома цифрами (програми з високим впливом, вільне місце на диску C, зайнята пам'ять), список програм автозавантаження з рішенням «лишити / вимкнути» і поясненням, а також висновок: гіпотеза підтвердилась чи ні.</p>
+<p><strong>Безпека:</strong> не вимикайте антивірус і драйвери, не закривайте системні процеси, не використовуйте «Очистити системні файли». Якщо кнопка «Вимкнути» неактивна (немає прав) — просто запишіть рішення і пояснення.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Запишіть гіпотезу</strong></p>
+        <p>Скопіюйте заготовку. У рядку «Наша гіпотеза» одним реченням напишіть, що, на вашу думку, найбільше гальмує комп'ютер. Наприклад: «Комп'ютер довго вмикається через зайві програми в автозавантаженні».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У заготовці записана гіпотеза пари.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Виміряйте автозавантаження «До»</strong></p>
+        <p>Натисніть <code>Ctrl + Shift + Esc</code>. Якщо вікно маленьке — «Докладніше». Відкрийте вкладку <strong>«Автозавантаження»</strong> (Windows 10) або <strong>«Програми автозавантаження»</strong> (Windows 11, значок спідометра зліва). Порахуйте, скільки програм мають стан «Увімкнуто» і скільки з них мають «Вплив на запуск: Високий». Запишіть обидві цифри в стовпчик «До».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У таблиці є дві цифри: увімкнених програм і програм з високим впливом.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Виміряйте пам&#39;ять і диск «До»</strong></p>
+        <p>У Диспетчері завдань відкрийте <strong>«Продуктивність» → «Пам'ять»</strong> і запишіть, скільки ГБ використовується і з якої кількості (наприклад, <code>5,2 з 8 ГБ</code>), а також відсоток (його видно на панелі зліва). Потім відкрийте <strong>Провідник → «Цей ПК»</strong> і запишіть, скільки ГБ вільно на диску C.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У стовпчику «До» заповнені всі рядки: пам&#39;ять у % і вільне місце на C у ГБ.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Вирішіть долю кожної програми автозавантаження</strong></p>
+        <p>Перепишіть у другу таблицю заготовки всі увімкнені програми. Для кожної напишіть рішення <strong>«лишити»</strong> або <strong>«вимкнути»</strong> і одне речення <strong>чому</strong>. Користуйтесь правилом: месенджери, лаунчери ігор, оновлювачі — можна вимкнути; антивірус, драйвери звуку, відео, тачпада — лишити. Незнайому назву спершу вбийте в пошуковик.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Таблиця рішень заповнена: у кожної програми є рішення і пояснення.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Вимкніть непотрібні програми</strong></p>
+        <p>Поверніться на вкладку автозавантаження. Для кожної програми з рішенням «вимкнути»: клацніть правою кнопкою → <strong>«Вимкнути»</strong> (або виділіть і натисніть кнопку «Вимкнути» вгорі). Стан має змінитися на «Вимкнуто». Якщо кнопка сіра — поставте біля програми позначку «немає прав».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Стан непотрібних програм — «Вимкнуто» або є позначка «немає прав».</p>      </li>
+      <li>
+        <p class="step-title"><strong>Очистіть диск від тимчасових файлів</strong></p>
+        <p>Натисніть Пуск, наберіть <strong>«Очищення диска»</strong> і відкрийте. Оберіть диск <strong>C</strong> → ОК. Позначте пункти <strong>«Тимчасові файли Інтернету»</strong>, <strong>«Тимчасові файли»</strong>, <strong>«Мініатюри»</strong>, <strong>«Кошик»</strong> → ОК → «Видалити файли». Кнопку «Очистити системні файли» <strong>не натискайте</strong>. Інший спосіб: <strong>Параметри → Система → Пам'ять → Тимчасові файли</strong> → позначити ті самі пункти → «Видалити файли».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Очищення завершене, вікно закрилось без помилок.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Звільніть оперативну пам&#39;ять</strong></p>
+        <p>У Диспетчері завдань відкрийте вкладку <strong>«Процеси»</strong> і клацніть по заголовку стовпчика <strong>«Пам'ять»</strong>, щоб найбільші були зверху. Закрийте зайві вкладки браузера в самому браузері. Програми, які відкрили ви і які зараз не потрібні (месенджер, ігровий лаунчер), виділіть → <strong>«Завершити завдання»</strong>. Системні процеси (Провідник Windows, Хост служби, Антивірус) не чіпайте.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Зайві програми закриті, у списку процесів їх більше немає.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Виміряйте «Після» і зробіть висновок</strong></p>
+        <p>Повторіть вимірювання з кроків 2 і 3 і запишіть цифри в стовпчик «Після». У стовпчику «Різниця» порахуйте, на скільки змінилася кожна цифра (наприклад, <code>+3,4 ГБ</code> вільного місця). Пам'ятайте: програми автозавантаження перестануть стартувати лише після перезавантаження, тому для них рахуйте, скільки увімкнених лишилось. Наприкінці допишіть висновок: гіпотеза підтвердилась чи ні і що дало найбільший ефект.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Таблиця «До / Після» повністю заповнена, є різниця і висновок одним-двома реченнями.</p>      </li>
+    </ol>
+    
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><p><strong>Пара:</strong> ______________________</p>
+<p><strong>Наша гіпотеза:</strong> ______________________</p>
+<p><strong>Таблиця 1. Вимірювання</strong></p>
+<table>
+<thead>
+<tr>
+<th>Що вимірюємо</th>
+<th>До</th>
+<th>Після</th>
+<th>Різниця</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Програм в автозавантаженні увімкнено</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>З них з високим впливом на запуск</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Оперативна пам'ять зайнята, %</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Вільне місце на диску C, ГБ</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Таблиця 2. Рішення по автозавантаженню</strong></p>
+<table>
+<thead>
+<tr>
+<th>Програма</th>
+<th>Вплив на запуск</th>
+<th>Лишити чи вимкнути</th>
+<th>Чому (одне речення)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Висновок:</strong> гіпотеза підтвердилась / не підтвердилась, бо ______________________</p>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Заповнена заготовка: таблиця «До / Після» з різницею, таблиця рішень по автозавантаженню з поясненнями та висновок. Показати вчителю на екрані або на роздрукованому аркуші.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Дослідження «Детектори гальм»: таблиця До / Після" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: Діагноз для слабкого комп&#39;ютера</h3>
+    <p>Ваш комп'ютер уявно дуже слабкий: старий диск і лише 4 ГБ пам'яті. Знайдіть ще два способи його полегшити і виміряйте ефект.</p>
+<ol>
+<li>Пуск → наберіть <strong>«Налаштування подання та продуктивності системи»</strong> → оберіть <strong>«Забезпечити найкращу швидкодію»</strong> → «Застосувати». Подивіться, що змінилось на екрані (анімації, тіні), і поверніть як було («Відновити значення за замовчуванням»), якщо комп'ютер спільний.</li>
+<li><strong>Параметри → Система → Пам'ять</strong>: подивіться, яка категорія займає найбільше місця на диску C (Програми, Тимчасові файли, Інші). Запишіть топ-3 категорії з цифрами.</li>
+<li>У <strong>«Продуктивність» → «Диск 0»</strong> знайдіть тип диска (SSD чи HDD) і допишіть у висновок: що з цього дасть найбільше прискорення слабкому комп'ютеру і чому.</li>
+</ol>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: Діагноз для слабкого комп&#39;ютера" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу знайти програми автозавантаження в Диспетчері завдань і пояснити, які з них потрібні, а які ні.</label></li>
+    <li><label><input type="checkbox"> Я можу виміряти вільне місце на диску C і зайняту пам&#39;ять та звільнити їх безпечними засобами Windows.</label></li>
+    <li><label><input type="checkbox"> Я можу порівняти цифри «До» і «Після» і сказати, чи допомогли мої дії.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Назви одну програму, яку можна вимкнути з автозавантаження, і одну, яку чіпати не можна. Чому?<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Назви одну програму, яку можна вимкнути з автозавантаження, і одну, яку чіпати не можна. Чому?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Де в Windows подивитися, скільки вільного місця на диску C?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Де в Windows подивитися, скільки вільного місця на диску C?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Яка цифра у вашій таблиці змінилась найбільше?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Яка цифра у вашій таблиці змінилась найбільше?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Детектор гальм удома <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%87%D0%BE%D0%BC%D1%83+%D0%B3%D0%B0%D0%BB%D1%8C%D0%BC%D1%83%D1%94+%D0%BA%D0%BE%D0%BC%D0%BF%27%D1%8E%D1%82%D0%B5%D1%80+windows+%D1%8F%D0%BA+%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D1%96%D1%80%D0%B8%D1%82%D0%B8+%D0%B0%D0%B2%D1%82%D0%BE%D0%B7%D0%B0%D0%B2%D0%B0%D0%BD%D1%82%D0%B0%D0%B6%D0%B5%D0%BD%D0%BD%D1%8F+%D0%B4%D0%B8%D1%81%D0%BA+%D0%BF%D0%B0%D0%BC%27%D1%8F%D1%82%D1%8C+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Чому гальмує комп&#39;ютер і як це перевірити<span class="resource-hint">пошук на YouTube: «чому гальмує комп&#39;ютер windows як перевірити автозавантаження диск пам&#39;ять українською»</span></span></a>
+
+<div class="resource-note">Допоможе вдома повторити кроки перевірки на своєму комп&#39;ютері чи ноутбуці.</div>  </div>
+</div>
+
+  <p>Перевір домашній комп'ютер або ноутбук (свій чи батьків — з дозволу).</p>
+<ol>
+<li>Відкрий Диспетчер завдань (<code>Ctrl + Shift + Esc</code>) і порахуй програми в автозавантаженні з високим впливом.</li>
+<li>Подивись вільне місце на диску C і зайняту пам'ять.</li>
+<li>Обери 1–3 програми, які можна вимкнути, і поясни чому — <strong>разом з власником комп'ютера</strong> вирішіть, чи вимикати.</li>
+<li>Сфотографуй або зроби знімок екрана вкладки автозавантаження і заповни заготовку.</li>
+</ol>
+<p>Якщо комп'ютера вдома немає — зроби те саме на телефоні: <strong>Налаштування → Пам'ять</strong> (скільки вільно) і знайди 2 застосунки, які займають найбільше місця.</p>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><table>
+<thead>
+<tr>
+<th>Що перевірили</th>
+<th>Цифра</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Програм з високим впливом в автозавантаженні</td>
+<td></td>
+</tr>
+<tr>
+<td>Вільне місце на диску C (або в телефоні), ГБ</td>
+<td></td>
+</tr>
+<tr>
+<td>Зайнята пам'ять, %</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Програма</th>
+<th>Рішення</th>
+<th>Чому</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Коли рідні скаржаться, що «комп&#39;ютер гальмує», ти зможеш сам знайти причину за 5 хвилин і не платити за «прискорювачі» чи майстра.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Детектор гальм удома" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>

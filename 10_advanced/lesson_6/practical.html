@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чесна чи фальшива знижка: Python-детектор акцій</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">10 КЛАС ПОГЛИБЛЕНИЙ КЛАС • ПОКРОКОВА ПРАКТИЧНА</p>
+  <h1>Чесна чи фальшива знижка: Python-детектор акцій</h1>
+<p class="lesson-subtitle">Пишемо програму, яка за історією цін перевіряє, чи магазин не підняв ціну перед акцією.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Створити список цін у Python і знайти найменшу ціну за допомогою функції min().</li>
+  <li>Порівняти акційну ціну з найменшою ціною до акції та вивести висновок через if/else.</li>
+  <li>Обчислити заявлену знижку у відсотках і пояснити, чому вона може бути нечесною.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Знижка справжня, лише якщо акційна ціна нижча за найменшу ціну за останній час, а не за перекреслену «стару» ціну.</li>
+  <li>Список у Python зберігає багато значень під одним іменем: prices = [1199, 1249, 1899].</li>
+  <li>Функція min(список) повертає найменше значення, а prices[-1] — останній елемент списку.</li>
+  <li>Відсоток знижки = (стара ціна - нова ціна) / стара ціна * 100.</li>
+  <li>Умова if/else дає програмі змогу самій зробити висновок і вивести його текстом.</li>
+</ul>
+
+  <div class="theory"><h3>Що таке фальшива знижка</h3>
+<p>Іноді магазин за тиждень-два до розпродажу <strong>піднімає</strong> ціну товару, а в день акції «знижує» її назад і пише великими літерами «-20%». Покупцю здається, що він економить, але насправді товар коштує стільки ж або навіть дорожче, ніж місяць тому. <strong>Чесна знижка</strong> — це коли акційна ціна нижча за <em>найменшу</em> ціну товару за останній час, а не лише за перекреслену «стару» ціну.</p>
+<h3>Як це перевірити програмою — крок за кроком</h3>
+<ol>
+<li><strong>Записуємо історію цін у список.</strong> Список — це кілька значень у квадратних дужках через кому: <code>prices = [1199, 1249, 1199, 1899, 1899]</code>. Кожне число — ціна за один тиждень, від найстарішого тижня до найновішого.</li>
+<li><strong>Шукаємо найменшу ціну.</strong> Функція <code>min(prices)</code> переглядає весь список і повертає найменше число. Тут це <code>1199</code>.</li>
+<li><strong>Беремо ціну прямо перед акцією.</strong> <code>prices[-1]</code> — це останній елемент списку (<code>1899</code>). Саме від неї магазин рахує свою «знижку» і саме її перекреслює на цінник.</li>
+<li><strong>Рахуємо заявлену знижку у відсотках:</strong> <code>(стара ціна - акційна ціна) / стара ціна * 100</code>. Функція <code>round()</code> округлює результат до цілого числа.</li>
+<li><strong>Робимо висновок.</strong> Якщо <code>sale_price &lt; min_price</code> — знижка справжня. Інакше — фальшива: товар уже колись коштував стільки ж або дешевше.</li>
+</ol>
+<h3>Невеликий приклад</h3>
+<pre><code class="language-python">prices = [1199, 1249, 1199, 1899, 1899]
+sale_price = 1499
+min_price = min(prices)
+if sale_price &lt; min_price:
+    print('Знижка справжня')
+else:
+    print('Фальшива знижка')
+</code></pre>
+<p>Програма надрукує <code>Фальшива знижка</code>, бо 1499 більше за 1199. Магазин написав «-21%» (від 1899 до 1499), але місяць тому товар коштував на 300 грн дешевше.</p>
+<h3>Порівняння двох випадків</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Чесна знижка</th>
+<th>Фальшива знижка</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Історія цін</td>
+<td>1299, 1299, 1349, 1299, 1299</td>
+<td>1199, 1249, 1199, 1899, 1899</td>
+</tr>
+<tr>
+<td>Акційна ціна</td>
+<td>999</td>
+<td>1499</td>
+</tr>
+<tr>
+<td>Найменша ціна до акції</td>
+<td>1299</td>
+<td>1199</td>
+</tr>
+<tr>
+<td>Висновок</td>
+<td>999 &lt; 1299 — вигідно</td>
+<td>1499 &gt; 1199 — не вигідно</td>
+</tr>
+</tbody>
+</table>
+<h3>Навіщо це в житті</h3>
+<p>Сайти-порівнювачі цін показують графік ціни товару за кілька місяців — і роблять ту саму перевірку, що й наша програма. У країнах ЄС магазини навіть зобов'язані поруч зі знижкою вказувати найнижчу ціну за 30 днів до акції. Уміння перевірити історію цін допомагає не купувати імпульсивно на «чорну п'ятницю» і зберегти гроші.</p>
+<h3>Типові пастки і як їх уникнути</h3>
+<ul>
+<li><strong>Пробіл у числі.</strong> <code>1 199</code> — це помилка. Пиши <code>1199</code>.</li>
+<li><strong>Забута кома між числами</strong> в списку — Python видасть <code>SyntaxError</code>.</li>
+<li><strong>Немає двокрапки</strong> після <code>if ...</code> і <code>else</code> або немає відступу (4 пробіли) у рядку під ними.</li>
+<li><strong>Назва <code>min</code> для змінної.</strong> Не пиши <code>min = min(prices)</code> — так ти «зламаєш» функцію. Використовуй <code>min_price</code>.</li>
+<li><strong>Нумерація з нуля.</strong> <code>prices[0]</code> — перший елемент, <code>prices[-1]</code> — останній.</li>
+</ul>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Як працює детектор знижки</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Історія цін у список prices</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">min(prices) — найменша ціна</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">prices[-1] — ціна перед акцією</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Обчислити заявлену знижку у %</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Порівняти акційну ціну з мінімумом</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Вивести вердикт</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Чесна і фальшива знижка</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Чесна знижка</h4><ul><li>Ціна до акції стабільна</li><li>Акційна ціна нижча за найменшу ціну до акції</li><li>Покупець справді економить</li><li>Програма: sale_price &lt; min_price</li></ul></div>
+    <div class="scheme-column"><h4>Фальшива знижка</h4><ul><li>Перед акцією ціну підняли</li><li>Акційна ціна вища або дорівнює найменшій</li><li>Покупець не економить</li><li>Програма: sale_price &gt;= min_price</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Трюк із накручуванням ціни</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Товар коштує 1199 грн</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">За 2 тижні до акції ціна 1899 грн</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">На акції 1499 грн з написом -21%</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Насправді на 300 грн дорожче, ніж було</li>
+  </ol>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Найменша і остання ціна у списку</h4>
+    <pre><code class="language-python">prices = [1299, 1299, 1349, 1299, 1299]
+print(min(prices))
+print(prices[-1])
+print(prices[0])
+</code></pre>
+
+    <div class="example-explanation"><ol>
+<li>Створюється список з п'яти цін.</li>
+<li><code>min(prices)</code> переглядає всі числа і знаходить найменше — <code>1299</code>.</li>
+<li><code>prices[-1]</code> — останній елемент, ціна перед акцією — <code>1299</code>.</li>
+<li><code>prices[0]</code> — перший елемент, найстаріший тиждень — <code>1299</code>.</li>
+</ol>
+<p>У цьому прикладі ціна майже не змінювалася, тож найменша й остання ціни однакові.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Обчислення заявленої знижки у відсотках</h4>
+    <pre><code class="language-python">old_price = 1299
+sale_price = 999
+discount = round((old_price - sale_price) / old_price * 100)
+print('Заявлена знижка:', discount, '%')
+</code></pre>
+
+    <div class="example-explanation"><ol>
+<li>Різниця цін: <code>1299 - 999 = 300</code>.</li>
+<li>Ділимо на стару ціну: <code>300 / 1299 ≈ 0.2309</code>.</li>
+<li>Множимо на 100: <code>≈ 23.09</code>.</li>
+<li><code>round()</code> округлює до <code>23</code>.</li>
+</ol>
+<p>На екрані: <code>Заявлена знижка: 23 %</code>. Дужки обов'язкові: без них Python спершу поділив би <code>sale_price / old_price</code>, і результат був би неправильним.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Вердикт для чесної знижки</h4>
+    <pre><code class="language-python">prices = [1299, 1299, 1349, 1299, 1299]
+sale_price = 999
+min_price = min(prices)
+if sale_price &lt; min_price:
+    print('Знижка справжня')
+else:
+    print('Фальшива знижка')
+</code></pre>
+
+    <div class="example-explanation"><ol>
+<li><code>min_price</code> дорівнює <code>1299</code>.</li>
+<li>Умова <code>999 &lt; 1299</code> істинна, тому виконується рядок під <code>if</code>.</li>
+<li>Рядок під <code>else</code> пропускається.</li>
+</ol>
+<p>Результат: <code>Знижка справжня</code>. Порівняй із прикладом у теорії, де при мінімумі 1199 і акційній ціні 1499 програма видала <code>Фальшива знижка</code>.</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%81%D0%BF%D0%B8%D1%81%D0%BA%D0%B8+%D0%B2+Python+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Списки в Python для початківців<span class="resource-hint">пошук на YouTube: «списки в Python для початківців пояснення українською»</span></span></a>
+
+<div class="resource-note">Коротке відео про те, як створити список, звернутися до елемента за індексом і знайти мінімум. Корисно, якщо ти не встиг зрозуміти пояснення на уроці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D0%B3%D1%80%D0%B0%D1%84%D1%96%D0%BA+%D1%96%D1%81%D1%82%D0%BE%D1%80%D1%96%D1%97+%D1%86%D1%96%D0%BD%D0%B8+%D1%82%D0%BE%D0%B2%D0%B0%D1%80%D1%83+hotline" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати, як виглядає графік зміни ціни товару на сайті-порівнювачі — знайти зображення<span class="resource-hint">пошук у Google Картинках: «графік історії ціни товару hotline»</span></span></a>
+
+<div class="resource-note">Ти побачиш лінію ціни, яка піднімається перед розпродажем і падає в день акції. Наша програма шукає на такій лінії найнижчу точку і порівнює з нею акційну ціну.</div>  </div>
+</div>
+
+</section>
+
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Список цін — як рядок цінників одного товару, наклеєних один за одним щотижня: найстаріший зліва, найновіший справа.</li>
+  <li>Функція min — як учень, який проходить уздовж рядка цінників і запам&#39;ятовує найменше число, яке бачив.</li>
+  <li>Фальшива знижка — як піднятися на табуретку, а потім зістрибнути й сказати, що ти «спустився на метр»: насправді ти на тій самій підлозі, де й стояв.</li>
+  <li>Умова if/else — як контролер на вході: якщо квиток є — проходь, інакше — стоп.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%8F%D0%BA+%D0%BF%D0%B5%D1%80%D0%B5%D0%B2%D1%96%D1%80%D0%B8%D1%82%D0%B8+%D1%81%D0%BF%D1%80%D0%B0%D0%B2%D0%B6%D0%BD%D1%8E+%D0%B7%D0%BD%D0%B8%D0%B6%D0%BA%D1%83+%D1%87%D0%BE%D1%80%D0%BD%D0%B0+%D0%BF%27%D1%8F%D1%82%D0%BD%D0%B8%D1%86%D1%8F+%D1%96%D1%81%D1%82%D0%BE%D1%80%D1%96%D1%8F+%D1%86%D1%96%D0%BD%D0%B8" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Як магазини накручують ціни перед розпродажем<span class="resource-hint">пошук у Google: «як перевірити справжню знижку чорна п&#39;ятниця історія ціни»</span></span></a>
+
+<div class="resource-note">Пояснення для покупців, як розпізнати фальшиву знижку і де подивитися історію цін — те саме, що робить наша програма.</div>  </div>
+</div>
+
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання <span class="task-points">9 балів</span></p>
+    <h3>Детектор фальшивої знижки</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.programiz.com/python-programming/online-compiler/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">💻</span><span class="resource-text">Онлайн-інтерпретатор Python від Programiz</span></a>
+
+<div class="resource-note">Запасний варіант, якщо на комп&#39;ютері немає Python: пиши код у лівому полі, натискай Run, результат з&#39;явиться справа.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> написати програму, яка за історією цін товару визначає, чи знижка справжня, чи магазин спершу підняв ціну.</p>
+<p><strong>Результат:</strong> програма <code>detector.py</code>, яка виводить найменшу ціну до акції, ціну перед акцією, заявлену знижку у відсотках і вердикт: «Знижка справжня» або «Фальшива знижка».</p>
+<p>Виконуй кроки по черзі. Після кожного кроку <strong>запускай програму</strong> (F5) і звіряй результат. Якщо можеш — скопіюй заготовку, щоб не набирати дані вручну.</p>
+<p>За цю частину можна отримати <strong>9 балів</strong>. Щоб отримати <strong>10–12 балів</strong>, виконай ще завдання 2: воно самостійне.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Створи файл програми</strong></p>
+        <p>Відкрий IDLE або Thonny. Створи новий файл (File → New File) і одразу збережи його як <code>detector.py</code> (File → Save As). Якщо Python не встановлено — відкрий онлайн-інтерпретатор з посилання під завданням.</p>
+<p>Напиши перший рядок:</p>
+<pre><code class="language-python">print('Детектор знижок')
+</code></pre>
+<p>Запусти програму клавішею F5 (в онлайн-інтерпретаторі — кнопка Run).</p>
+
+<p class="step-result"><strong>Має вийти:</strong> На екрані з&#39;явився текст: Детектор знижок</p>      </li>
+      <li>
+        <p class="step-title"><strong>Запиши історію цін у список</strong></p>
+        <p>Під першим рядком додай список цін за 5 тижнів до акції і акційну ціну:</p>
+<pre><code class="language-python">prices = [1199, 1249, 1199, 1899, 1899]
+sale_price = 1499
+print('Історія цін:', prices)
+</code></pre>
+<p>Числа пиши без пробілів усередині, через кому.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> На екрані: Історія цін: [1199, 1249, 1199, 1899, 1899]</p>      </li>
+      <li>
+        <p class="step-title"><strong>Знайди найменшу ціну</strong></p>
+        <p>Додай рядки:</p>
+<pre><code class="language-python">min_price = min(prices)
+print('Найменша ціна до акції:', min_price)
+</code></pre>
+<p>Змінну назви саме <code>min_price</code>, а не <code>min</code>.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> На екрані: Найменша ціна до акції: 1199</p>      </li>
+      <li>
+        <p class="step-title"><strong>Візьми ціну перед акцією</strong></p>
+        <p>Додай рядки:</p>
+<pre><code class="language-python">old_price = prices[-1]
+print('Ціна перед акцією:', old_price)
+print('Акційна ціна:', sale_price)
+</code></pre>
+<p><code>prices[-1]</code> — це останній елемент списку.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> На екрані: Ціна перед акцією: 1899 і Акційна ціна: 1499</p>      </li>
+      <li>
+        <p class="step-title"><strong>Порахуй заявлену знижку</strong></p>
+        <p>Додай рядки:</p>
+<pre><code class="language-python">discount = round((old_price - sale_price) / old_price * 100)
+print('Магазин пише знижку:', discount, '%')
+</code></pre>
+<p>Стеж за дужками: різниця цін має бути в дужках.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> На екрані: Магазин пише знижку: 21 %</p>      </li>
+      <li>
+        <p class="step-title"><strong>Виведи вердикт</strong></p>
+        <p>Додай умову (рядки з print мають відступ 4 пробіли):</p>
+<pre><code class="language-python">if sale_price &lt; min_price:
+    print('Знижка справжня: так дешево ще не було!')
+else:
+    print('Фальшива знижка! Раніше товар коштував', min_price)
+</code></pre>
+
+<p class="step-result"><strong>Має вийти:</strong> На екрані: Фальшива знижка! Раніше товар коштував 1199</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір програму на чесній знижці</strong></p>
+        <p>Зміни лише два рядки з даними (решту коду не чіпай):</p>
+<pre><code class="language-python">prices = [1299, 1299, 1349, 1299, 1299]
+sale_price = 999
+</code></pre>
+<p>Запусти програму ще раз.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> На екрані: найменша ціна 1299, ціна перед акцією 1299, знижка 23 %, вердикт: Знижка справжня: так дешево ще не було!</p>      </li>
+    </ol>
+    <div class="task-success">
+  <h4><span aria-hidden="true">🏁</span> Умова успішного виконання (9 балів)</h4>
+  <ul><li>Програма запускається без помилок.</li><li>Для першого набору: мінімум 1199, знижка 21 %, вердикт «Фальшива знижка».</li><li>Для другого набору: мінімум 1299, знижка 23 %, вердикт «Знижка справжня».</li></ul>
+</div>
+<h4><span aria-hidden="true">🛠️</span> Якщо не вийшло</h4>
+<p class="muted">Не переписуй усе — знайди, яка саме частина зламалась, і виправ лише її.</p>
+<div class="table-wrap">
+<table class="troubleshooting">
+  <thead><tr><th>Що бачу</th><th>Що перевірити</th></tr></thead>
+  <tbody><tr><td>SyntaxError у рядку зі списком</td><td>Чи стоїть кома між усіма числами і чи немає пробілу всередині числа (1199, а не 1 199).</td></tr><tr><td>TypeError: &#39;int&#39; object is not callable</td><td>Змінну назвали min. Перейменуй на min_price і перезапусти програму.</td></tr><tr><td>IndentationError або SyntaxError біля if чи else</td><td>Чи є двокрапка після if ... і після else та відступ 4 пробіли в рядках під ними.</td></tr><tr><td>Знижка вийшла не 21 %, а дивне число</td><td>Чи взята різниця (old_price - sale_price) у дужки.</td></tr></tbody>
+</table>
+</div>
+
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><pre><code class="language-python">print('Детектор знижок')
+
+# Історія цін за 5 тижнів до акції (від найстарішого до найновішого)
+prices = [1199, 1249, 1199, 1899, 1899]
+# Ціна в день акції
+sale_price = 1499
+
+# Крок 3: знайди найменшу ціну
+
+# Крок 4: візьми ціну перед акцією
+
+# Крок 5: порахуй заявлену знижку
+
+# Крок 6: виведи вердикт
+</code></pre>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Файл detector.py, який правильно працює на обох наборах цін (кроки 6 і 7), і усно — вердикт для двох наборів цін від вчителя.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Детектор фальшивої знижки" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="task">
+    <p class="task-kind">Самостійна робота <span class="task-points">+3 бали</span></p>
+    <h3>Справжня знижка від найменшої ціни</h3>
+    
+    <p><strong>Мета:</strong> дізнатися, скільки відсотків покупець економить <strong>насправді</strong> — не від перекресленої ціни, а від найменшої ціни до акції.</p>
+<p>Додай у кінець своєї програми <code>detector.py</code> рядок, який виводить:</p>
+<p><code>Справжня знижка від найменшої ціни: … %</code></p>
+<p>Формулу склади сам, подивившись на крок 5: там знижку рахували від старої ціни, а тепер рахуй від найменшої.</p>
+<p><strong>Приклад, як має працювати.</strong> Для чайника з цінами <code>[640, 600, 650, 700, 750]</code> і акційною ціною <code>560</code> програма має показати:</p>
+<ul>
+<li><code>Магазин пише знижку: 25 %</code></li>
+<li><code>Справжня знижка від найменшої ціни: 7 %</code></li>
+</ul>
+<p>Спочатку перевір свою програму на чайнику (скопіюй заготовку з даними), а потім на першому наборі з інструкції і запиши собі, яке число вийшло. Будь готовий усно пояснити вчителю, що означає це число.</p>
+
+    <h4><span aria-hidden="true">💡</span> Підказки</h4>
+<ul class="task-hints"><li>Подивись на формулу з кроку 5. Яку змінну в ній треба замінити, щоб рахувати від найменшої ціни?</li><li>Змінна з найменшою ціною вже є у твоїй програмі — ти створив її на кроці 3.</li><li>Не забудь дужки навколо різниці цін і round(), щоб отримати ціле число.</li><li>Якщо вийшло від&#39;ємне число — це не помилка. Подумай, що воно означає для покупця.</li></ul>
+<h4><span aria-hidden="true">🏁</span> Оцінювання (до +3 бали)</h4>
+<div class="table-wrap">
+<table class="rubric">
+  <thead><tr><th>Бали</th><th>За що</th></tr></thead>
+  <tbody><tr><td class="rubric-points">+1</td><td>Новий рядок додано, програма запускається без помилок і виводить текст із відсотком.</td></tr><tr><td class="rubric-points">+1</td><td>Формула правильна: для чайника виходить 7 %, для першого набору -25 %.</td></tr><tr><td class="rubric-points">+1</td><td>Учень усно пояснює, що означає від&#39;ємне число для першого набору (на акції дорожче, ніж було найдешевше).</td></tr></tbody>
+</table>
+</div>
+
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-2"><pre><code class="language-python"># Дані для перевірки самостійного завдання (чайник)
+prices = [640, 600, 650, 700, 750]
+sale_price = 560
+</code></pre>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-2">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Програма з новим рядком, яка для чайника виводить 7 %, і усне пояснення вчителю, що вийшло для першого набору і чому.</p>
+    <div class="answer-box">
+  <label for="answer-task-2">Твоя відповідь</label>
+  <textarea id="answer-task-2" data-answer="Завдання 2: Справжня знижка від найменшої ціни" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: Наскільки підняли ціну перед акцією</h3>
+    <p>Покращ детектор: нехай він показує, <strong>на скільки гривень</strong> магазин підняв ціну перед акцією, і <strong>на якому тижні</strong> товар був найдешевшим.</p>
+<p>Додай у кінець програми:</p>
+<ul>
+<li>різницю <code>old_price - min_price</code> з підписом «Перед акцією ціну підняли на … грн»;</li>
+<li>номер тижня з найменшою ціною. Підказка: <code>prices.index(min_price)</code> повертає індекс першого такого числа, а тижні люди рахують з 1, не з 0.</li>
+</ul>
+<p>Перевір на першому наборі цін: має вийти «підняли на 700 грн» і «найдешевше було на тижні 1».</p>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: Наскільки підняли ціну перед акцією" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу створити список цін у Python і знайти найменшу ціну за допомогою min().</label></li>
+    <li><label><input type="checkbox"> Я можу порівняти акційну ціну з найменшою ціною до акції і вивести висновок через if/else.</label></li>
+    <li><label><input type="checkbox"> Я можу обчислити заявлену знижку у відсотках і пояснити, чому вона може бути нечесною.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Що поверне min([700, 450, 900])?<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Що поверне min([700, 450, 900])?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Ціни до акції: 500, 520, 800. Акційна ціна 600. Знижка справжня чи фальшива — і чому?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Ціни до акції: 500, 520, 800. Акційна ціна 600. Знижка справжня чи фальшива — і чому?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Від якої ціни магазин рахує свою знижку і від якої ціни варто рахувати покупцю?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Від якої ціни магазин рахує свою знижку і від якої ціни варто рахувати покупцю?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Перевір справжній товар <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://hotline.ua" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Hotline — порівняння цін з графіком</span></a>
+
+<div class="resource-note">Знайди тут будь-який товар і відкрий графік зміни ціни: з нього візьми ціни за кілька тижнів для домашнього завдання.</div>  </div>
+</div>
+
+  <ol>
+<li>Відкрий сайт-порівнювач цін (наприклад, Hotline) і знайди будь-який товар, який тобі цікавий: навушники, кросівки, гру.</li>
+<li>Відкрий графік зміни ціни і випиши 5 цін за останні тижні (від найстарішої до найновішої) та поточну ціну.</li>
+<li>Скопіюй заготовку, встав свої числа і запусти програму.</li>
+<li>Зроби скриншот результату програми разом із назвою товару і принеси на наступний урок.</li>
+</ol>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><pre><code class="language-python"># Товар: (напиши назву)
+prices = [0, 0, 0, 0, 0]   # 5 цін за останні тижні
+sale_price = 0             # поточна ціна
+
+min_price = min(prices)
+old_price = prices[-1]
+discount = round((old_price - sale_price) / old_price * 100)
+print('Найменша ціна:', min_price)
+print('Магазин пише знижку:', discount, '%')
+if sale_price &lt; min_price:
+    print('Знижка справжня')
+else:
+    print('Фальшива знижка або знижки немає')
+</code></pre>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Перед великими розпродажами ти зможеш за хвилину перевірити, чи справді економиш, а не купуєш товар за звичайною ціною з гарним написом «-30%».</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Перевір справжній товар" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>
