@@ -1,0 +1,1548 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чому розумні люди вірять у фейки: уроки великих цифрових обманів</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">10 КЛАС • ТЕОРІЯ + ПРАКТИКА</p>
+  <h1>Чому розумні люди вірять у фейки: уроки великих цифрових обманів</h1>
+<p class="lesson-subtitle">Розбираємо відомі цифрові фейки й атаки, з&#39;ясовуємо, як їх зробили і чому вони спрацювали, і відрізняємо фейк від фішингу.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Пояснити на прикладі, як роблять цифрові фейки (монтаж, ШІ та діпфейки, вирваний контекст, боти, зламаний акаунт, підроблений сайт) і чому вони спрацьовують.</li>
+  <li>Відрізнити фейк, що змінює думку, від фішингу, що краде дані чи гроші, і впізнати випадок, де вони поєднані.</li>
+  <li>Застосувати 4–5 правил перевірки до нового допису чи листа і скласти пам&#39;ятку «Антифейк і антифішинг».</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Фейк змінює те, що ти думаєш; фішинг змушує тебе щось зробити — ввести пароль, перейти за посиланням, переказати гроші.</li>
+  <li>Фейки роблять монтажем, за допомогою ШІ, вириванням з контексту, ботами, через зламані акаунти й підроблені сайти.</li>
+  <li>Фейки спрацьовують не через дурість, а через емоції, поспіх, довіру до авторитету й бажання повірити у «своє».</li>
+  <li>Навіть «офіційне» джерело може бути зламане: перевіряй, чи пишуть про це інші незалежні джерела.</li>
+  <li>Найкращий захист — пауза: зупинись, перевір джерело, знайди підтвердження, лише потім дій чи поширюй.</li>
+</ul>
+
+  <div class="theory"><h3>Що таке фейк і що таке фішинг</h3>
+<p><strong>Фейк</strong> — це неправдива або перекручена інформація, яку подають як правду. Мета фейку — змінити те, що ти думаєш чи відчуваєш: налякати, розлютити, посіяти паніку, змусити повірити в чиюсь версію подій.</p>
+<p><strong>Фішинг</strong> (від англ. <em>fishing</em> — риболовля) — це шахрайство, коли тебе «ловлять на гачок»: підробленим листом, повідомленням чи сайтом змушують <strong>зробити дію</strong> — ввести пароль, код з SMS, дані картки, завантажити файл або переказати гроші.</p>
+<p>Коротко: <strong>фейк краде твою думку, фішинг краде твої дані чи гроші.</strong> Часто вони працюють разом: фейкова новина веде на фішинговий сайт, а зламаний через фішинг акаунт поширює фейки.</p>
+<h3>Як роблять фейки</h3>
+<table>
+<thead>
+<tr>
+<th>Спосіб</th>
+<th>Як це виглядає</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Монтаж</td>
+<td>Фото чи відео змінене в редакторі: щось додали, прибрали, склеїли</td>
+</tr>
+<tr>
+<td>ШІ та діпфейки</td>
+<td>Нейромережа генерує фото, голос або відео людини, якої там не було</td>
+</tr>
+<tr>
+<td>Вирваний контекст</td>
+<td>Справжнє фото чи цитата, але з іншого місця, часу або обрізані</td>
+</tr>
+<tr>
+<td>Боти</td>
+<td>Тисячі фальшивих акаунтів лайкають і поширюють, створюючи враження «всі про це говорять»</td>
+</tr>
+<tr>
+<td>Зламаний акаунт</td>
+<td>Фейк публікують зі справжньої сторінки відомої людини чи медіа</td>
+</tr>
+<tr>
+<td>Підроблений сайт</td>
+<td>Копія відомого сайту з майже таким самим адресом</td>
+</tr>
+</tbody>
+</table>
+<h3>Чому фейки спрацьовують</h3>
+<ol>
+<li><strong>Емоції.</strong> Страх, злість чи захват вимикають обережність — хочеться реагувати негайно.</li>
+<li><strong>Поспіх.</strong> «Терміново!», «Лише 30 хвилин!» — немає часу подумати.</li>
+<li><strong>Авторитет.</strong> Якщо пише відомий акаунт, новинне агентство чи «банк», ми довіряємо автоматично.</li>
+<li><strong>Віра у своє.</strong> Ми легше віримо в те, що збігається з нашою думкою (це називають <em>упередженням підтвердження</em>).</li>
+</ol>
+<p>Це спрацьовує навіть з дорослими: у 2013 році один фейковий твіт від агентства AP за кілька хвилин обвалив американську біржу.</p>
+<h3>Приклад: розбираємо повідомлення</h3>
+<blockquote>
+<p>«Ваш акаунт Instagram буде видалено через 24 години за порушення авторських прав. Підтвердіть, що це ви: instagrarn-support.com»</p>
+</blockquote>
+<ul>
+<li>Поспіх — «24 години».</li>
+<li>Страх — «акаунт буде видалено».</li>
+<li>Адреса підроблена — <em>instagrarn</em> замість <em>instagram</em> (літери <strong>r</strong> і <strong>n</strong> поруч схожі на <strong>m</strong>).</li>
+<li>Мета — змусити ввести логін і пароль. Отже, це <strong>фішинг</strong>.</li>
+</ul>
+<h3>Як захиститися: правило паузи</h3>
+<ol>
+<li><strong>Зупинись.</strong> Сильна емоція — сигнал перевірити.</li>
+<li><strong>Перевір джерело.</strong> Хто автор? Чи справжня адреса сайту чи пошти?</li>
+<li><strong>Знайди підтвердження.</strong> Чи пишуть про це інші незалежні джерела?</li>
+<li><strong>Простеж оригінал.</strong> Пошук за картинкою покаже, де і коли фото з'явилося вперше.</li>
+<li><strong>Не вводь дані за посиланням з листа.</strong> Відкрий сайт чи застосунок сам.</li>
+</ol>
+<h3>Типова пастка</h3>
+<p>Думати: «Мене не обдурять, я ж розумію». Саме впевненість робить нас уразливими — ми перестаємо перевіряти. Інша пастка: «Це написав офіційний акаунт, значить правда». Акаунти зламують, тому навіть офіційне повідомлення про щось надзвичайне варто звірити з іншими джерелами.</p>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Фейк і фішинг: у чому різниця</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Фейк</h4><ul><li>Мета: змінити думку чи емоції</li><li>Хоче, щоб ти повірив і поширив</li><li>Шкода: паніка, ворожнеча, неправильні рішення</li><li>Приклад: ШІ-фото вибуху біля Пентагону</li><li>Захист: перевір джерело і знайди підтвердження</li></ul></div>
+    <div class="scheme-column"><h4>Фішинг</h4><ul><li>Мета: украсти дані, доступ чи гроші</li><li>Хоче, щоб ти щось зробив: увів пароль, переказав</li><li>Шкода: зламаний акаунт, втрачені гроші</li><li>Приклад: лист «ваш акаунт заблоковано»</li><li>Захист: не вводь дані за посиланням, відкрий сайт сам</li></ul></div>
+  </div>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Як фейк стає масовим</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Створення: монтаж, ШІ або вирваний контекст</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Запуск: зламаний чи авторитетний акаунт</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Підсилення: боти лайкають і поширюють</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Емоція і поспіх у людей</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Люди пересилають без перевірки</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Реальні наслідки: паніка, втрати, рішення</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Правило паузи перед реакцією</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Відчув сильну емоцію чи поспіх</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Зупинись</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Перевір автора й адресу</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Знайди інші незалежні джерела</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Простеж оригінал фото чи відео</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Лише тоді дій чи поширюй</li>
+  </ol>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Фейковий твіт AP 2013 року: фішинг і фейк разом</h4>
+    <p>23 квітня 2013 року з перевіреного акаунта агентства Associated Press з'явився твіт: «Breaking: Two Explosions in the White House and Barack Obama is injured». За кілька хвилин індекс Dow Jones впав приблизно на 150 пунктів, а ринок «втратив» близько 136 млрд доларів. За кілька хвилин AP повідомило про злам, і ринок відновився.</p>
+
+    <div class="example-explanation"><ol>
+<li><strong>Як зроблено:</strong> перед цим співробітники AP отримали фішингові листи, схожі на службові. Хтось перейшов за посиланням і ввів дані — зловмисники отримали доступ до акаунта.</li>
+<li><strong>Що опублікували:</strong> короткий драматичний фейк з офіційного акаунта.</li>
+<li><strong>Чому спрацювало:</strong> авторитет (AP — одне з найнадійніших агентств), страх (вибух, поранений президент), поспіх (автоматичні програми біржі реагують на новини за мілісекунди).</li>
+<li><strong>Фейк чи фішинг:</strong> обидва. Фішинг дав доступ, фейк завдав шкоди.</li>
+<li><strong>Правило захисту:</strong> надзвичайну новину перевіряй в інших незалежних джерелах; для організацій — двофакторна автентифікація й навчання співробітників.</li>
+</ol>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Розбір фішингового листа за ознаками</h4>
+    <p>Від: Служба безпеки Google <a href="mailto:security@g00gle-support.net" target="_blank" rel="noopener">security@g00gle-support.net</a>
+Тема: ТЕРМІНОВО: підозрілий вхід у ваш акаунт</p>
+<p>Ми виявили вхід з невідомого пристрою. Якщо це були не ви, протягом 2 годин підтвердіть свою особу, інакше акаунт буде заблоковано: [Підтвердити]</p>
+
+    <div class="example-explanation"><ol>
+<li><strong>Адреса відправника:</strong> <code>g00gle-support.net</code> — нулі замість літер «o», чужий домен. Справжні листи Google приходять з домену google.com.</li>
+<li><strong>Поспіх і страх:</strong> «ТЕРМІНОВО», «2 години», «буде заблоковано».</li>
+<li><strong>Вимога дії:</strong> кнопка веде на підроблену сторінку входу.</li>
+<li><strong>Висновок:</strong> це фішинг — мета вкрасти пароль.</li>
+<li><strong>Що робити:</strong> не натискати кнопку; відкрити свій акаунт самостійно через браузер чи застосунок і подивитися розділ «Безпека». Якщо входу немає — лист фальшивий.</li>
+</ol>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> ШІ-фото: як перевірити, а не лише роздивлятися</h4>
+    <p>У соцмережі бачиш дуже реалістичне фото відомої людини в незвичній ситуації з підписом «Ви не повірите, що він сьогодні вдягнув!». Допис має 50 тисяч поширень.</p>
+
+    <div class="example-explanation"><ol>
+<li><strong>Подивись на деталі:</strong> руки, пальці, окуляри, написи, тіні, предмети, що «зливаються». Але пам'ятай: нові генератори роблять це майже без помилок.</li>
+<li><strong>Перевір джерело:</strong> хто опублікував першим? Чи є фото в надійних медіа чи на офіційній сторінці людини?</li>
+<li><strong>Пошук за картинкою</strong> (Google Lens або TinEye) покаже, де фото з'явилося вперше і чи є статті-спростування.</li>
+<li><strong>Шукай інші ракурси:</strong> справжню подію зазвичай знімають кілька людей.</li>
+<li><strong>Висновок:</strong> якщо фото є лише в одному вірусному дописі й немає інших ракурсів чи джерел — найімовірніше, це фейк (ШІ). Саме так розкрили фото Папи Римського в пуховику 2023 року.</li>
+</ol>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.stopfake.org/uk/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">StopFake — спростування фейків</span></a>
+
+<div class="resource-note">Український фактчекінговий проєкт: тут можна побачити, як професіонали розбирають реальні фейки і за якими ознаками їх викривають.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=%D1%8F%D0%BA+%D1%80%D0%BE%D0%B7%D0%BF%D1%96%D0%B7%D0%BD%D0%B0%D1%82%D0%B8+%D0%B4%D1%96%D0%BF%D1%84%D0%B5%D0%B9%D0%BA+%D0%B2%D1%96%D0%B4%D0%B5%D0%BE+%D0%BF%D0%BE%D1%8F%D1%81%D0%BD%D0%B5%D0%BD%D0%BD%D1%8F+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">Як розпізнати діпфейк<span class="resource-hint">пошук на YouTube: «як розпізнати діпфейк відео пояснення українською»</span></span></a>
+
+<div class="resource-note">Коротке відео з прикладами, на що дивитися в підроблених відео й голосі, доповнює розповідь про ШІ та діпфейки.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D1%89%D0%BE+%D1%82%D0%B0%D0%BA%D0%B5+%D1%84%D1%96%D1%88%D0%B8%D0%BD%D0%B3+%D1%8F%D0%BA+%D1%80%D0%BE%D0%B7%D0%BF%D1%96%D0%B7%D0%BD%D0%B0%D1%82%D0%B8+%D1%84%D1%96%D1%88%D0%B8%D0%BD%D0%B3%D0%BE%D0%B2%D0%B8%D0%B9+%D0%BB%D0%B8%D1%81%D1%82+%D0%BA%D1%96%D0%B1%D0%B5%D1%80%D0%BF%D0%BE%D0%BB%D1%96%D1%86%D1%96%D1%8F+%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D0%B8" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Що таке фішинг і як його розпізнати<span class="resource-hint">пошук у Google: «що таке фішинг як розпізнати фішинговий лист кіберполіція України»</span></span></a>
+
+<div class="resource-note">Пояснення різновидів фішингу (лист, SMS, дзвінок) з типовими ознаками; допомагає відрізнити фішинг від фейку.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=AP+hacked+tweet+2013+White+House+explosions+screenshot" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати фейковий твіт AP 2013 року на етапі гачка — знайти зображення<span class="resource-hint">пошук у Google Картинках: «AP hacked tweet 2013 White House explosions screenshot»</span></span></a>
+
+<div class="resource-note">Учні бачать, що фейк вийшов з перевіреного акаунта поважного агентства; це пояснює, чому авторитет джерела не гарантує правду.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=%D1%84%D1%96%D1%88%D0%B8%D0%BD%D0%B3%D0%BE%D0%B2%D0%B8%D0%B9+%D0%BB%D0%B8%D1%81%D1%82+%D0%BF%D1%80%D0%B8%D0%BA%D0%BB%D0%B0%D0%B4+%D0%BE%D0%B7%D0%BD%D0%B0%D0%BA%D0%B8+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Приклад фішингового листа з позначеними ознаками — знайти зображення<span class="resource-hint">пошук у Google Картинках: «фішинговий лист приклад ознаки українською»</span></span></a>
+
+<div class="resource-note">На прикладі видно підроблену адресу, тиск на поспіх і кнопку з посиланням — головні ознаки фішингу.</div>  </div>
+</div>
+
+</section>
+
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Фішинг — як шахрай у формі листоноші: форма справжня на вигляд, але він прийшов не принести посилку, а забрати твої ключі.</li>
+  <li>Фейк — як чутка в школі: чим вона емоційніша, тим швидше її переказують, і ніхто не питає, хто це сказав першим.</li>
+  <li>Вирваний контекст — як фото, де ти падаєш: без відео видно лише «невдаху», хоча насправді ти щойно забив гол у падінні.</li>
+  <li>Боти — як найняті глядачі, що аплодують у залі: здається, що всім подобається, хоча справжніх людей мало.</li>
+  <li>Зламаний офіційний акаунт — як справжній бланк школи, на якому хтось чужий написав фальшивий наказ.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=%D0%B7%D0%BB%D0%B0%D0%BC+Twitter+2020+%D0%B1%D1%96%D1%82%D0%BA%D0%BE%D1%97%D0%BD+%D0%9E%D0%B1%D0%B0%D0%BC%D0%B0+%D0%9C%D0%B0%D1%81%D0%BA+%D1%8F%D0%BA+%D1%86%D0%B5+%D1%81%D1%82%D0%B0%D0%BB%D0%BE%D1%81%D1%8F" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📄</span><span class="resource-text">Історія зламу Twitter 2020 року<span class="resource-hint">пошук у Google: «злам Twitter 2020 біткоїн Обама Маск як це сталося»</span></span></a>
+
+<div class="resource-note">Розповідь про те, як через телефонний фішинг співробітників зламали акаунти знаменитостей; корисно для глибшого розбору картки 4.</div>  </div>
+</div>
+
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Дослідницьке завдання</p>
+    <h3>Розслідування: як зроблено великі цифрові обмани і пам&#39;ятка «Антифейк і антифішинг»</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://lens.google.com/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Google Lens — пошук за зображенням</span></a>
+
+<div class="resource-note">Якщо є комп&#39;ютери чи смартфони: завантаж фото з картки й подивися, де воно з&#39;явилося вперше і чи є спростування.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://tineye.com/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">TinEye — зворотний пошук картинок</span></a>
+
+<div class="resource-note">Ще один сервіс пошуку за картинкою: показує найстаріші копії зображення, тож видно, чи фото «вирване» з іншого часу.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=Pope+Francis+puffer+jacket+AI+image+Midjourney+2023" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Картка 2: ШІ-фото Папи Римського в пуховику — знайти зображення<span class="resource-hint">пошук у Google Картинках: «Pope Francis puffer jacket AI image Midjourney 2023»</span></span></a>
+
+<div class="resource-note">На фото видно ознаки генерації (руки, окуляри, деталі) — учні розбирають, чому картинка здалася справжньою.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=fake+Pentagon+explosion+image+May+2023+AI" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Картка 3: фейкове фото вибуху біля Пентагону — знайти зображення<span class="resource-hint">пошук у Google Картинках: «fake Pentagon explosion image May 2023 AI»</span></span></a>
+
+<div class="resource-note">Учні бачать «розмиті» деталі паркану й будівлі і з&#39;ясовують, як фото з платних «перевірених» акаунтів вплинуло на біржу.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> з'ясувати на реальних випадках, як роблять цифрові фейки й атаки і чому вони спрацьовують, і з цього самостійно вивести правила захисту.</p>
+<p><strong>Результат:</strong> заповнена таблиця розбору 5 випадків і ваша пам'ятка «Антифейк і антифішинг» з 4–5 правил, яку можна сфотографувати й надіслати в сімейний чат.</p>
+<p>Працюйте в парах або трійках. Скопіюй заготовку. Нижче — картки випадків.</p>
+<hr />
+<p><strong>Картка 1. Діпфейк Зеленського (березень 2022).</strong> Під час повномасштабного вторгнення на зламаному сайті й у біжучому рядку телеканалу «Україна 24» з'явилося відео, де «Президент» закликає військових скласти зброю. Обличчя трохи «пливе», голова непропорційна, голос неприродний. Його швидко спростували сам Президент і держструктури, які заздалегідь попереджали про можливий діпфейк.</p>
+<p><strong>Картка 2. Папа Римський у пуховику (березень 2023).</strong> У соцмережах розлетілося фото Папи Франциска в модному білому пуховику. Мільйони людей повірили і сміялися зі «стильного Папи». Пізніше виявилося, що картинку створив користувач у нейромережі Midjourney.</p>
+<p><strong>Картка 3. «Вибух біля Пентагону» (травень 2023).</strong> Фото чорного диму біля будівлі, схожої на Пентагон, поширювали акаунти з синьою галочкою, зокрема такі, що виглядали як новинні агентства. Біржовий індекс S&amp;P 500 ненадовго впав. Влада підтвердила, що вибуху не було, а фото згенероване ШІ.</p>
+<p><strong>Картка 4. Злам Twitter (липень 2020).</strong> З акаунтів Обами, Байдена, Ілона Маска, Білла Гейтса, Apple та інших з'явилися дописи: «Надішліть біткоїни на цю адресу — я поверну вдвічі. Лише 30 хвилин!». Шахраї отримали понад 100 тис. доларів. Доступ здобули, телефонуючи співробітникам Twitter і видаючи себе за ІТ-підтримку.</p>
+<p><strong>Картка 5. Лист «Ваш акаунт заблоковано».</strong></p>
+<blockquote>
+<p>Від: Instagram Support <a href="mailto:noreply@instagram-helpcenter.co" target="_blank" rel="noopener">noreply@instagram-helpcenter.co</a>
+Ваш акаунт заблоковано через порушення правил спільноти. Щоб уникнути видалення, підтвердіть особу протягом 12 годин: [Оскаржити рішення]</p>
+</blockquote>
+<hr />
+<p><strong>Як має виглядати готова відповідь (зразок для випадку AP, якого немає в картках):</strong>
+<em>Як зроблено:</em> зламаний акаунт (через фішингові листи співробітникам). <em>Чому спрацювало:</em> авторитет AP, страх, поспіх біржі. <em>Фейк/фішинг:</em> обидва. <em>Правило:</em> надзвичайну новину перевіряй в інших незалежних джерелах.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Підготуй таблицю</strong></p>
+        <p>Скопіюй заготовку (або візьми надрукований аркуш). Домовтеся в парі чи трійці, хто записує, а хто зачитує картки. Перечитайте зразок відповіді для випадку AP — так має виглядати кожен рядок.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Перед вами таблиця на 5 випадків і зрозумілий зразок заповнення.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Розбери картку 1 — діпфейк</strong></p>
+        <p>Прочитай картку 1. У стовпчику «Як зроблено» обери спосіб: монтаж, ШІ/діпфейк, вирваний контекст, боти, зламаний акаунт, підроблений сайт (може бути кілька). У «Чому спрацювало» — емоції, поспіх, авторитет, віра у своє. Подумай, чи вкрав цей випадок дані/гроші, чи хотів змінити думку.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Заповнений перший рядок з усіма чотирма стовпчиками.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Розбери картки 2 і 3 — ШІ-зображення</strong></p>
+        <p>Прочитай картки 2 і 3. Якщо є комп'ютер чи смартфон, знайди ці фото за запитом з картинок до завдання і подивись: які деталі видають генерацію? Порівняй: чому картка 3 мала реальні наслідки, а картка 2 — ні? Запиши в таблицю.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Два рядки заповнені; ви можете пояснити, чому фейк про Пентагон небезпечніший за фото Папи.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Розбери картку 4 — злам знаменитостей</strong></p>
+        <p>Прочитай картку 4. Зверни увагу: як саме отримали доступ (телефонний дзвінок) і що хотіли від читачів (біткоїни). Це фейк, фішинг чи обидва? Запиши, який психологічний гачок тут головний.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Рядок 4 заповнений; у стовпчику «Фейк чи фішинг» обґрунтована відповідь.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Розбери картку 5 — фішинговий лист</strong></p>
+        <p>Прочитай лист у картці 5. Знайди щонайменше 3 ознаки фішингу: адреса відправника, тиск часом, загроза, кнопка з посиланням. Запиши їх у стовпчик «Як зроблено» чи «Чому спрацювало».</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Усі 5 рядків таблиці заповнені.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Знайди спільне</strong></p>
+        <p>Подивіться на стовпчик «Чому спрацювало». Яка причина трапляється найчастіше? Підкресліть її. Потім подивіться на стовпчик «Правило захисту»: які правила повторюються або допомагають у кількох випадках одразу?</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Ви бачите 2–3 найчастіші пастки і найуніверсальніші правила.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Склади пам&#39;ятку</strong></p>
+        <p>У другій частині заготовки запишіть 4–5 правил «Антифейк і антифішинг». Кожне правило — коротка дія (дієслово на початку: «Перевір…», «Не вводь…»), і біля нього в дужках — номер картки, де воно допомогло б. Хоча б одне правило — проти фейків, хоча б одне — проти фішингу.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Готова пам&#39;ятка з 4–5 правил, кожне прив&#39;язане до реального випадку.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Збережи результат</strong></p>
+        <p>Сфотографуйте таблицю й пам'ятку (кожен учасник собі). Підготуйте одне правило, яке ви вважаєте найважливішим, — ним скористаємося на перевірці.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Фото пам&#39;ятки в кожного учня; група готова назвати своє головне правило.</p>      </li>
+    </ol>
+    
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><p><strong>Частина 1. Розбір випадків</strong></p>
+<table>
+<thead>
+<tr>
+<th>Випадок</th>
+<th>Як зроблено (монтаж, ШІ, контекст, боти, зламаний акаунт, підроблений сайт)</th>
+<th>Чому спрацювало (емоції, поспіх, авторитет, віра у своє)</th>
+<th>Фейк, фішинг чи обидва?</th>
+<th>Яке правило захисту допомогло б?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Діпфейк Зеленського, 2022</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2. Папа Римський у пуховику, 2023</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3. «Вибух біля Пентагону», 2023</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>4. Злам Twitter знаменитостей, 2020</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5. Лист «Ваш акаунт заблоковано»</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Частина 2. Пам'ятка «Антифейк і антифішинг»</strong></p>
+<table>
+<thead>
+<tr>
+<th>№</th>
+<th>Правило (почни з дії)</th>
+<th>Від чого захищає (фейк / фішинг)</th>
+<th>У якому випадку допомогло б (№ картки)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Фото заповненої таблиці розбору 5 випадків і пам&#39;ятки з 4–5 правил; усно — одне головне правило групи.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Розслідування: як зроблено великі цифрові обмани і пам&#39;ятка «Антифейк і антифішинг»" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: Новий випадок: перевір свою пам&#39;ятку</h3>
+    <p>Перевір, чи захищає твоя пам'ятка від нового, хитрішого обману.</p>
+<p><strong>Випадок:</strong> у Telegram з'являється канал з назвою, логотипом і фото, як в офіційного волонтерського фонду. Там допис: «ТЕРМІНОВО! Наш підрозділ без дронів. До ранку треба зібрати 50 000 грн. Номер картки: 4441 …». Під дописом сотні коментарів «Задонатив!» від акаунтів без аватарок, створених минулого тижня.</p>
+<ol>
+<li>Визнач: як зроблено, чому спрацює, фейк, фішинг чи обидва.</li>
+<li>Перевір: чи є в твоїй пам'ятці правило, яке захищає саме від цього? Якщо ні — допиши шосте правило.</li>
+<li>Запиши 3 дії, як перевірити, чи збір справжній.</li>
+</ol>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: Новий випадок: перевір свою пам&#39;ятку" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу пояснити на прикладі, як роблять цифровий фейк (монтаж, ШІ, вирваний контекст, боти, зламаний акаунт, підроблений сайт) і чому він спрацьовує.</label></li>
+    <li><label><input type="checkbox"> Я можу відрізнити фейк від фішингу і впізнати випадок, де вони поєднані.</label></li>
+    <li><label><input type="checkbox"> Я можу застосувати 4–5 правил перевірки до нового допису чи листа.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>На яку пастку (емоції, поспіх, авторитет, віра у своє) ти сам найлегше попадаєшся і чому?<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: На яку пастку (емоції, поспіх, авторитет, віра у своє) ти сам найлегше попадаєшся і чому?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Одним реченням: чим фішинг відрізняється від фейку?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Одним реченням: чим фішинг відрізняється від фейку?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Яке правило з пам&#39;ятки ти застосуєш уже сьогодні?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Яке правило з пам&#39;ятки ти застосуєш уже сьогодні?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Тренажер фішингу і пам&#39;ятка для родини <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://phishingquiz.withgoogle.com/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">💻</span><span class="resource-text">Тест Google: чи впізнаєш ти фішинг</span></a>
+
+<div class="resource-note">Онлайн-тренажер з 8 прикладами листів: треба вирішити, справжній лист чи фішинговий, і подивитися пояснення до кожного.</div>  </div>
+</div>
+
+  <ol>
+<li>Пройди онлайн-тест Google про фішинг (посилання в ресурсах до домашнього, 8 прикладів, близько 7 хвилин). Запиши свій результат.</li>
+<li>Знайди у своїй пошті (папка «Спам»), SMS або месенджерах одне підозріле повідомлення. Зроби скриншот, <strong>заклей чи розмий особисті дані</strong>, і відміть на ньому 2 ознаки фішингу або фейку.</li>
+<li>Надішли фото своєї пам'ятки «Антифейк і антифішинг» у сімейний чат або покажи рідним і запитай, чи траплялося з ними щось подібне. Скопіюй заготовку і заповни її.</li>
+</ol>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><table>
+<thead>
+<tr>
+<th>Пункт</th>
+<th>Мій результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Результат тесту Google (з 8)</td>
+<td></td>
+</tr>
+<tr>
+<td>Де знайшов підозріле повідомлення</td>
+<td></td>
+</tr>
+<tr>
+<td>Ознака 1</td>
+<td></td>
+</tr>
+<tr>
+<td>Ознака 2</td>
+<td></td>
+</tr>
+<tr>
+<td>Що відповіли рідні про пам'ятку</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Шахраї пишуть кожному щодня: «посилка затримана», «акаунт заблоковано», фейкові збори. Уміння за 10 секунд помітити ознаки рятує твої акаунти й гроші, а пам&#39;ятка в сімейному чаті захищає і старших родичів, на яких шахраї часто полюють.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Тренажер фішингу і пам&#39;ятка для родини" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>

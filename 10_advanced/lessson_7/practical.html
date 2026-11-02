@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Урок 7. Розбираємо код: синтаксис, помилки, функції</title>
+<style>
+  :root{
+    --bg:#f7f5f0; --card:#fff; --ink:#1d2433; --muted:#5b6475;
+    --accent:#2f6fde; --accent-soft:#e7efff; --ok:#1f8a4c; --ok-soft:#e3f5ea;
+    --bad:#c2410c; --bad-soft:#fdeee5; --warn-soft:#fff6d9; --line:#e2ddd3; --code:#14181f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:940px;margin:0 auto;padding:28px 18px 80px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+  .tag{display:inline-block;font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:3px 10px;border-radius:99px}
+  h1{font-size:34px;line-height:1.2;margin:12px 0 8px}
+  h2{font-size:26px;margin:46px 0 8px;display:flex;gap:12px;align-items:baseline}
+  h2 .n{font-size:16px;font-weight:700;color:#fff;background:var(--ink);border-radius:8px;padding:2px 10px;flex:none}
+  h3{font-size:20px;margin:24px 0 6px}
+  .lead{color:var(--muted);margin:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0}
+  pre{background:#fbfaf7;color:#1d2433;border:1px solid #d9d3c7;border-left:5px solid var(--accent);border-radius:10px;padding:14px 16px;overflow-x:auto;font:17px/1.6 ui-monospace,"Cascadia Code",Consolas,monospace;margin:10px 0}
+  .file{display:inline-block;margin:14px 0 -6px;font:600 14px ui-monospace,Consolas,monospace;background:var(--ink);color:#fff;padding:3px 12px;border-radius:8px 8px 0 0}
+  pre .ln{color:#a0a7b4;user-select:none;display:inline-block;width:2.2em}
+  pre .c{color:#6b7280}
+  pre .f{color:#0b5cad;font-weight:600} pre .s{color:#2f7d32} pre .k{color:#a626a4;font-weight:600} pre .num{color:#b45309}
+  code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
+  p code,li code,td code{background:#eeeae1;padding:1px 6px;border-radius:5px;font-size:.92em}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:16px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f0ece4}
+  td.l{font-weight:700;color:var(--accent);white-space:nowrap;text-align:center}
+  td.blank{background:#fff;height:2.4em}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 4px}
+  .pair pre{margin:0;font-size:15px}
+  .pair .yes pre{border-left:5px solid #3fb950;background:#f3fbf5}
+  .pair .no pre{border-left:5px solid #f85149;background:#fdf3f2}
+  .pair .lbl{font-size:14px;font-weight:700;margin-bottom:4px}
+  .pair .yes .lbl{color:var(--ok)} .pair .no .lbl{color:var(--bad)}
+  .rule{border-top:1px dashed var(--line);padding-top:14px;margin-top:14px}
+  .rule:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .rule h3{margin:0 0 2px;font-size:19px}
+  .callout{border-left:5px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .callout.warn{border-color:#d4a106;background:var(--warn-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .err{font:15px/1.5 ui-monospace,Consolas,monospace;background:#fff;color:#c4000f;border:1px solid #f1c6c6;border-radius:10px;padding:12px 14px;white-space:pre;overflow-x:auto;margin:8px 0}
+  .err .lk{color:#1a5fd0;text-decoration:underline}
+  .anat{display:grid;grid-template-columns:28px 1fr;gap:8px 10px;font-size:16px;margin-top:8px}
+  .anat .b{width:26px;height:26px;border-radius:50%;background:var(--bad);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .fn{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-family:ui-monospace,Consolas,monospace;font-size:20px;margin:12px 0}
+  .fn span{padding:6px 12px;border-radius:8px;border:2px solid}
+  .fn .a{border-color:#2f6fde;background:var(--accent-soft)}
+  .fn .b2{border-color:#d4a106;background:var(--warn-soft)}
+  .fn .r{border-color:var(--ok);background:var(--ok-soft)}
+  .fn small{font-family:system-ui;font-size:13px;color:var(--muted);display:block}
+  details{background:#faf8f3;border:1px solid var(--line);border-radius:10px;padding:8px 14px;margin:8px 0}
+  summary{cursor:pointer;font-weight:600;color:var(--accent)}
+  .steps li{margin:10px 0}
+  .pts{font-size:14px;font-weight:700;color:var(--ok);background:var(--ok-soft);border-radius:6px;padding:1px 8px;margin-left:6px;white-space:nowrap}
+  .kbd{font:14px ui-monospace,Consolas,monospace;background:#fff;border:1px solid #c9c2b3;border-bottom-width:3px;border-radius:6px;padding:0 6px}
+  .links a{color:var(--accent)} .links li{margin:8px 0}
+  footer{margin-top:50px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:14px}
+  @media (max-width:700px){.pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="tag">10 клас · поглиблений · урок 7</span>
+  <h1>Розбираємо код: синтаксис, помилки, функції</h1>
+  <p class="lead">Беремо дві наші програми — <code>anketa.py</code> і <code>detector.py</code> — і розбираємо кожен рядок: з чого він складається, за якими правилами написаний і що Python з ним робить. Потім вчимося читати помилки в Thonny і лагодимо зламану програму.</p>
+</header>
+
+<div class="card">
+  <b>Після уроку ти зможеш:</b>
+  <ul>
+    <li>пояснити, з яких частин складається кожен рядок наших програм;</li>
+    <li>назвати основні правила синтаксису Python і побачити, де їх порушено;</li>
+    <li>розпізнати функцію в коді: назва, аргументи, результат;</li>
+    <li>прочитати помилку в Thonny, знайти рядок і виправити його.</li>
+  </ul>
+</div>
+
+<!-- ================= 1 ================= -->
+<h2><span class="n">1</span>Код, який ми розбираємо: «Картка гравця» (урок 5)</h2>
+<p>Повна програма з уроку 5. Номери ліворуч — це номери рядків, їх не пишемо.</p>
+<div class="file">anketa.py</div>
+<pre><span class="ln">1</span>print('=== КАРТКА ГРАВЦЯ ===')
+<span class="ln">2</span>name = input("Як тебе звати? ")
+<span class="ln">3</span>print('Привіт,', name)
+<span class="ln">4</span>age = int(input('Скільки тобі років? '))
+<span class="ln">5</span>print(type(age))
+<span class="ln">6</span>game = input('Улюблена гра: ')
+<span class="ln">7</span>months = age * 12
+<span class="ln">8</span>days = age * 365
+<span class="ln">9</span>print('=' * 30)
+<span class="ln">10</span>print('Гравець:', name)
+<span class="ln">11</span>print('Гра:', game)
+<span class="ln">12</span>print('Вік:', age)
+<span class="ln">13</span>print('Місяців прожито:', months)
+<span class="ln">14</span>print('Днів прожито:', days)
+<span class="ln">15</span>print('=' * 30)</pre>
+<p><b>Що вона виводить</b> (ввели: Оля, 16, Minecraft):</p>
+<pre>=== КАРТКА ГРАВЦЯ ===
+Як тебе звати? Оля
+Привіт, Оля
+Скільки тобі років? 16
+&lt;class 'int'&gt;
+Улюблена гра: Minecraft
+==============================
+Гравець: Оля
+Гра: Minecraft
+Вік: 16
+Місяців прожито: 192
+Днів прожито: 5840
+==============================</pre>
+
+<h3>Розбір рядок за рядком</h3>
+<table>
+  <tr><th style="width:60px">Рядок</th><th>Що тут написано (синтаксис)</th><th>Що робить Python</th></tr>
+  <tr><td class="l">1</td><td>Виклик <b>функції</b> <code>print</code>. У дужках — <b>аргумент</b>: текст в одинарних лапках.</td><td>Виводить текст у Shell. Лапки на екран не потрапляють — вони лише показують, де текст починається і закінчується.</td></tr>
+  <tr><td class="l">2</td><td>Ліворуч — ім'я <b>змінної</b>, далі <code>=</code> (присвоєння), праворуч — функція <code>input</code>. Лапки подвійні, бо в тексті є апостроф.</td><td>Спочатку виконує праву частину: показує питання і чекає Enter. Те, що ввели, — <b>завжди текст</b> (<code>str</code>). Кладе його в <code>name</code>.</td></tr>
+  <tr><td class="l">3</td><td><code>print</code> з <b>двома аргументами</b> через кому.</td><td>Виводить їх в один рядок і сам ставить пробіл між ними.</td></tr>
+  <tr><td class="l">4</td><td>Функція <b>всередині</b> функції: <code>int(input(...))</code>. Дві пари дужок — обидві мають закритись.</td><td>Читає <b>зсередини назовні</b>: спочатку <code>input</code> отримує текст <code>'16'</code>, потім <code>int</code> перетворює його на число <code>16</code>, і тільки тоді результат іде в <code>age</code>.</td></tr>
+  <tr><td class="l">5</td><td>Функція в функції: <code>print(type(age))</code>.</td><td><code>type</code> дізнається тип, <code>print</code> його показує: <code>&lt;class 'int'&gt;</code> — отже, в <code>age</code> число.</td></tr>
+  <tr><td class="l">6</td><td>Те саме, що рядок 2, без <code>int</code>.</td><td>Назва гри — текст, рахувати з нею нічого не треба.</td></tr>
+  <tr><td class="l">7–8</td><td><b>Вирази</b> з оператором <code>*</code>; числа без лапок.</td><td>Бере число з <code>age</code>, множить, результат кладе в нову змінну. Працює тільки тому, що в рядку 4 був <code>int</code>!</td></tr>
+  <tr><td class="l">9, 15</td><td>Текст <code>*</code> число.</td><td>Для тексту <code>*</code> означає «повтори»: 30 знаків <code>=</code> — рамка картки.</td></tr>
+  <tr><td class="l">10–14</td><td><code>print</code> з двома аргументами: текст-підпис і змінна.</td><td>Підставляє <b>значення</b> змінної, а не її ім'я: друкує <code>Оля</code>, а не <code>name</code>.</td></tr>
+</table>
+
+<div class="callout warn"><b>Перевір себе:</b> що буде в рядку 7, якщо в рядку 4 прибрати <code>int</code>? <details><summary>Відповідь</summary><p><code>age</code> буде текстом <code>'16'</code>, а текст × 12 — це повтор: <code>months = '161616161616161616161616'</code>. Помилки не буде, але результат неправильний — такі баги найпідступніші. А рядок 5 покаже <code>&lt;class 'str'&gt;</code>.</p></details></div>
+
+<!-- ================= 2 ================= -->
+<h2><span class="n">2</span>Код, який ми розбираємо: «Детектор знижок» (урок 6)</h2>
+<p>Повна програма з уроку 6.</p>
+<div class="file">detector.py</div>
+<pre><span class="ln">1</span>print('=== Детектор знижок ===')
+<span class="ln">2</span>prices = [1199, 1249, 1199, 1899, 1899]
+<span class="ln">3</span>sale_price = 1499
+<span class="ln">4</span>print('Історія цін:', prices)
+<span class="ln">5</span>min_price = min(prices)
+<span class="ln">6</span>print('Найнижча ціна:', min_price)
+<span class="ln">7</span>old_price = prices[-1]
+<span class="ln">8</span>print('Ціна до акції:', old_price)
+<span class="ln">9</span>print('Акційна ціна:', sale_price)
+<span class="ln">10</span>discount = round((old_price - sale_price) / old_price * 100)
+<span class="ln">11</span>print('Знижка в магазині:', discount, '%')
+<span class="ln">12</span>if sale_price &lt; min_price:
+<span class="ln">13</span>    print('Знижка чесна')
+<span class="ln">14</span>else:
+<span class="ln">15</span>    print('Знижка фейкова')</pre>
+<p><b>Що вона виводить:</b></p>
+<pre>=== Детектор знижок ===
+Історія цін: [1199, 1249, 1199, 1899, 1899]
+Найнижча ціна: 1199
+Ціна до акції: 1899
+Акційна ціна: 1499
+Знижка в магазині: 21 %
+Знижка фейкова</pre>
+
+<h3>Розбір рядок за рядком</h3>
+<table>
+  <tr><th style="width:60px">Рядок</th><th>Що тут написано (синтаксис)</th><th>Що робить Python</th></tr>
+  <tr><td class="l">2</td><td><b>Список</b>: квадратні дужки, елементи через <b>кому</b>. Числа без пробілів усередині.</td><td>Створює один об'єкт, у якому 5 чисел по порядку. Номери (індекси): 0, 1, 2, 3, 4.</td></tr>
+  <tr><td class="l">3</td><td>Змінна з числом (без лапок).</td><td>Кладе 1499 у <code>sale_price</code>. Тут ціну не питаємо, а пишемо прямо в коді.</td></tr>
+  <tr><td class="l">4</td><td><code>print</code>, другий аргумент — весь список.</td><td>Виводить список разом із квадратними дужками.</td></tr>
+  <tr><td class="l">5</td><td>Функція <code>min</code>, аргумент — список.</td><td>Проходить усі числа і <b>повертає</b> найменше (1199). Кладемо його в <code>min_price</code>.</td></tr>
+  <tr><td class="l">7</td><td><b>Індекс</b> у квадратних дужках одразу після імені списку.</td><td><code>[-1]</code> — останній елемент (1899). <code>[0]</code> був би перший.</td></tr>
+  <tr><td class="l">10</td><td>Вираз з дужками, все це — всередині функції <code>round</code>.</td><td>Як у математиці: спершу дужки (400), потім ділення і множення (21.05…), потім <code>round</code> округлює → 21.</td></tr>
+  <tr><td class="l">11</td><td><code>print</code> з трьома аргументами різних типів: текст, число, текст.</td><td>Через кому можна змішувати типи — <code>print</code> сам їх виведе.</td></tr>
+  <tr><td class="l">12</td><td><b>Ключове слово</b> <code>if</code>, умова, <b>двокрапка</b> в кінці.</td><td>Обчислює <code>1499 &lt; 1199</code> → <code>False</code> (неправда).</td></tr>
+  <tr><td class="l">13</td><td><b>Відступ</b> — 4 пробіли. Він показує, що рядок «належить» до <code>if</code>.</td><td>Пропускає, бо умова — неправда.</td></tr>
+  <tr><td class="l">14–15</td><td><code>else</code> з двокрапкою, під ним рядок з відступом.</td><td>Виконує цю гілку. Виконується <b>тільки одна</b> з двох гілок.</td></tr>
+</table>
+
+<!-- ================= 3 ================= -->
+<h2><span class="n">3</span>Граматика Python: 7 правил</h2>
+<p class="lead">Python, як і українська мова, має правила. Тільки людина зрозуміє речення з помилкою, а Python — ні: він зупиниться і покаже <b>SyntaxError</b>.</p>
+<div class="card">
+
+  <div class="rule"><h3>1. Великі й малі літери — різні</h3>
+    <p><code>print</code>, <code>Print</code> і <code>PRINT</code> — для Python три різні слова. Існує тільки перше.</p>
+    <div class="pair"><div class="yes"><div class="lbl">✔ правильно</div><pre>print('Привіт')</pre></div><div class="no"><div class="lbl">✘ NameError</div><pre>Print('Привіт')</pre></div></div>
+  </div>
+
+  <div class="rule"><h3>2. Текст — завжди в лапках, і лапки парні</h3>
+    <p>Можна <code>'одинарні'</code> або <code>"подвійні"</code>, але відкрити й закрити однаковими. Якщо в тексті є апостроф (<i>ім'я</i>) — бери подвійні.</p>
+    <div class="pair"><div class="yes"><div class="lbl">✔ правильно</div><pre>input("Твоє ім'я: ")</pre></div><div class="no"><div class="lbl">✘ SyntaxError</div><pre>input('Твоє ім'я: ')</pre></div></div>
+  </div>
+
+  <div class="rule"><h3>3. Дужки — завжди парами</h3>
+    <p>Скільки відкрив, стільки й закрий. Особливо уважно у вкладених функціях.</p>
+    <div class="pair"><div class="yes"><div class="lbl">✔ правильно</div><pre>age = int(input('Вік: '))</pre></div><div class="no"><div class="lbl">✘ SyntaxError: '(' was never closed</div><pre>age = int(input('Вік: ')</pre></div></div>
+  </div>
+
+  <div class="rule"><h3>4. Кома розділяє елементи й аргументи</h3>
+    <p>У списку і в дужках функції. Числа пишемо без пробілів усередині.</p>
+    <div class="pair"><div class="yes"><div class="lbl">✔ правильно</div><pre>prices = [1199, 1249, 1899]</pre></div><div class="no"><div class="lbl">✘ SyntaxError</div><pre>prices = [1 199, 1249 1899]</pre></div></div>
+  </div>
+
+  <div class="rule"><h3>5. Після <code>if</code> / <code>else</code> — двокрапка, далі — відступ</h3>
+    <p>Відступ (4 пробіли або <span class="kbd">Tab</span> у Thonny) показує, які рядки належать до блоку. Без нього — <b>IndentationError</b>.</p>
+    <div class="pair"><div class="yes"><div class="lbl">✔ правильно</div><pre>if price &lt; 500:
+    print('Дешево')</pre></div><div class="no"><div class="lbl">✘ SyntaxError / IndentationError</div><pre>if price &lt; 500
+print('Дешево')</pre></div></div>
+  </div>
+
+  <div class="rule"><h3>6. <code>=</code> — це «поклади», а не «дорівнює»</h3>
+    <p>Ліворуч — тільки ім'я змінної. Для порівняння «чи дорівнює?» в Python є <code>==</code> (знадобиться в <code>if</code>).</p>
+    <div class="pair"><div class="yes"><div class="lbl">✔ правильно</div><pre>months = age * 12
+if age == 16:</pre></div><div class="no"><div class="lbl">✘ SyntaxError</div><pre>age * 12 = months
+if age = 16:</pre></div></div>
+  </div>
+
+  <div class="rule"><h3>7. Імена змінних: латиниця, цифри, <code>_</code></h3>
+    <p>Не починати з цифри, без пробілів. І <b>не займати імена функцій</b> (<code>min</code>, <code>print</code>, <code>input</code>…).</p>
+    <div class="pair"><div class="yes"><div class="lbl">✔ правильно</div><pre>min_price = min(prices)
+sale_price = 1499</pre></div><div class="no"><div class="lbl">✘ помилка або зламана функція</div><pre>min = min(prices)
+sale price = 1499
+2price = 100</pre></div></div>
+  </div>
+
+  <p style="margin-top:16px"><b>І бонус:</b> усе після <code>#</code> — <b>коментар</b>. Python його ігнорує, він для людей: <code>discount = round(x)  # округлюємо до цілого</code></p>
+</div>
+
+<!-- ================= 4 ================= -->
+<h2><span class="n">4</span>Функції — потроху</h2>
+<p>У наших двох програмах уже є <b>сім функцій</b>. Функція — це готова «машинка»: даєш їй щось у дужках, вона щось робить і (часто) повертає результат.</p>
+
+<div class="card">
+  <div class="fn">
+    <span class="a">min<small>назва</small></span>
+    <span class="b2">( [5, 2, 9] )<small>аргумент — що даємо</small></span>
+    →
+    <span class="r">2<small>результат — що повертає</small></span>
+  </div>
+  <p>Як розпізнати функцію в коді: <b>слово, а одразу за ним — дужки</b>. Без дужок функція не запуститься.</p>
+
+  <h3>Функції, які ми вже знаємо</h3>
+  <table>
+    <tr><th>Функція</th><th>Що дає на вхід</th><th>Що робить / повертає</th><th>Приклад → результат</th></tr>
+    <tr><td><code>print()</code></td><td>будь-що, через кому</td><td>виводить на екран</td><td><code>print('Hi', 5)</code> → на екрані <code>Hi 5</code></td></tr>
+    <tr><td><code>input()</code></td><td>текст питання</td><td>чекає введення, повертає <b>текст</b></td><td><code>input('Вік: ')</code> → <code>'16'</code></td></tr>
+    <tr><td><code>int()</code></td><td>текст з цифр</td><td>повертає ціле число</td><td><code>int('16')</code> → <code>16</code></td></tr>
+    <tr><td><code>type()</code></td><td>будь-яке значення</td><td>повертає тип</td><td><code>type(16)</code> → <code>&lt;class 'int'&gt;</code></td></tr>
+    <tr><td><code>min()</code></td><td>список</td><td>повертає найменше</td><td><code>min([5, 2, 9])</code> → <code>2</code></td></tr>
+    <tr><td><code>round()</code></td><td>число з комою</td><td>повертає округлене</td><td><code>round(21.05)</code> → <code>21</code></td></tr>
+    <tr><td><code>.index()</code></td><td>значення</td><td>номер елемента в списку*</td><td><code>prices.index(1249)</code> → <code>1</code></td></tr>
+  </table>
+  <p style="font-size:15px;color:var(--muted)">* <code>.index()</code> пишеться через крапку після списку — така функція, «прикріплена» до об'єкта, називається <b>методом</b>.</p>
+
+  <h3>Нові родичі — вони працюють так само</h3>
+<pre>prices = [<span class="num">1199</span>, <span class="num">1249</span>, <span class="num">1899</span>]
+<span class="f">print</span>(<span class="f">max</span>(prices))   <span class="c"># 1899 — найбільше</span>
+<span class="f">print</span>(<span class="f">sum</span>(prices))   <span class="c"># 4347 — сума</span>
+<span class="f">print</span>(<span class="f">len</span>(prices))   <span class="c"># 3    — скільки елементів</span>
+<span class="f">print</span>(<span class="f">str</span>(<span class="num">21</span>) + <span class="s">'%'</span>) <span class="c"># 21%  — число → текст (протилежність int)</span></pre>
+
+  <h3>Важливо: вкладені функції читаємо зсередини</h3>
+<pre><span class="f">print</span>(<span class="f">round</span>(<span class="f">sum</span>(prices) / <span class="f">len</span>(prices)))</pre>
+  <p>① <code>sum(prices)</code> → 4347 · ② <code>len(prices)</code> → 3 · ③ ділимо → 1449.0 · ④ <code>round</code> → 1449 · ⑤ <code>print</code> виводить. Так ми порахували <b>середню ціну</b> одним рядком.</p>
+
+  <h3>Зазирнемо вперед: свої функції</h3>
+  <p>Функції можна створювати й самому — словом <code>def</code>. Наприклад, перевірку знижки можна «запакувати» в окрему машинку і перевіряти скільки завгодно товарів:</p>
+<pre><span class="k">def</span> <span class="f">is_honest</span>(prices, sale_price):
+    <span class="k">return</span> sale_price &lt; <span class="f">min</span>(prices)
+
+<span class="f">print</span>(<span class="f">is_honest</span>([<span class="num">1199</span>, <span class="num">1249</span>, <span class="num">1899</span>], <span class="num">1499</span>))   <span class="c"># False</span>
+<span class="f">print</span>(<span class="f">is_honest</span>([<span class="num">1299</span>, <span class="num">1349</span>, <span class="num">1299</span>], <span class="num">999</span>))    <span class="c"># True</span></pre>
+  <p>Детально про <code>def</code> і <code>return</code> — на наступних уроках. Поки достатньо бачити: це той самий принцип «назва — аргументи — результат».</p>
+</div>
+
+<!-- ================= 5 ================= -->
+<h2><span class="n">5</span>Помилки в Thonny: як їх читати</h2>
+<p>Червоний текст у вікні <b>Shell</b> — це повідомлення від Python: <i>де</i> він зупинився і <i>чому</i>.</p>
+
+<div class="card">
+  <h3>Анатомія помилки</h3>
+<div class="err">Traceback (most recent call last):
+  File <span class="lk">"C:\Users\...\detector.py", line 5</span>, in &lt;module&gt;
+    old_price = prices[5]
+IndexError: list index out of range</div>
+  <div class="anat">
+    <div class="b">1</div><div><b>line 5</b> — номер рядка. У Thonny це посилання: клацни — і курсор перескочить на цей рядок.</div>
+    <div class="b">2</div><div><b>old_price = prices[5]</b> — сам рядок, що зламався. Іноді під ним є <code>^^^^</code> — стрілочки показують точне місце.</div>
+    <div class="b">3</div><div><b>IndexError</b> — <b>тип</b> помилки. Одразу каже, яка це категорія проблеми.</div>
+    <div class="b">4</div><div><b>list index out of range</b> — пояснення: «індекс виходить за межі списку». Читай <b>останній рядок першим</b>!</div>
+  </div>
+
+  <div class="callout ok"><b>Помічник у Thonny:</b> меню <b>View → Assistant</b> (Вигляд → Помічник). Він пояснює помилку простішими словами й підказує, що перевірити.</div>
+
+  <h3>Два види помилок</h3>
+  <table>
+    <tr><th></th><th>Синтаксична (SyntaxError, IndentationError)</th><th>Помилка під час виконання (усі інші)</th></tr>
+    <tr><td><b>Коли</b></td><td>Python читає файл <b>до запуску</b> і не розуміє «граматику».</td><td>Граматика правильна, але на якомусь рядку виконати дію неможливо.</td></tr>
+    <tr><td><b>Що бачиш</b></td><td>Програма <b>навіть не стартує</b> — не з'являється жоден <code>print</code>.</td><td>Рядки <b>до</b> помилки виконуються, далі — стоп.</td></tr>
+    <tr><td><b>Скільки за раз</b></td><td>Показує тільки першу. Виправив — запусти знову, побачиш наступну.</td><td>Теж тільки першу.</td></tr>
+  </table>
+
+  <h3>Довідник помилок</h3>
+  <table>
+    <tr><th>Тип</th><th>Простими словами</th><th>Код, що її викликає</th><th>Як виправити</th></tr>
+    <tr><td><code>SyntaxError</code></td><td>«Не розумію граматику»</td><td><code>[1899 1899]</code><br><code>if x &lt; 5</code></td><td>Кома, двокрапка, дужка, лапка</td></tr>
+    <tr><td><code>IndentationError</code></td><td>«Відступ не там»</td><td><code>else:</code><br><code>print('...')</code> (без відступу)</td><td>Відступ 4 пробіли під <code>if</code>/<code>else</code></td></tr>
+    <tr><td><code>NameError</code></td><td>«Не знаю такого імені»</td><td><code>Print('Hi')</code><br><code>print(min_prise)</code></td><td>Опечатка або змінну не створили</td></tr>
+    <tr><td><code>TypeError</code></td><td>«З цим типом так не можна»</td><td><code>'16' + 1</code><br><code>discount + '%'</code></td><td><code>int()</code> або <code>str()</code>, чи кома в <code>print</code></td></tr>
+    <tr><td><code>ValueError</code></td><td>«Тип правильний, значення — ні»</td><td><code>int('шістнадцять')</code><br><code>int('1 499')</code></td><td>Вводити тільки цифри</td></tr>
+    <tr><td><code>IndexError</code></td><td>«Немає такого місця в списку»</td><td>5 елементів, а <code>prices[5]</code></td><td>Індекси 0…4, або <code>[-1]</code></td></tr>
+    <tr><td><code>ZeroDivisionError</code></td><td>«На нуль ділити не можна»</td><td><code>(old - sale) / 0</code></td><td>Перевірити дільник</td></tr>
+  </table>
+  <p style="font-size:15px;color:var(--muted)">Текст пояснення може трохи відрізнятись залежно від версії Python у Thonny, але тип помилки — завжди той самий.</p>
+</div>
+
+<!-- ================= 6 ================= -->
+<h2><span class="n">6</span>Практична: полагодь детектор <span class="pts">9 балів</span></h2>
+<p>У цій версії детектора <b>6 помилок</b>. Знайди й виправ їх, орієнтуючись на <b>повідомлення Thonny</b>.</p>
+
+<div class="card">
+  <ol class="steps">
+    <li>Створи у Thonny файл <code>broken.py</code> і скопіюй у нього код нижче. Увімкни <b>View → Variables</b> і <b>View → Assistant</b>.</li>
+  </ol>
+<div class="file">broken.py</div>
+<pre><span class="f">print</span>(<span class="s">'=== Детектор знижок ==='</span>)
+prices = [<span class="num">1199</span>, <span class="num">1249</span>, <span class="num">1199</span>, <span class="num">1899</span> <span class="num">1899</span>]
+sale_price = <span class="f">int</span>(<span class="f">input</span>(<span class="s">'Акційна ціна: '</span>))
+min = <span class="f">min</span>(prices)
+old_price = prices[<span class="num">5</span>]
+discount = <span class="f">round</span>((old_price - sale_price) / old_price * <span class="num">100</span>)
+<span class="f">print</span>(<span class="s">'Знижка в магазині:'</span>, discount + <span class="s">'%'</span>)
+<span class="k">if</span> sale_price &lt; min_price
+    <span class="f">print</span>(<span class="s">'Знижка чесна'</span>)
+<span class="k">else</span>:
+<span class="f">print</span>(<span class="s">'Знижка фейкова'</span>)</pre>
+  <ol class="steps" start="2">
+    <li>Натисни <span class="kbd">F5</span>. Прочитай помилку: <b>рядок</b>, <b>тип</b>, <b>пояснення</b>. Виправ <b>тільки цю одну</b> помилку і запусти знову. Акційну ціну вводь <code>1499</code>.</li>
+    <li>Після кожної помилки заповни рядок таблиці в зошиті. <span class="pts">6 × 1 бал</span></li>
+  </ol>
+  <table>
+    <tr><th>№</th><th>Рядок</th><th>Тип помилки</th><th>Що було не так</th><th>Як виправив</th></tr>
+    <tr><td>1</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>2</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>3</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>4</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>5</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+    <tr><td>6</td><td class="blank"></td><td class="blank"></td><td class="blank"></td><td class="blank"></td></tr>
+  </table>
+  <ol class="steps" start="4">
+    <li>Коли все працює, на екрані має бути: <span class="pts">1 бал</span>
+<pre>=== Детектор знижок ===
+Акційна ціна: 1499
+Знижка в магазині: 21 %
+Знижка фейкова</pre></li>
+    <li>Тепер спеціально введи <code>1 499</code> (з пробілом). Яку помилку побачиш і чому? Запиши. <span class="pts">1 бал</span></li>
+    <li>Запусти програму в <b>покроковому режимі</b>: <span class="kbd">Ctrl</span>+<span class="kbd">F5</span>, далі тисни <span class="kbd">F7</span> (Step into). Подивись на рядок з <code>int(input(...))</code>: Thonny покаже, що спочатку виконується <code>input</code>, а потім <code>int</code>. Поясни вчителю, що ти побачив. <span class="pts">1 бал</span></li>
+  </ol>
+
+  <details><summary>Застряг на якійсь помилці? Підказка</summary>
+    <p>Подивись у довідник помилок у розділі 5 і на правила граматики в розділі 3. Кожна з 6 помилок там є. І пам'ятай: перші три помилки — синтаксичні, тому програма навіть не почнеться, поки їх не виправиш.</p>
+  </details>
+
+  <div class="callout"><b>Бонус +2 бали:</b> додай у полагоджену програму рядки, які виводять <b>найвищу ціну</b> (<code>max</code>), <b>кількість тижнів</b> в історії (<code>len</code>) і <b>середню ціну</b> (див. приклад із <code>sum</code> та <code>len</code> у розділі 4).</div>
+</div>
+
+<!-- ================= 7 ================= -->
+<h2><span class="n">7</span>Вихідний квиток</h2>
+<div class="card">
+  <ol>
+    <li>Чим синтаксична помилка відрізняється від помилки під час виконання? Як це помітити в Thonny?</li>
+    <li>Знайди всі функції в рядку <code>print(round(sum(prices) / len(prices)))</code>. У якому порядку вони виконуються?</li>
+    <li>Що означає <code>NameError: name 'Print' is not defined</code> і як це виправити?</li>
+  </ol>
+</div>
+
+<!-- ================= links ================= -->
+<h2><span class="n">★</span>Корисні сервіси</h2>
+<div class="card links">
+  <ul>
+    <li><a href="https://thonny.org/" target="_blank" rel="noopener"><b>Thonny</b></a> — наше середовище. Безкоштовне, можна встановити й удома.</li>
+    <li><a href="https://pythontutor.com/visualize.html" target="_blank" rel="noopener"><b>Python Tutor</b></a> — показує виконання коду крок за кроком у браузері, працює з телефона.</li>
+    <li><a href="https://www.programiz.com/python-programming/online-compiler/" target="_blank" rel="noopener"><b>Programiz Online Compiler</b></a> — запуск Python у браузері без встановлення.</li>
+    <li><a href="https://docs.python.org/uk/3/library/functions.html" target="_blank" rel="noopener"><b>Вбудовані функції Python</b></a> — офіційний список усіх «готових машинок» (наші — <code>print</code>, <code>input</code>, <code>int</code>, <code>min</code>, <code>max</code>, <code>sum</code>, <code>len</code>, <code>round</code>).</li>
+  </ul>
+</div>
+
+<!-- ================= homework ================= -->
+<h2><span class="n">🏠</span>Домашнє завдання (на папері)</h2>
+<div class="card">
+  <p>Для кожного фрагмента напиши: <b>тип помилки</b> і <b>виправлений рядок</b>.</p>
+<pre>a) name = input('Ім'я: ')
+b) weeks = len(prices
+c) total = sum(prices) + ' грн'
+d) print(prices[len(prices)])
+e) if total > 1000
+       print('Дорого')</pre>
+  <p><b>За бажанням:</b> поясни письмово, що виведе <code>print(len([10, 20, 30]) * 2)</code> і в якому порядку працюють функції.</p>
+</div>
+
+<footer>Урок 7 · Розбір уроків 5–6: синтаксис, помилки, функції · Інформатика, 10 клас</footer>
+</div>
+</body>
+</html>

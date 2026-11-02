@@ -1,0 +1,1193 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Практична: працюємо зі справжньою базою даних Chinook</title>
+<style>
+
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+
+/* --- Additions for the check-yourself practical --- */
+.mini-terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--space-1); margin: var(--space-2) 0; }
+.mini-term { padding: var(--space-1) var(--space-2); border: 2px solid var(--color-accent); border-radius: var(--radius); background: var(--color-note-bg); }
+.mini-term b { color: var(--color-accent); }
+.download-btn { display: inline-block; padding: var(--space-1) var(--space-3); border-radius: var(--radius); background: var(--color-accent); color: var(--color-on-accent); font-weight: 700; text-decoration: none; font-size: var(--text-lg); }
+.answer-sheet { width: 100%; }
+.answer-sheet td:first-child { width: 2.5rem; }
+.answer-sheet td:nth-child(2) { width: 40%; }
+.answer-sheet textarea { box-sizing: border-box; width: 100%; padding: .3rem .5rem; border: 1px solid var(--color-muted); border-radius: var(--radius); background: var(--color-surface); color: var(--color-fg); font: inherit; resize: vertical; }
+.tip { font-size: .9em; color: var(--color-muted); }
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+
+<header class="lesson-header">
+  <p class="lesson-label">9 КЛАС • ПРАКТИЧНА РОБОТА • ДО 12 БАЛІВ</p>
+  <h1>Залазимо всередину справжньої бази даних</h1>
+  <p class="lesson-subtitle">База музичного магазину Chinook (як Spotify чи iTunes): шукаємо, фільтруємо і пишемо перші запити.</p>
+  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Одразу до завдань <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Тільки найважливіше (2 хвилини)</h2>
+  <p>Netflix, Spotify, Нова пошта, електронний щоденник — усі зберігають інформацію в <strong>базах даних</strong>. Найпростіше уявити базу як таблицю:</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>ArtistId</th><th>Name</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>AC/DC</td></tr>
+      <tr><td>2</td><td>Accept</td></tr>
+      <tr><td>3</td><td>Aerosmith</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="mini-terms">
+    <div class="mini-term"><b>База даних</b> — дані, складені за порядком (багато таблиць).</div>
+    <div class="mini-term"><b>Запис</b> — один рядок. Тут: один виконавець.</div>
+    <div class="mini-term"><b>Поле</b> — один стовпець. Тут: <code>ArtistId</code> і <code>Name</code>.</div>
+    <div class="mini-term"><b>СУБД</b> — програма, що шукає, сортує, фільтрує дані. У нас — SQLite.</div>
+    <div class="mini-term"><b>SQL</b> — мова, якою ми «просимо» базу: «покажи», «порахуй», «знайди».</div>
+  </div>
+  <p>У кожного запису є свій <strong>номер</strong> (Id), який не повторюється. Таблиці зв'язані саме номерами: в альбомі записано не ім'я виконавця, а його <code>ArtistId</code>.</p>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">⬇️</span>Крок 0. Завантаж базу і відкрий її</h2>
+  <p><a class="download-btn" href="https://github.com/lerocha/chinook-database/releases/latest/download/Chinook_Sqlite.sqlite">⬇️ Завантажити Chinook_Sqlite.sqlite</a></p>
+  <p class="tip">Якщо кнопка не спрацювала: відкрий <a href="https://github.com/lerocha/chinook-database/releases">github.com/lerocha/chinook-database/releases</a> → розгорни <b>Assets</b> → натисни <b>Chinook_Sqlite.sqlite</b>. Потрібен саме файл <b>.sqlite</b> (≈ 1 МБ), не <b>.sql</b>.</p>
+  <ol>
+    <li>Запусти програму <b>DB Browser for SQLite</b>.</li>
+    <li>Натисни <b>«Відкрити базу даних»</b> (Open Database) або <kbd>Ctrl</kbd>+<kbd>O</kbd>.</li>
+    <li>Знайди файл у папці <b>«Завантаження»</b> і відкрий.</li>
+  </ol>
+  <p class="tip">Нема DB Browser? Відкрий <a href="https://sqliteonline.com">sqliteonline.com</a> → <b>File → Open DB</b> → обери файл. Запити там пишуться так само.</p>
+  <p class="resource-note">⚠️ Сьогодні ми лише дивимося дані. <b>Не</b> натискай «Записати зміни» і нічого не видаляй.</p>
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+
+  <p class="resource-note">✍️ <b>Куди писати відповіді:</b> у <a href="#blank">бланк</a> внизу сторінки, а потім скопіюй усе в документ (Word / Google Docs) однією кнопкою. Можна й на листок. Кожна правильна відповідь — <b>1 бал</b>.</p>
+
+  <article class="task">
+    <p class="task-kind">Завдання 1 · Будова бази <span class="task-points">2 бали</span></p>
+    <ol>
+      <li>Відкрий вкладку <b>«Структура бази даних»</b> (Database Structure).</li>
+      <li>Розгорни рядок <b>«Таблиці»</b> і порахуй, скільки їх.</li>
+      <li>Розгорни таблицю <b>Track</b> (клацни на стрілочку) і порахуй її поля.</li>
+    </ol>
+    <p class="step-result">✍️ <b>№1</b> Скільки таблиць у базі? &nbsp; <b>№2</b> Скільки полів у таблиці Track?</p>
+  </article>
+
+  <article class="task">
+    <p class="task-kind">Завдання 2 · Записи <span class="task-points">2 бали</span></p>
+    <ol>
+      <li>Відкрий вкладку <b>«Перегляд даних»</b> (Browse Data).</li>
+      <li>Угорі в списку <b>«Таблиця»</b> обери потрібну таблицю.</li>
+      <li>Кількість записів написана внизу вікна, наприклад <code>1 - 50 of 275</code>. Потрібне <b>останнє</b> число.</li>
+    </ol>
+    <p class="step-result">✍️ <b>№3</b> Скільки записів у таблиці <b>Track</b> (пісні)? &nbsp; <b>№4</b> Скільки записів у таблиці <b>Customer</b> (клієнти)?</p>
+  </article>
+
+  <article class="task">
+    <p class="task-kind">Завдання 3 · Фільтр і зв'язок таблиць <span class="task-points">2 бали</span></p>
+    <ol>
+      <li>У «Перегляді даних» обери таблицю <b>Artist</b>.</li>
+      <li>Під заголовком <b>Name</b> є порожня клітинка-фільтр. Впиши туди <b>Queen</b> і подивись номер <code>ArtistId</code>.</li>
+      <li>Обери таблицю <b>Album</b>. У фільтр під <b>ArtistId</b> впиши <code>=</code> і цей номер (наприклад <code>=7</code>).</li>
+      <li>Подивись, які альбоми залишилися. Потім очисти фільтри.</li>
+    </ol>
+    <p class="step-result">✍️ <b>№5</b> Який ArtistId у Queen? &nbsp; <b>№6</b> Скільки в Queen альбомів і як вони називаються?</p>
+  </article>
+
+  <article class="task">
+    <p class="task-kind">Завдання 4 · Перші запити SQL <span class="task-points">3 бали</span></p>
+    <p>Відкрий вкладку <b>«Виконати SQL»</b> (Execute SQL). Впиши запит і запусти кнопкою <b>▶</b> (або <kbd>Ctrl</kbd>+<kbd>Enter</kbd>). Кожен новий запит пиши замість старого.</p>
+
+    <p><b>а)</b> Скільки клієнтів зі США? <span class="muted">COUNT — «порахуй», WHERE — «де».</span></p>
+    <pre><code>SELECT COUNT(*) FROM Customer WHERE Country = 'USA';</code></pre>
+    <p class="step-result">✍️ <b>№7</b> Що показав запит?</p>
+
+    <p><b>б)</b> Скільки пісень у жанрі номер 1 (Rock)?</p>
+    <pre><code>SELECT COUNT(*) FROM Track WHERE GenreId = 1;</code></pre>
+    <p class="step-result">✍️ <b>№8</b> Скільки пісень?</p>
+
+    <p><b>в)</b> Хто єдиний клієнт з Польщі і з якого він міста?</p>
+    <pre><code>SELECT FirstName, LastName, City FROM Customer WHERE Country = 'Poland';</code></pre>
+    <p class="step-result">✍️ <b>№9</b> Ім'я, прізвище і місто клієнта.</p>
+  </article>
+
+  <article class="task extra-task">
+    <p class="task-kind">⭐ Додаткові завдання · до 12 балів <span class="task-points">+3 бали</span></p>
+    <p>Завдання йдуть від легшого до складнішого. Кожне — <b>1 бал</b>. У бланк запиши і запит, і відповідь.</p>
+
+    <h3>Д1. Скільки клієнтів з Канади?</h3>
+    <p>Візьми запит <b>4а</b> і заміни країну. Канада англійською — <code>Canada</code>.</p>
+    <p class="step-result">✍️ <b>№10</b> Запит і відповідь.</p>
+
+    <h3>Д2. Як називається найдовша пісня в базі? <span class="muted">(складніше)</span></h3>
+    <p>Тривалість пісні зберігається в полі <code>Milliseconds</code>. Щоб знайти найдовшу, треба <b>відсортувати</b> пісні від найдовшої до найкоротшої і взяти <b>першу</b>.</p>
+    <ul>
+      <li><code>ORDER BY поле DESC</code> — відсортувати від більшого до меншого;</li>
+      <li><code>LIMIT 1</code> — показати лише перший рядок.</li>
+    </ul>
+    <p>Допиши запит замість пропусків:</p>
+    <pre><code>SELECT Name, Milliseconds FROM Track ORDER BY ________ DESC LIMIT __;</code></pre>
+    <p class="step-result">✍️ <b>№11</b> Запит і назва пісні. Скільки це хвилин (приблизно)?</p>
+
+    <h3>Д3. Скільки пісень довші за 10 хвилин? <span class="muted">(найскладніше)</span></h3>
+    <p>Цей запит пишеш повністю сам. Він схожий на <b>4б</b>, тільки умова інша.</p>
+    <ul>
+      <li>Порахуй, скільки мілісекунд у 10 хвилинах: 1 хв = 60 с, 1 с = 1000 мс.</li>
+      <li>Знак «більше» — <code>&gt;</code>.</li>
+    </ul>
+    <p class="step-result">✍️ <b>№12</b> Скільки мілісекунд у 10 хвилинах, запит і відповідь.</p>
+  </article>
+</section>
+
+<section class="block" id="blank">
+  <h2><span class="icon" aria-hidden="true">📝</span>Бланк відповідей</h2>
+  <p>Пиши відповіді прямо тут. Коли закінчиш, натисни <b>«Скопіювати відповіді»</b> і встав їх у документ (<kbd>Ctrl</kbd>+<kbd>V</kbd>). Питання скопіюються разом із відповідями. Якщо сторінку випадково закрити або оновити, записане не зникне (на цьому комп'ютері).</p>
+  <div class="student-name">
+    <label for="student-name">Прізвище, ім'я</label>
+    <input id="student-name" type="text" autocomplete="off" placeholder="Наприклад: Коваленко Марія">
+  </div>
+  <div class="table-wrap">
+  <table class="answer-sheet">
+    <thead><tr><th>№</th><th>Питання</th><th>Відповідь</th></tr></thead>
+    <tbody id="sheet-rows"></tbody>
+  </table>
+  </div>
+  <p style="margin-top:1rem"><button type="button" class="send-button" id="copy-answers">📋 Скопіювати відповіді</button> <span class="copy-status" id="copy-status"></span></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="8" hidden readonly></textarea>
+  <p class="tip">Без комп'ютера? Перепиши номери 1–12 на листок і пиши відповіді там.</p>
+  <p class="deliverable"><b>Що здати:</b> документ із відповідями (або листок) і покажи вчителю на екрані результат одного запиту з завдання 4 або з додаткових.</p>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе (усно)</h2>
+  <ul class="checklist">
+    <li>☐ Я можу показати в таблиці один <b>запис</b> і одне <b>поле</b>.</li>
+    <li>☐ Я знаю, чим база даних відрізняється від СУБД.</li>
+    <li>☐ Я розумію, навіщо в кожного запису свій номер (Id).</li>
+    <li>☐ Я можу пояснити, що робить <code>SELECT … FROM … WHERE …</code>.</li>
+  </ul>
+</section>
+
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // The answer sheet: typed here, kept on this device, copied out together with the questions.
+  var QUESTIONS = [
+    "Скільки таблиць у базі",
+    "Скільки полів у таблиці Track",
+    "Скільки записів у Track",
+    "Скільки записів у Customer",
+    "ArtistId у Queen",
+    "Альбоми Queen (скільки і які)",
+    "Клієнтів зі США",
+    "Пісень жанру Rock",
+    "Клієнт з Польщі: ім'я, прізвище, місто",
+    "Д1: запит і скільки клієнтів з Канади",
+    "Д2: запит, назва найдовшої пісні і скільки це хвилин",
+    "Д3: скільки мс у 10 хв, запит і відповідь"
+  ];
+  var store = "db-practice-sheet:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(store) || "{}"); } catch (e) { saved = {}; }
+  function save() { try { localStorage.setItem(store, JSON.stringify(saved)); } catch (e) {} }
+
+  var tbody = document.getElementById("sheet-rows");
+  QUESTIONS.forEach(function (q, i) {
+    var tr = document.createElement("tr");
+    var n = document.createElement("td"); n.textContent = i + 1;
+    var t = document.createElement("td"); t.textContent = q;
+    var a = document.createElement("td");
+    var box = document.createElement("textarea");
+    box.rows = i >= 9 ? 3 : 1;
+    box.id = "a" + (i + 1);
+    box.setAttribute("aria-label", "Відповідь " + (i + 1));
+    box.value = saved[box.id] || "";
+    box.addEventListener("input", function () { saved[box.id] = box.value; save(); });
+    a.appendChild(box);
+    tr.appendChild(n); tr.appendChild(t); tr.appendChild(a);
+    tbody.appendChild(tr);
+  });
+
+  var name = document.getElementById("student-name");
+  name.value = saved.name || "";
+  name.addEventListener("input", function () { saved.name = name.value; save(); });
+
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>"); }
+  function build() {
+    var who = name.value.trim() || "—";
+    var plain = ["Практична: база даних Chinook", "Прізвище, ім'я: " + who, ""];
+    var html = "<p><b>Практична: база даних Chinook</b><br>Прізвище, ім'я: " + esc(who) + "</p>" +
+      "<table border=\"1\" cellpadding=\"4\" style=\"border-collapse:collapse\"><tr><th>№</th><th>Питання</th><th>Відповідь</th></tr>";
+    QUESTIONS.forEach(function (q, i) {
+      var ans = (document.getElementById("a" + (i + 1)).value || "").trim();
+      plain.push((i + 1) + ". " + q + ": " + (ans || "—"));
+      html += "<tr><td>" + (i + 1) + "</td><td>" + esc(q) + "</td><td>" + (ans ? esc(ans) : "—") + "</td></tr>";
+    });
+    html += "</table>";
+    return { plain: plain.join("\n"), html: html };
+  }
+
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  function done() { fallback.hidden = true; status.textContent = "Скопійовано! Встав у документ (Ctrl+V)."; }
+  function legacyCopy(text) {
+    fallback.hidden = false;
+    fallback.value = text;
+    fallback.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    if (ok) { done(); return; }
+    status.textContent = "Не вдалося скопіювати автоматично. Текст виділено нижче — натисни Ctrl+C.";
+  }
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var out = build();
+    if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+      var item = new ClipboardItem({
+        "text/html": new Blob([out.html], { type: "text/html" }),
+        "text/plain": new Blob([out.plain], { type: "text/plain" })
+      });
+      navigator.clipboard.write([item]).then(done, function () { legacyCopy(out.plain); });
+      return;
+    }
+    legacyCopy(out.plain);
+  });
+})();
+</script>
+</body>
+</html>
