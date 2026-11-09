@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Урок 11: SQL-запити з умовами</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1d2433; --muted:#5b6478; --line:#e3e7ef;
+  --accent:#3b6fd8; --accent-soft:#e8effc; --ok:#1f9d63; --ok-soft:#e5f6ee;
+  --warn:#c77700; --warn-soft:#fff4e0; --bad:#d23f3f; --bad-soft:#fdeaea;
+  --gold:#a86b00; --gold-soft:#fff3d6;
+  --code-bg:#1e2433; --code-text:#e6e9f2; --kw:#7fb4ff; --str:#9be29b; --num:#ffc66d; --cm:#8a93a8; --blank:#ff8fb1;
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1b2029; --text:#e6e9f2; --muted:#9aa3b8; --line:#2c3341;
+  --accent:#7aa5ff; --accent-soft:#1f2a40; --ok:#4fd197; --ok-soft:#173327;
+  --warn:#ffb648; --warn-soft:#3a2c14; --bad:#ff7b7b; --bad-soft:#3a1c1c;
+  --gold:#ffcc66; --gold-soft:#3a3016; --code-bg:#0d1017;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+header{padding:28px 0 8px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:8px 0 12px}
+h2{font-size:24px;margin:0 0 10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+h3{font-size:18px;margin:18px 0 6px}
+.pts{font-size:13px;font-weight:700;background:var(--accent-soft);color:var(--accent);padding:3px 10px;border-radius:999px}
+.pts.gold{background:var(--gold-soft);color:var(--gold)}
+.lead{font-size:18px;color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:22px 0}
+.card.story{border:2px solid var(--gold);background:linear-gradient(180deg,var(--gold-soft),var(--card) 140px)}
+.theme-btn{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:14px;z-index:5}
+a{color:var(--accent)}
+.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600;border:0;cursor:pointer;font-size:16px}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;background:var(--accent-soft);padding:1px 6px;border-radius:6px;font-size:.92em}
+pre{background:var(--code-bg);color:var(--code-text);border-radius:12px;padding:14px 16px;overflow-x:auto;font:15.5px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace;margin:8px 0}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.k{color:var(--kw);font-weight:700}.s{color:var(--str)}.n{color:var(--num)}.c{color:var(--cm);font-style:italic}
+.b{color:var(--blank);font-weight:700}
+.callout{border-left:5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:12px 16px;margin:14px 0}
+.callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+.callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+.task{border-top:1px dashed var(--line);padding-top:12px;margin-top:14px}
+.task:first-of-type{border-top:0;padding-top:0}
+.tnum{display:inline-block;min-width:38px;font-weight:800;color:var(--accent)}
+.mode{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;margin-right:6px;vertical-align:2px}
+.mode.rep{background:var(--ok-soft);color:var(--ok)}
+.mode.self{background:var(--warn-soft);color:var(--warn)}
+.ask{margin:6px 0 0;font-weight:600}
+.ask::before{content:"✍️ "}
+ul.songs{columns:2;gap:24px;padding-left:20px}
+@media(max-width:560px){ul.songs{columns:1}}
+.clue{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0}
+.clue .num{font-size:22px}
+table{width:100%;border-collapse:collapse;font-size:15.5px}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:13.5px}
+td.q{width:52%}
+td.no{width:46px;font-weight:700;color:var(--accent)}
+input[type=text]{width:100%;font:inherit;font-size:15.5px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+input[type=text]:focus{outline:2px solid var(--accent);border-color:transparent}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:560px){.who{grid-template-columns:1fr}}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.toast{color:var(--ok);font-weight:600}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.check input{margin-top:6px;width:18px;height:18px}
+.small{font-size:14px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){.grid2{grid-template-columns:1fr}}
+.scroll{overflow-x:auto}
+
+pre{position:relative}
+.copy{position:absolute;top:8px;right:8px;background:#ffffff1a;color:#cfd6e6;border:0;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px}
+.copy:hover{background:#ffffff33}
+.translate{display:grid;grid-template-columns:1fr;gap:6px;margin:12px 0}
+.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.lang{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted);min-width:34px}
+.en{font-size:19px;font-style:italic}
+.ua{color:var(--muted)}
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:12px 0}
+.word{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}
+.word b{font-family:ui-monospace,Consolas,monospace;color:var(--accent);font-size:18px;display:block}
+.word span{color:var(--muted);font-size:15px}
+.order{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.pill{background:var(--accent);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-family:ui-monospace,Consolas,monospace}
+.pill.opt{background:transparent;color:var(--accent);border:2px dashed var(--accent)}
+.arrow{color:var(--muted)}
+details.quiz{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+details.quiz summary{cursor:pointer;font-size:18px;list-style:none}
+details.quiz summary::before{content:"🗣️ ";}
+details.quiz[open] summary{margin-bottom:6px}
+.venn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){.venn{grid-template-columns:1fr}}
+
+.section-divider{margin:56px 0 0;padding:28px 0 8px;border-top:3px solid var(--accent)}
+.toplinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+td code{word-break:break-word}
+@media(max-width:560px){th,td{padding:7px 4px;font-size:14px}}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn">🌓 Світла / темна тема</button>
+<div class="wrap">
+<div class="theory">
+<header id="theory">
+  <div class="kicker">11 клас • Урок 11 • Пояснення + практична</div>
+  <h1>SQL — це англійська мова, тільки дуже сувора 🇬🇧</h1>
+  <p class="lead">Минулого разу ми дізналися, як стрімінги зберігають фільми в базах даних, і написали перші запити <code>SELECT … FROM … WHERE … LIMIT</code>. Сьогодні вчимося ставити базі <b>точні запитання</b>: вибирати потрібні стовпці й перейменовувати їх, рахувати на льоту, поєднувати умови (<code>AND</code>, <code>OR</code>, <code>NOT</code>, <code>IN</code>, <code>BETWEEN</code>) і шукати за частиною слова (<code>LIKE</code>).</p>
+  <div class="toplinks"><a class="btn" href="#practical">Перейти до практичної ↓</a><a class="btn ghost" href="#blank">Бланк відповідей</a></div>
+</header>
+
+<section class="card">
+  <h2>💡 Головна ідея</h2>
+  <p>SQL придумали в 1970-х, щоб із базою могли «говорити» не лише програмісти. Тому запит читається як англійське речення.</p>
+  <div class="translate">
+    <div class="row"><span class="lang">UA</span><span class="ua">Покажи назви і тривалість серій, довших за 45 хвилин.</span></div>
+    <div class="row"><span class="lang">EN</span><span class="en">Select name and length from tracks where length is more than 45 minutes.</span></div>
+  </div>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track <span class="k">WHERE</span> Milliseconds &gt; <span class="n">2700000</span>;</code></pre>
+  <div class="callout warn">⚠️ Але база — дуже сувора вчителька англійської: зайва кома, забута лапка, помилка в назві стовпця, і вона «не зрозуміє» (видасть помилку). Читайте повідомлення про помилку: там зазвичай написано, що саме не так.</div>
+</section>
+
+<section class="card">
+  <h2>📖 Словник: SQL ↔ англійська ↔ українська</h2>
+  <div class="words">
+    <div class="word"><b>SELECT</b><span>select — вибери, покажи</span></div>
+    <div class="word"><b>FROM</b><span>from — з (якої таблиці)</span></div>
+    <div class="word"><b>AS</b><span>as — як, під назвою</span></div>
+    <div class="word"><b>WHERE</b><span>where — де, за умови що</span></div>
+    <div class="word"><b>AND / OR / NOT</b><span>і / або / не</span></div>
+    <div class="word"><b>IN (…)</b><span>in — один зі списку</span></div>
+    <div class="word"><b>BETWEEN … AND …</b><span>between — між (включно)</span></div>
+    <div class="word"><b>LIKE</b><span>like — схожий на</span></div>
+    <div class="word"><b>IS NULL</b><span>is empty — порожнє, невідоме</span></div>
+    <div class="word"><b>ORDER BY … DESC</b><span>order by — впорядкуй (DESC — спадання)</span></div>
+    <div class="word"><b>LIMIT</b><span>limit — не більше ніж</span></div>
+  </div>
+  <h3>🧩 Граматика: порядок слів</h3>
+  <div class="order">
+    <span class="pill">SELECT</span><span class="arrow">→</span>
+    <span class="pill">FROM</span><span class="arrow">→</span>
+    <span class="pill opt">WHERE</span><span class="arrow">→</span>
+    <span class="pill opt">ORDER BY</span><span class="arrow">→</span>
+    <span class="pill opt">LIMIT</span>
+  </div>
+  <p class="small">Пунктирні частини необовʼязкові, але порядок завжди такий. <code>WHERE</code> після <code>ORDER BY</code> — помилка, як «Is France where country».</p>
+</section>
+
+<section class="card">
+  <h2>1️⃣ Лише потрібні стовпці, AS та обчислення</h2>
+  <p><code>SELECT *</code> означає «покажи все». У таблиці <code>Customer</code> 13 стовпців, але зазвичай треба 2–3.</p>
+  <div class="translate"><div class="row"><span class="lang">EN</span><span class="en">Select first name, last name and country from customers.</span></div></div>
+<pre><code><span class="k">SELECT</span> FirstName, LastName, Country <span class="k">FROM</span> Customer;</code></pre>
+  <div class="callout">✏️ Стовпці перелічуємо через кому, після останнього коми немає. Порядок у запиті = порядок у результаті.</div>
+  <h3>AS — дати стовпцю зрозумілу назву</h3>
+  <div class="translate"><div class="row"><span class="lang">EN</span><span class="en">Select first name as «Імʼя», country as «Країна» from customers.</span></div></div>
+<pre><code><span class="k">SELECT</span> FirstName <span class="k">AS</span> Імʼя, Country <span class="k">AS</span> Країна <span class="k">FROM</span> Customer;</code></pre>
+  <h3>Обчислення на льоту</h3>
+  <p>Тривалість у базі зберігається в мілісекундах. Людині зручніше бачити хвилини, тому рахуємо прямо в запиті:</p>
+<pre><code><span class="k">SELECT</span> Name <span class="k">AS</span> Назва,
+       ROUND(Milliseconds / <span class="n">60000.0</span>, <span class="n">1</span>) <span class="k">AS</span> Хвилини
+<span class="k">FROM</span> Track;</code></pre>
+  <div class="callout warn">🧮 Пастка: <code>Milliseconds / 60000</code> дасть <b>5</b>, а <code>/ 60000.0</code> дасть <b>5.73</b>. Ціле, поділене на ціле, у SQLite дає ціле. Покажіть обидва варіанти наживо.</div>
+</section>
+
+<section class="card">
+  <h2>2️⃣ WHERE: порівняння, IN, BETWEEN</h2>
+  <table>
+    <tr><th>Знак</th><th>Англійською</th><th>Приклад</th></tr>
+    <tr><td><code>=</code></td><td>is</td><td><code>Country = 'Canada'</code></td></tr>
+    <tr><td><code>&lt;&gt;</code></td><td>is not</td><td><code>Country &lt;&gt; 'USA'</code></td></tr>
+    <tr><td><code>&gt;  &lt;</code></td><td>more / less than</td><td><code>UnitPrice &gt; 1</code></td></tr>
+    <tr><td><code>&gt;=  &lt;=</code></td><td>at least / at most</td><td><code>Total &gt;= 20</code></td></tr>
+    <tr><td><code>IN (…)</code></td><td>is one of</td><td><code>Country IN ('France','Germany')</code></td></tr>
+    <tr><td><code>BETWEEN a AND b</code></td><td>is between</td><td><code>Total BETWEEN 10 AND 15</code></td></tr>
+  </table>
+  <div class="translate"><div class="row"><span class="lang">EN</span><span class="en">Select customers whose country is one of France, Germany, Poland.</span></div></div>
+<pre><code><span class="k">SELECT</span> FirstName, Country <span class="k">FROM</span> Customer
+<span class="k">WHERE</span> Country <span class="k">IN</span> (<span class="s">'France'</span>, <span class="s">'Germany'</span>, <span class="s">'Poland'</span>);</code></pre>
+  <div class="translate"><div class="row"><span class="lang">EN</span><span class="en">Select tracks whose length is between 3 and 4 minutes.</span></div></div>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Track <span class="k">WHERE</span> Milliseconds <span class="k">BETWEEN</span> <span class="n">180000</span> <span class="k">AND</span> <span class="n">240000</span>;</code></pre>
+  <div class="callout warn">⚠️ Текст пишемо в <code>'лапках'</code>, числа без лапок. <code>=</code> розрізняє великі й малі літери: <code>'usa'</code> ≠ <code>'USA'</code>. <code>BETWEEN</code> <b>включає</b> обидві межі.</div>
+  <h3>IS NULL — «значення невідоме»</h3>
+  <p>У деяких треків автор (<code>Composer</code>) не вказаний: там <code>NULL</code>, тобто «порожньо, невідомо». Це не нуль і не пробіл.</p>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Track <span class="k">WHERE</span> Composer <span class="k">IS NULL</span>;      <span class="c">-- правильно</span>
+<span class="k">SELECT</span> Name <span class="k">FROM</span> Track <span class="k">WHERE</span> Composer = <span class="k">NULL</span>;       <span class="c">-- 0 рядків! так не працює</span></code></pre>
+</section>
+
+<section class="card">
+  <h2>3️⃣ AND, OR, NOT і дужки</h2>
+  <div class="venn">
+    <div class="callout ok"><b>AND</b>: обидві умови. <i>«Сонячно <b>і</b> є час»</i>. Результат менший.</div>
+    <div class="callout"><b>OR</b>: хоча б одна. <i>«Піца <b>або</b> бургер»</i>. Результат більший.</div>
+  </div>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track
+<span class="k">WHERE</span> MediaTypeId = <span class="n">3</span> <span class="k">AND</span> Milliseconds &gt; <span class="n">2700000</span>;   <span class="c">-- відео довші за 45 хв</span></code></pre>
+  <div class="callout bad">🚫 <code>WHERE Country = 'Brazil' OR 'Chile'</code> — помилка. Англійською так кажуть, а SQL ні. Пишіть повністю: <code>Country = 'Brazil' OR Country = 'Chile'</code> або <code>Country IN ('Brazil','Chile')</code>.</div>
+  <div class="callout warn">🧠 <b>AND сильніший за OR</b>, як множення сильніше за додавання: <code>2 + 3 × 4 = 14</code>, а не 20. Тому:
+<pre><code><span class="c">-- «драма, АБО (фантастика довша за 50 хв)»: зовсім не те, що хотіли</span>
+<span class="k">WHERE</span> GenreId = <span class="n">21</span> <span class="k">OR</span> GenreId = <span class="n">20</span> <span class="k">AND</span> Milliseconds &gt; <span class="n">3000000</span>
+<span class="c">-- «(драма або фантастика) І довша за 50 хв»: правильно</span>
+<span class="k">WHERE</span> (GenreId = <span class="n">21</span> <span class="k">OR</span> GenreId = <span class="n">20</span>) <span class="k">AND</span> Milliseconds &gt; <span class="n">3000000</span></code></pre>
+  Правило: змішуєш <code>AND</code> і <code>OR</code>, то став дужки.</div>
+  <p><b>NOT</b> перевертає умову: <code>NOT Country = 'USA'</code>, <code>NOT IN (…)</code>, <code>NOT LIKE</code>, <code>IS NOT NULL</code>.</p>
+</section>
+
+<section class="card">
+  <h2>4️⃣ LIKE — «схожий на»</h2>
+  <p>Коли назву не памʼятаєш точно. <code>%</code> — будь-яка кількість будь-яких символів (навіть 0), <code>_</code> — рівно один символ.</p>
+  <table>
+    <tr><th>Шаблон</th><th>Англійською</th><th>Знайде</th></tr>
+    <tr><td><code>'Love%'</code></td><td>starts with</td><td>Love Gun, Love Of My Life…</td></tr>
+    <tr><td><code>'%love'</code></td><td>ends with</td><td>Whole Lotta Love…</td></tr>
+    <tr><td><code>'%love%'</code></td><td>contains</td><td>будь-де в назві</td></tr>
+    <tr><td><code>'_a%'</code></td><td>2nd letter is a</td><td>Mark, Daan, Hannah…</td></tr>
+  </table>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Track <span class="k">WHERE</span> Name <span class="k">LIKE</span> <span class="s">'%love%'</span>;              <span class="c">-- 114</span>
+<span class="k">SELECT</span> Title <span class="k">FROM</span> Album <span class="k">WHERE</span> Title <span class="k">LIKE</span> <span class="s">'%Season%'</span>;          <span class="c">-- сезони серіалів?</span></code></pre>
+  <div class="callout ok">✅ <code>LIKE</code> не зважає на регістр (для латиниці): <code>'%lost%'</code> знайде і «Lost», і «LOST».</div>
+  <div class="callout warn">🪤 <b>Пастка (покажіть наживо!):</b>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Track <span class="k">WHERE</span> Name <span class="k">LIKE</span> <span class="s">'%rain%'</span>;</code></pre>
+  Шукали пісні про дощ, а знайшли <i>Crazy <b>Train</b></i> і <i>My Poor <b>Brain</b></i>. <code>LIKE</code> шукає <b>літери</b>, а не зміст. Так само пошук «сезонів» знайде <i>Vivaldi: The Four <b>Season</b>s</i>.</div>
+</section>
+
+<section class="card">
+  <h2>🗣️ Перекладай сам (усно з класом)</h2>
+  <details class="quiz"><summary>Select name and price from tracks, price as «Ціна».</summary>
+<pre><code><span class="k">SELECT</span> Name, UnitPrice <span class="k">AS</span> Ціна <span class="k">FROM</span> Track;</code></pre></details>
+  <details class="quiz"><summary>Покажи клієнтів із Канади, США або Бразилії (через IN).</summary>
+<pre><code><span class="k">SELECT</span> FirstName, Country <span class="k">FROM</span> Customer <span class="k">WHERE</span> Country <span class="k">IN</span> (<span class="s">'Canada'</span>, <span class="s">'USA'</span>, <span class="s">'Brazil'</span>);</code></pre></details>
+  <details class="quiz"><summary>Select invoices where total is between 5 and 6.</summary>
+<pre><code><span class="k">SELECT</span> * <span class="k">FROM</span> Invoice <span class="k">WHERE</span> Total <span class="k">BETWEEN</span> <span class="n">5</span> <span class="k">AND</span> <span class="n">6</span>;</code></pre></details>
+  <details class="quiz"><summary>Скільки клієнтів не вказали компанію?</summary>
+<pre><code><span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Customer <span class="k">WHERE</span> Company <span class="k">IS NULL</span>;</code></pre></details>
+  <details class="quiz"><summary>Select artists whose name starts with «The» but are not «The Who».</summary>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Artist <span class="k">WHERE</span> Name <span class="k">LIKE</span> <span class="s">'The %'</span> <span class="k">AND</span> Name &lt;&gt; <span class="s">'The Who'</span>;</code></pre></details>
+  <details class="quiz"><summary>🔎 Пошта на yahoo, але клієнт не з Франції й не з Німеччини.</summary>
+<pre><code><span class="k">SELECT</span> FirstName, Email, Country <span class="k">FROM</span> Customer
+<span class="k">WHERE</span> Email <span class="k">LIKE</span> <span class="s">'%yahoo%'</span> <span class="k">AND</span> Country <span class="k">NOT IN</span> (<span class="s">'France'</span>, <span class="s">'Germany'</span>);</code></pre></details>
+</section>
+
+<section class="card">
+  <h2>🧾 Шпаргалка на дошку</h2>
+<pre><code><span class="k">SELECT</span> стовпець <span class="k">AS</span> Назва, обчислення <span class="k">AS</span> Назва2
+<span class="k">FROM</span>   Таблиця
+<span class="k">WHERE</span>  (умова1 <span class="k">OR</span> умова2) <span class="k">AND</span> умова3
+<span class="k">ORDER BY</span> стовпець <span class="k">DESC</span>
+<span class="k">LIMIT</span>  <span class="n">10</span>;
+
+<span class="c">-- =  &lt;&gt;  &gt;  &lt;  &gt;=  &lt;=   IN (…)   BETWEEN a AND b   LIKE '%…%'   IS NULL   NOT</span></code></pre>
+  <p style="text-align:center;margin-top:18px"><a class="btn" href="#practical">Переходимо до практичної ↓</a></p>
+</section>
+</div>
+
+<header class="section-divider" id="practical">
+  <div class="kicker">11 клас • Практична робота • до 12 балів</div>
+  <h1 style="font-size:clamp(26px,4.5vw,36px)">📺 Стажер-аналітик стрімінгу</h1>
+  <p class="lead">Chinook продає не лише музику, а й <b>серії серіалів</b>: Lost, The Office, Heroes, Battlestar Galactica. Тебе взяли стажером-аналітиком. Керівниця надсилає запитання, а відповідати на них можна тільки через SQL. У кінці на тебе чекає <b>фейковий каталог</b> і <b>серія-загадка</b>.</p>
+  <div class="actions">
+    <a class="btn" href="#practice">Одразу до завдань ↓</a>
+    <a class="btn ghost" href="#theory">↑ До пояснення</a>
+    <a class="btn ghost" href="#blank">Бланк відповідей</a>
+  </div>
+</header>
+
+<section class="card">
+  <h2>🧰 Крок 0. Відкрий базу</h2>
+  <p>Відкрий <code>Chinook_Sqlite.sqlite</code> з минулого уроку в <b>DB Browser for SQLite</b> (Ctrl+O) → вкладка <b>Execute SQL</b> → запуск <b>Ctrl+Enter</b>.</p>
+  <p class="small">Файлу немає? <a href="https://github.com/lerocha/chinook-database/releases/latest/download/Chinook_Sqlite.sqlite">Завантажити Chinook_Sqlite.sqlite</a> (не плутати з файлами <code>.sql</code>). Альтернатива: <a href="https://sqliteonline.com" target="_blank" rel="noopener">sqliteonline.com</a> → File → Open DB.</p>
+  <div class="callout warn">⚠️ Не натискай «Записати зміни» і нічого не видаляй. Сьогодні ми лише <b>читаємо</b>.</div>
+  <div class="callout">📌 <span class="mode rep">ПОВТОРИ</span> — перепиши запит руками (не копіюй!) і запусти. <span class="mode self">САМ</span> — заміни <span class="b">___</span> або напиши запит повністю. Відповіді записуй у <a href="#blank">бланк</a>.</div>
+  <div class="callout">📚 <b>Track</b>: Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, UnitPrice. <b>Album</b>: Title. <b>Customer</b>: FirstName, LastName, City, Country, Email, Company. <b>Employee</b>: FirstName, LastName, Title. <b>Invoice</b>: Total.<br>
+  🎬 <code>MediaTypeId = 3</code> — відеофайл (серія). Жанри: <code>1</code> Rock, <code>20</code> Sci Fi &amp; Fantasy, <code>21</code> Drama. 1 хв = 60 000 мс.</div>
+</section>
+
+<div id="practice"></div>
+
+<section class="card">
+  <h2>1️⃣ Стовпці, AS, обчислення <span class="pts">2 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">1.1</span><span class="mode rep">ПОВТОРИ</span>Керівниця хоче бачити тривалість у хвилинах, а не в мілісекундах:</p>
+<pre><code><span class="k">SELECT</span> Name <span class="k">AS</span> Назва, ROUND(Milliseconds / <span class="n">60000.0</span>, <span class="n">1</span>) <span class="k">AS</span> Хвилини
+<span class="k">FROM</span> Track;</code></pre>
+    <p class="ask">Скільки хвилин триває перший трек у результаті? Що вийде, якщо прибрати <code>.0</code> після 60000?</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">1.2</span><span class="mode self">САМ</span>Склади список працівників з українськими назвами стовпців: Імʼя, Прізвище, Посада (<code>Title</code>).</p>
+<pre><code><span class="k">SELECT</span> FirstName <span class="k">AS</span> <span class="b">___</span>, <span class="b">___</span> <span class="k">AS</span> Прізвище, <span class="b">___</span> <span class="k">AS</span> <span class="b">___</span> <span class="k">FROM</span> <span class="b">___</span>;</code></pre>
+    <p class="ask">Хто працює на посаді <b>IT Manager</b>?</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>2️⃣ WHERE, IN, BETWEEN <span class="pts">3 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">2.1</span><span class="mode rep">ПОВТОРИ</span>Скільки в магазині відеофайлів (серій)?</p>
+<pre><code><span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Track <span class="k">WHERE</span> MediaTypeId = <span class="n">3</span>;</code></pre>
+    <p class="ask">Запиши число.</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">2.2</span><span class="mode self">САМ</span>Плануємо рекламу в Південній Америці. Скільки клієнтів із <b>Бразилії, Аргентини або Чилі</b>? Використай <code>IN</code>.</p>
+<pre><code><span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Customer <span class="k">WHERE</span> Country <span class="k">IN</span> (<span class="b">___</span>, <span class="b">___</span>, <span class="b">___</span>);</code></pre>
+    <p class="ask">Запиши число.</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">2.3</span><span class="mode self">САМ</span>Скільки рахунків (<b>Invoice</b>) мають суму від <b>10 до 15</b> доларів включно? Напиши запит повністю, використай <code>BETWEEN</code>.</p>
+    <p class="ask">Запиши число і запит.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>3️⃣ AND, OR, IS NULL і дужки <span class="pts">3 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">3.1</span><span class="mode rep">ПОВТОРИ</span>Скільки серій довші за <b>45 хвилин</b>?</p>
+<pre><code><span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Track <span class="k">WHERE</span> MediaTypeId = <span class="n">3</span> <span class="k">AND</span> Milliseconds &gt; <span class="n">2700000</span>;</code></pre>
+    <p class="ask">Запиши число.</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">3.2</span><span class="mode self">САМ</span>Скільки рок-треків (<code>GenreId = 1</code>) мають <b>невідомого автора</b> (<code>Composer</code>)?</p>
+<pre><code><span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Track <span class="k">WHERE</span> GenreId = <span class="n">1</span> <span class="k">AND</span> Composer <span class="b">___</span> <span class="b">___</span>;</code></pre>
+    <p class="ask">Запиши число.</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">3.3</span><span class="mode self">САМ</span>Керівниця питає: «Скільки серій жанру <b>Drama</b> або <b>Sci Fi &amp; Fantasy</b> довші за <b>50 хвилин</b>?» Напиши запит сам. Обережно з <code>AND</code> та <code>OR</code>!</p>
+    <p class="ask">Запиши число, назву цієї серії (серій) і запит.</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>4️⃣ LIKE <span class="pts">2 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">4.1</span><span class="mode rep">ПОВТОРИ</span>Які серії є пілотними (перші серії серіалів)?</p>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Track <span class="k">WHERE</span> Name <span class="k">LIKE</span> <span class="s">'%pilot%'</span>;</code></pre>
+    <p class="ask">Скільки їх?</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">4.2</span><span class="mode self">САМ</span>Знайди в таблиці <b>Album</b> усі альбоми, у назві (<code>Title</code>) яких є слово <b>Season</b>.</p>
+    <p class="ask">Скільки їх? Один із них не є сезоном серіалу. Який саме і чому він потрапив у результат?</p>
+  </div>
+</section>
+
+<section class="card story">
+  <h2>🕵️ 5. Розслідування <span class="pts gold">2 бали</span></h2>
+  <h3>5.1 📺 Фейковий каталог</h3>
+  <p>Маркетолог підготував банер: «У нас дивляться: Lost, Stranger Things, The Office, Friends, Heroes, Breaking Bad, Battlestar Galactica, Game of Thrones». Але частини цих серіалів у магазині <b>немає</b>. Знайди їх, поки банер не опублікували!</p>
+<pre><code><span class="k">SELECT</span> Title <span class="k">FROM</span> Album <span class="k">WHERE</span> Title <span class="k">LIKE</span> <span class="s">'%Lost%'</span>;
+<span class="c">-- порожній результат = серіалу немає</span></code></pre>
+  <p class="small">💡 Хочеш перевірити всі серіали одним запитом? Спробуй кілька <code>LIKE</code>, поєднаних через <code>OR</code>.</p>
+  <p class="ask">Яких серіалів немає в каталозі?</p>
+
+  <h3>5.2 🎬 Серія-загадка</h3>
+  <p>У підтримку пише глядач: «Я дивився одну серію, але забув назву. Допоможіть знайти!»</p>
+  <div class="clue"><span class="num">1️⃣</span><div>«У назві було слово <b>man</b>».</div></div>
+  <div class="clue"><span class="num">2️⃣</span><div>«Це була саме <b>серія</b> (відео), а не пісня».</div></div>
+  <div class="clue"><span class="num">3️⃣</span><div>«Жанр: <b>Drama</b>».</div></div>
+  <div class="clue"><span class="num">4️⃣</span><div>«Довга, <b>понад 44 хвилини</b>».</div></div>
+  <p>Додавай підказки по одній через <code>AND</code> і щоразу записуй, скільки рядків залишилося.</p>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track
+<span class="k">WHERE</span> Name <span class="k">LIKE</span> <span class="s">'<span class="b">___</span>'</span>
+  <span class="c">-- AND ...</span>;</code></pre>
+  <p class="ask">Скільки рядків після кожної з 4 підказок? Як називається серія?</p>
+  <div class="callout warn">🤔 Після 3-ї підказки уважно переглянь назви. Одна з них насправді не про «man». Чому вона в результаті?</div>
+</section>
+
+<section class="card">
+  <h2>⭐ Бонус <span class="pts gold">+3 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">Б1</span><b>(+1) Відео за ціною пісні.</b> Усі серії коштують 1.99, але є одне відео за 0.99. Що це?</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">Б2</span><b>(+1) Топ-3 найдовших серій.</b> Покажи назву і тривалість у хвилинах (<code>AS Хвилини</code>), від найдовшої. Скільки хвилин триває №1?</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">Б3</span><b>(+1) Своя загадка.</b> Придумай 3–4 підказки, які разом ведуть рівно до <b>одного</b> рядка (серія, пісня або клієнт). Запиши підказки і запит, дай сусідові розгадати.</p>
+  </div>
+</section>
+
+<section class="card" id="blank">
+  <h2>📝 Бланк відповідей</h2>
+  <div class="who">
+    <input type="text" data-key="name" placeholder="Прізвище та імʼя">
+    <input type="text" data-key="class" placeholder="Клас (наприклад, 11-А)">
+  </div>
+  <div class="scroll"><table id="answers"><tr><th>№</th><th>Питання</th><th>Відповідь</th></tr></table></div>
+  <div class="actions">
+    <button class="btn" id="copyBtn">📋 Скопіювати відповіді</button>
+    <span class="toast" id="toast"></span>
+  </div>
+  <p class="small">Питання скопіюються разом із відповідями. Відповіді зберігаються лише на цьому пристрої.</p>
+</section>
+
+<section class="card check">
+  <h2>✅ Перевір себе</h2>
+  <label><input type="checkbox"><span>Я вмію вибирати потрібні стовпці й перейменовувати їх через <code>AS</code>.</span></label>
+  <label><input type="checkbox"><span>Я розумію, чому <code>/ 60000</code> і <code>/ 60000.0</code> дають різний результат.</span></label>
+  <label><input type="checkbox"><span>Я вмію використовувати <code>IN</code>, <code>BETWEEN</code> та <code>IS NULL</code>.</span></label>
+  <label><input type="checkbox"><span>Я ставлю дужки, коли змішую <code>AND</code> та <code>OR</code>.</span></label>
+  <label><input type="checkbox"><span>Я розумію, що <code>LIKE</code> шукає літери, а не зміст.</span></label>
+</section>
+
+</div>
+<script>
+(function(){
+  var root=document.documentElement, KEY='cs9-theme', AKEY='cs11-l11-answers';
+  function apply(t){root.setAttribute('data-theme',t)}
+  var saved=null; try{saved=localStorage.getItem(KEY)}catch(e){}
+  apply(saved || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
+  document.getElementById('themeBtn').onclick=function(){
+    var t=root.getAttribute('data-theme')==='dark'?'light':'dark'; apply(t);
+    try{localStorage.setItem(KEY,t)}catch(e){}
+  };
+
+  var Q=[
+    ['1.1','Хвилин у першому треку; що буде без .0'],
+    ['1.2','Хто працює на посаді IT Manager'],
+    ['2.1','Скільки відеофайлів (серій)'],
+    ['2.2','Скільки клієнтів із Бразилії, Аргентини, Чилі'],
+    ['2.3','Скільки рахунків від 10 до 15$ + запит'],
+    ['3.1','Скільки серій довші за 45 хв'],
+    ['3.2','Скільки рок-треків без автора'],
+    ['3.3','Драма/фантастика довші за 50 хв: число, назва, запит'],
+    ['4.1','Скільки пілотних серій'],
+    ['4.2','Скільки альбомів із Season; який не серіал і чому'],
+    ['5.1','Яких серіалів немає в каталозі'],
+    ['5.2','Рядків після кожної підказки; назва серії'],
+    ['Б1','Відео за 0.99'],
+    ['Б2','Топ-3 серій; хвилин у №1'],
+    ['Б3','Твоя загадка: підказки + запит']
+  ];
+  var store={}; try{store=JSON.parse(localStorage.getItem(AKEY)||'{}')||{}}catch(e){store={}}
+  function save(){try{localStorage.setItem(AKEY,JSON.stringify(store))}catch(e){}}
+  var tbl=document.getElementById('answers');
+  Q.forEach(function(q){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="no">'+q[0]+'</td><td class="q">'+q[1]+'</td><td><input type="text" data-key="'+q[0]+'"></td>';
+    tbl.appendChild(tr);
+  });
+  document.querySelectorAll('input[data-key]').forEach(function(inp){
+    var k=inp.getAttribute('data-key'); if(store[k]) inp.value=store[k];
+    inp.addEventListener('input',function(){store[k]=inp.value;save()});
+  });
+
+  document.getElementById('copyBtn').onclick=function(){
+    var lines=['11 клас, урок 11 — Стажер-аналітик стрімінгу','Учень: '+(store.name||'')+'  Клас: '+(store['class']||''),''];
+    Q.forEach(function(q){lines.push(q[0]+'. '+q[1]+': '+(store[q[0]]||'—'))});
+    var txt=lines.join('\n'), toast=document.getElementById('toast');
+    var done=function(){toast.textContent='✓ Скопійовано!';setTimeout(function(){toast.textContent=''},2000)};
+    if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done,function(){fallback(txt);done()})}else{fallback(txt);done()}
+  };
+  function fallback(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()}
+})();
+
+(function(){
+  document.querySelectorAll('.theory pre').forEach(function(pre){
+    var b=document.createElement('button'); b.className='copy'; b.textContent='Копіювати';
+    b.onclick=function(){
+      var txt=pre.querySelector('code').innerText;
+      var done=function(){b.textContent='✓ Скопійовано';setTimeout(function(){b.textContent='Копіювати'},1500)};
+      if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done,function(){fb(txt);done()})}else{fb(txt);done()}
+    };
+    pre.appendChild(b);
+  });
+  function fb(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()}
+})();
+</script>
+</body>
+</html>

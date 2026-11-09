@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Урок 5: Пішохідний світлофор</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1d2433; --muted:#5b6478; --line:#e3e7ef;
+  --accent:#3b6fd8; --accent-soft:#e8effc; --ok:#1f9d63; --ok-soft:#e5f6ee;
+  --warn:#c77700; --warn-soft:#fff4e0; --bad:#d23f3f; --bad-soft:#fdeaea;
+  --gold:#a86b00; --gold-soft:#fff3d6;
+  --code-bg:#1e2433; --code-text:#e6e9f2; --kw:#7fb4ff; --str:#9be29b; --num:#ffc66d; --cm:#8a93a8; --blank:#ff8fb1;
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1b2029; --text:#e6e9f2; --muted:#9aa3b8; --line:#2c3341;
+  --accent:#7aa5ff; --accent-soft:#1f2a40; --ok:#4fd197; --ok-soft:#173327;
+  --warn:#ffb648; --warn-soft:#3a2c14; --bad:#ff7b7b; --bad-soft:#3a1c1c;
+  --gold:#ffcc66; --gold-soft:#3a3016; --code-bg:#0d1017;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+header{padding:28px 0 8px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:8px 0 12px}
+h2{font-size:24px;margin:0 0 10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+h3{font-size:18px;margin:18px 0 6px}
+.pts{font-size:13px;font-weight:700;background:var(--accent-soft);color:var(--accent);padding:3px 10px;border-radius:999px}
+.pts.gold{background:var(--gold-soft);color:var(--gold)}
+.lead{font-size:18px;color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:22px 0}
+.card.story{border:2px solid var(--gold);background:linear-gradient(180deg,var(--gold-soft),var(--card) 140px)}
+.theme-btn{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:14px;z-index:5}
+a{color:var(--accent)}
+.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600;border:0;cursor:pointer;font-size:16px}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;background:var(--accent-soft);padding:1px 6px;border-radius:6px;font-size:.92em}
+pre{background:var(--code-bg);color:var(--code-text);border-radius:12px;padding:14px 16px;overflow-x:auto;font:15.5px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace;margin:8px 0}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.k{color:var(--kw);font-weight:700}.s{color:var(--str)}.n{color:var(--num)}.c{color:var(--cm);font-style:italic}
+.b{color:var(--blank);font-weight:700}
+.callout{border-left:5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:12px 16px;margin:14px 0}
+.callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+.callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+.task{border-top:1px dashed var(--line);padding-top:12px;margin-top:14px}
+.task:first-of-type{border-top:0;padding-top:0}
+.tnum{display:inline-block;min-width:38px;font-weight:800;color:var(--accent)}
+.mode{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;margin-right:6px;vertical-align:2px}
+.mode.rep{background:var(--ok-soft);color:var(--ok)}
+.mode.self{background:var(--warn-soft);color:var(--warn)}
+.ask{margin:6px 0 0;font-weight:600}
+.ask::before{content:"✍️ "}
+ul.songs{columns:2;gap:24px;padding-left:20px}
+@media(max-width:560px){ul.songs{columns:1}}
+.clue{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0}
+.clue .num{font-size:22px}
+table{width:100%;border-collapse:collapse;font-size:15.5px}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:13.5px}
+td.q{width:52%}
+td.no{width:46px;font-weight:700;color:var(--accent)}
+input[type=text]{width:100%;font:inherit;font-size:15.5px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+input[type=text]:focus{outline:2px solid var(--accent);border-color:transparent}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:560px){.who{grid-template-columns:1fr}}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.toast{color:var(--ok);font-weight:600}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.check input{margin-top:6px;width:18px;height:18px}
+.small{font-size:14px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){.grid2{grid-template-columns:1fr}}
+.scroll{overflow-x:auto}
+
+pre{position:relative}
+.copy{position:absolute;top:8px;right:8px;background:#ffffff1a;color:#cfd6e6;border:0;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px}
+.copy:hover{background:#ffffff33}
+.translate{display:grid;grid-template-columns:1fr;gap:6px;margin:12px 0}
+.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.lang{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted);min-width:34px}
+.en{font-size:19px;font-style:italic}
+.ua{color:var(--muted)}
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:12px 0}
+.word{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}
+.word b{font-family:ui-monospace,Consolas,monospace;color:var(--accent);font-size:18px;display:block}
+.word span{color:var(--muted);font-size:15px}
+.order{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.pill{background:var(--accent);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-family:ui-monospace,Consolas,monospace}
+.pill.opt{background:transparent;color:var(--accent);border:2px dashed var(--accent)}
+.arrow{color:var(--muted)}
+details.quiz{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+details.quiz summary{cursor:pointer;font-size:18px;list-style:none}
+details.quiz summary::before{content:"🗣️ ";}
+details.quiz[open] summary{margin-bottom:6px}
+.venn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){.venn{grid-template-columns:1fr}}
+
+.section-divider{margin:56px 0 0;padding:28px 0 8px;border-top:3px solid var(--accent)}
+.toplinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+td code{word-break:break-word}
+@media(max-width:560px){th,td{padding:7px 4px;font-size:14px}}
+
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.st{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;min-width:96px;text-align:center}
+.st small{color:var(--muted);font-size:13px}
+.dot{width:22px;height:22px;border-radius:50%;margin-bottom:4px;box-shadow:0 0 10px currentColor}
+.dot.g{background:#2fb36b;color:#2fb36b}.dot.y{background:#f5b400;color:#f5b400}.dot.r{background:#e5484d;color:#e5484d}
+.dot.blink{animation:bl 0.8s steps(2) infinite}
+@keyframes bl{50%{opacity:.15}}
+@media (prefers-reduced-motion: reduce){.dot.blink{animation:none;opacity:.6}}
+.step{display:flex;gap:14px;align-items:flex-start;border-top:1px dashed var(--line);padding:14px 0 4px}
+.step:first-of-type{border-top:0}
+.step>div{flex:1;min-width:0}
+.sn{flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px}
+.step p{margin:4px 0 8px}
+.expect{background:var(--ok-soft);border-left:4px solid var(--ok);border-radius:8px;padding:8px 12px}
+.expect::before{content:"👀 Має вийти: ";font-weight:700}
+.codehead{font-weight:700;font-size:14px;color:var(--muted);margin-top:8px}
+.svgwrap{overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px}
+.svgwrap svg{display:block;width:100%;min-width:560px;height:auto}
+.bbwrap{overflow-x:auto;border-radius:12px;margin:10px 0}
+.bbwrap svg{display:block;width:100%;min-width:560px;height:auto}
+ol.rules,ol.sub{margin:8px 0;padding-left:22px}
+ol.rules li,ol.sub li{margin:4px 0}
+figure.shot{margin:14px 0;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+figure.shot img{display:block;width:100%;height:auto;border-radius:8px;cursor:zoom-in}
+figure.shot figcaption{font-size:14px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn">🌓 Світла / темна тема</button>
+<div class="wrap">
+<header id="theory">
+  <div class="kicker">10 клас • Робототехніка • Урок 5</div>
+  <h1>🚦 Пішохідний світлофор з кнопкою</h1>
+  <p class="lead">Минулого разу кнопка вмикала маячок. Сьогодні збираємо справжній пристрій із вулиці: <b>світлофор для машин</b>, який перемикається, коли пішохід натискає кнопку, і <b>пищить</b>, поки можна переходити.</p>
+  <div class="toplinks"><a class="btn" href="#practical">Перейти до практичної ↓</a><a class="btn ghost" href="#blank">Бланк відповідей</a></div>
+</header>
+
+<section class="card">
+  <h2>🎯 Що будуємо</h2>
+  <p>У звичайному стані машинам горить <b>зелений</b>. Пішохід натискає кнопку, і світлофор проходить такі кроки:</p>
+  <div class="flow">
+    <div class="st"><span class="dot g"></span><b>Зелений</b><small>чекаємо кнопку</small></div>
+    <span class="arrow">→</span>
+    <div class="st"><span class="dot y"></span><b>Жовтий</b><small>1,5 с</small></div>
+    <span class="arrow">→</span>
+    <div class="st"><span class="dot r"></span><b>Червоний + 🔊</b><small>5 с, пішоходи йдуть</small></div>
+    <span class="arrow">→</span>
+    <div class="st"><span class="dot y"></span><b>Жовтий</b><small>1,5 с</small></div>
+    <span class="arrow">→</span>
+    <div class="st"><span class="dot g"></span><b>Зелений</b><small>знову чекаємо</small></div>
+  </div>
+  <div class="callout">🔊 <b>Навіщо звук?</b> Справжні пішохідні світлофори пищать, щоб дорогу могли безпечно перейти незрячі люди. Ми робимо те саме.</div>
+</section>
+
+<section class="card">
+  <h2>🆕 Що нового сьогодні</h2>
+
+  <h3>1. Імена для пінів: <code>const int</code></h3>
+  <p>Коли світлодіодів три, легко заплутатися, що таке пін 10, а що 12. Тому даємо пінам <b>імена</b>, як контактам у телефоні: ти ж шукаєш «Мама», а не номер.</p>
+<pre><code><span class="k">const int</span> RED = <span class="n">12</span>;      <span class="c">// червоний на піні 12</span>
+<span class="k">const int</span> YELLOW = <span class="n">11</span>;   <span class="c">// жовтий на піні 11</span>
+<span class="k">const int</span> GREEN = <span class="n">10</span>;    <span class="c">// зелений на піні 10</span>
+
+digitalWrite(RED, HIGH);   <span class="c">// читається як «увімкни червоний»</span></code></pre>
+  <div class="callout ok">✅ Переставили світлодіод на інший пін? Змінюєш <b>одне число</b> вгорі, а не шукаєш його по всьому коду.<br><small><code>const</code> означає «константа»: це значення не змінюється під час роботи програми.</small></div>
+
+  <h3>2. Пʼєзо-пищалка: <code>tone()</code> і <code>noTone()</code></h3>
+  <p>Пʼєзоелемент — маленька «колонка». Arduino дуже швидко вмикає й вимикає пін, пластинка всередині тремтить, і ми чуємо звук.</p>
+<pre><code>tone(BUZZER, <span class="n">1000</span>);   <span class="c">// почати пищати на частоті 1000 Гц</span>
+noTone(BUZZER);        <span class="c">// замовкнути</span></code></pre>
+  <table>
+    <tr><th>Частота</th><th>Як звучить</th></tr>
+    <tr><td><code>262</code></td><td>нота «до»: низько, спокійно</td></tr>
+    <tr><td><code>440</code></td><td>нота «ля»: так налаштовують гітару</td></tr>
+    <tr><td><code>1000</code></td><td>різкий писк, добре чутно на вулиці</td></tr>
+  </table>
+  <div class="callout warn">⚠️ <code>tone()</code> пищить, доки не скажеш <code>noTone()</code>. Забув <code>noTone</code>, і світлофор пищатиме вічно 😅</div>
+
+  <h3>3. Кожному світлодіоду свій резистор</h3>
+  <p>Як і минулого разу: пін → резистор 220 Ω → <b>анод</b> (довга, зігнута ніжка) → <b>катод</b> → GND. Тепер таких кіл <b>три</b>. Усі катоди сходяться на спільну лінію GND (лінія «−» уздовж краю макетної плати).</p>
+</section>
+
+<section class="card">
+  <h2>🔌 Схема підключення</h2>
+  <div class="svgwrap">
+  <svg viewBox="0 0 720 380" role="img" aria-label="Схема підключення світлофора">
+    <style>
+      .ln{stroke:var(--text);stroke-width:2.5;fill:none}
+      .gnd{stroke:var(--text);stroke-width:3.5;fill:none}
+      .tx{fill:var(--text);font:600 15px system-ui,sans-serif}
+      .tm{fill:var(--muted);font:13px system-ui,sans-serif}
+      .box{fill:var(--card);stroke:var(--text);stroke-width:2.5}
+      .ard{fill:#1f6fb2;stroke:#174f80;stroke-width:2}
+      .pin{fill:#fff;font:700 15px ui-monospace,Consolas,monospace}
+    </style>
+    <rect class="ard" x="20" y="30" width="150" height="320" rx="14"/>
+    <text x="95" y="62" text-anchor="middle" fill="#fff" style="font:700 16px system-ui">Arduino</text>
+    <text x="95" y="82" text-anchor="middle" fill="#cfe3ff" style="font:13px system-ui">Uno R3</text>
+    <!-- pin labels -->
+    <text class="pin" x="160" y="115" text-anchor="end">12</text>
+    <text class="pin" x="160" y="165" text-anchor="end">11</text>
+    <text class="pin" x="160" y="215" text-anchor="end">10</text>
+    <text class="pin" x="160" y="265" text-anchor="end">8</text>
+    <text class="pin" x="160" y="315" text-anchor="end">2</text>
+    <text class="pin" x="160" y="342" text-anchor="end">GND</text>
+    <!-- LED rows -->
+    <g>
+      <path class="ln" d="M170 110 H250"/><rect class="box" x="250" y="100" width="60" height="20" rx="4"/><text class="tm" x="280" y="94" text-anchor="middle">220 Ω</text>
+      <path class="ln" d="M310 110 H390"/><circle cx="410" cy="110" r="18" fill="#e5484d" stroke="var(--text)" stroke-width="2"/>
+      <text class="tx" x="440" y="105">червоний</text><text class="tm" x="440" y="122">RED</text>
+      <path class="ln" d="M520 110 H640"/>
+    </g>
+    <g>
+      <path class="ln" d="M170 160 H250"/><rect class="box" x="250" y="150" width="60" height="20" rx="4"/><text class="tm" x="280" y="144" text-anchor="middle">220 Ω</text>
+      <path class="ln" d="M310 160 H390"/><circle cx="410" cy="160" r="18" fill="#f5b400" stroke="var(--text)" stroke-width="2"/>
+      <text class="tx" x="440" y="155">жовтий</text><text class="tm" x="440" y="172">YELLOW</text>
+      <path class="ln" d="M520 160 H640"/>
+    </g>
+    <g>
+      <path class="ln" d="M170 210 H250"/><rect class="box" x="250" y="200" width="60" height="20" rx="4"/><text class="tm" x="280" y="194" text-anchor="middle">220 Ω</text>
+      <path class="ln" d="M310 210 H390"/><circle cx="410" cy="210" r="18" fill="#2fb36b" stroke="var(--text)" stroke-width="2"/>
+      <text class="tx" x="440" y="205">зелений</text><text class="tm" x="440" y="222">GREEN</text>
+      <path class="ln" d="M520 210 H640"/>
+    </g>
+    <!-- buzzer -->
+    <path class="ln" d="M170 260 H390"/>
+    <circle cx="410" cy="260" r="18" fill="#333" stroke="var(--text)" stroke-width="2"/><text x="410" y="266" text-anchor="middle" fill="#fff" style="font:700 16px system-ui">♪</text>
+    <text class="tx" x="440" y="255">пищалка (Piezo)</text><text class="tm" x="440" y="272">BUZZER, «+» до піна</text>
+    <path class="ln" d="M590 260 H640"/>
+    <!-- button -->
+    <path class="ln" d="M170 310 H385"/>
+    <rect class="box" x="385" y="296" width="50" height="28" rx="5"/><circle cx="410" cy="310" r="8" fill="var(--muted)"/>
+    <text class="tx" x="450" y="305">кнопка</text><text class="tm" x="450" y="322">BUTTON, по діагоналі</text>
+    <path class="ln" d="M600 310 H640"/>
+    <!-- GND bus -->
+    <path class="gnd" d="M640 100 V342 H170"/>
+    <text x="652" y="230" fill="var(--text)" style="font:700 14px system-ui" transform="rotate(90 652 230)">спільний GND (−)</text>
+  </svg>
+  </div>
+  <p class="small">Спрощена схема: лінії праворуч від кожного елемента йдуть до чорної лінії GND (на макетній платі це лінія «−»). У світлодіода до GND іде <b>катод</b> (коротка пряма ніжка).</p>
+  <table>
+    <tr><th>Елемент</th><th>Звідки</th><th>Куди</th></tr>
+    <tr><td>🔴 Червоний LED</td><td>пін 12 → резистор → анод</td><td>катод → GND</td></tr>
+    <tr><td>🟡 Жовтий LED</td><td>пін 11 → резистор → анод</td><td>катод → GND</td></tr>
+    <tr><td>🟢 Зелений LED</td><td>пін 10 → резистор → анод</td><td>катод → GND</td></tr>
+    <tr><td>🔊 Piezo</td><td>пін 8 → «+» (Positive)</td><td>«−» (Negative) → GND</td></tr>
+    <tr><td>🔘 Кнопка</td><td>пін 2 → ніжка</td><td>протилежна по діагоналі ніжка → GND</td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2>🪲 Типові помилки</h2>
+  <table>
+    <tr><th>Що бачиш</th><th>Причина</th></tr>
+    <tr><td>Один світлодіод не світиться</td><td>Перевернутий (анод і катод навпаки) або дріт іде не на той пін</td></tr>
+    <tr><td>Червона помилка <code>'RED' was not declared</code></td><td>Помилка в імені: <code>Red</code> ≠ <code>RED</code>. Великі й малі літери важливі</td></tr>
+    <tr><td>Світлофор перемикається сам, без кнопки</td><td>Забули <code>INPUT_PULLUP</code> або кнопка стоїть не над жолобком</td></tr>
+    <tr><td>Пищить без зупинки</td><td>Немає <code>noTone(BUZZER);</code></td></tr>
+    <tr><td>Нічого не чути</td><td>У Tinkercad увімкни звук у браузері; пищалка «+» має йти на пін 8</td></tr>
+  </table>
+  <p style="text-align:center;margin-top:18px"><a class="btn" href="#practical">Переходимо до практичної ↓</a></p>
+</section>
+
+<header class="section-divider" id="practical">
+  <div class="kicker">10 клас • Робототехніка • Практична робота 5</div>
+  <h1 style="font-size:clamp(26px,4.5vw,36px)">🛠️ Збираємо світлофор крок за кроком</h1>
+  <p class="lead">Працюй у <b>Tinkercad Circuits</b>. Після кожного кроку звіряйся з рядком <b>«Має вийти»</b>. Не виходить? Подивись «Типові помилки» вище. В останньому кроці ти звіриш свою схему з готовою схемою-зразком.</p>
+  <div class="actions">
+    <a class="btn" href="#practice">Одразу до кроків ↓</a>
+    <a class="btn ghost" href="#theory">↑ До пояснення</a>
+    <a class="btn ghost" href="#blank">Бланк відповідей</a>
+  </div>
+</header>
+
+<div id="practice"></div>
+
+<section class="card">
+  <h2>🧱 Частина 1. Три світлодіоди</h2>
+  <div class="step"><span class="sn">1</span><div>
+    <p>Відкрий <a href="https://www.tinkercad.com" target="_blank" rel="noopener">tinkercad.com</a> → <b>Circuits</b> → <b>Create new Circuit</b>. Назви проєкт <b>«Світлофор Прізвище»</b>.</p>
+    <p class="small">💡 Можна зробити копію минулого проєкту («Маячок з кнопкою»): у списку проєктів ⚙️ → <b>Duplicate</b>. Тоді Arduino, макетна плата і кнопка вже будуть на місці.</p>
+    <p class="expect">Порожнє робоче поле (або копія маячка) з твоєю назвою.</p>
+  </div></div>
+  <div class="step"><span class="sn">2</span><div>
+    <p>Постав <b>Arduino Uno R3</b> і поруч <b>Breadboard Small</b> (макетну плату).</p>
+    <div class="callout">🧩 <b>Навіщо макетна плата?</b> Щоб зʼєднувати деталі <b>без паяльника</b>. Усередині під дірочками сховані металеві смужки, і деталі, встромлені в одну смужку, зʼєднуються між собою. Запамʼятай <b>два правила</b>:
+      <ol class="rules">
+        <li><b>Стовпчик із 5 дірочок</b> (a–e в одній колонці) — це один провідник. Встромиш дві ніжки в колонку 4, і вони зʼєднані, хоча не торкаються.</li>
+        <li><b>Довга лінія вздовж краю</b> зі знаком <b>−</b> — теж один провідник на всю довжину. Підключимо її до GND Arduino, і всі «мінуси» будуть в одному місці.</li>
+      </ol>
+      Жолобок посередині розділяє плату на дві половини, які <b>не</b> зʼєднані.</div>
+    <p class="small">💡 Наведи мишку на дірочку в Tinkercad: підсвітяться всі дірочки, зʼєднані з нею. Так легко перевірити себе.</p>
+    <p class="expect">На робочому полі стоять Arduino і макетна плата.</p>
+  </div></div>
+  <div class="step"><span class="sn">3</span><div>
+    <p><b>Червоний світлодіод.</b> Збери одне коло точно як на малюнку, а потім повториш його ще двічі.</p>
+    <div class="bbwrap"><svg viewBox="0 0 700 340" role="img" aria-label="Як ставити червоний світлодіод на макетну плату">
+<style>.hl{font:600 13px system-ui,sans-serif}.lb{font:12px system-ui,sans-serif;fill:#555}</style>
+<rect x="0" y="0" width="700" height="340" rx="12" fill="#fbfaf6"/>
+<rect x="30" y="34" width="640" height="210" rx="10" fill="#f3f1ea" stroke="#c9c4b5"/>
+<rect x="50" y="42" width="600" height="14" fill="#e2ded2"/>
+<text class="lb" x="560" y="53" text-anchor="middle">↑ жолобок (вище — половина f–j)</text>
+<line x1="50" y1="215" x2="650" y2="215" stroke="#222" stroke-width="2"/>
+<line x1="50" y1="235" x2="650" y2="235" stroke="#e5484d" stroke-width="2"/>
+<text x="36" y="211" fill="#222" style="font:700 18px system-ui">−</text>
+<text x="36" y="231" fill="#e5484d" style="font:700 16px system-ui">+</text>
+<rect x="91" y="81" width="18" height="98" rx="5" fill="#6b7280" fill-opacity=".22" stroke="#6b7280" stroke-width="1.5"/>
+<rect x="111" y="81" width="18" height="98" rx="5" fill="#2fb36b" fill-opacity=".22" stroke="#2fb36b" stroke-width="1.5"/>
+<rect x="191" y="81" width="18" height="98" rx="5" fill="#f08c00" fill-opacity=".22" stroke="#f08c00" stroke-width="1.5"/>
+<rect x="57" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="77" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="97" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="117" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="137" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="157" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="177" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="197" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="217" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="237" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="257" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="277" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="297" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="317" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="337" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="357" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="377" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="397" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="417" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="437" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="457" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="477" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="497" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="517" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="537" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="557" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="577" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="597" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="617" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="637" y="87" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="57" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="77" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="97" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="117" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="137" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="157" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="177" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="197" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="217" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="237" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="257" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="277" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="297" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="317" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="337" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="357" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="377" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="397" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="417" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="437" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="457" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="477" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="497" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="517" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="537" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="557" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="577" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="597" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="617" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="637" y="107" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="57" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="77" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="97" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="117" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="137" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="157" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="177" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="197" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="217" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="237" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="257" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="277" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="297" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="317" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="337" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="357" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="377" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="397" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="417" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="437" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="457" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="477" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="497" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="517" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="537" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="557" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="577" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="597" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="617" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="637" y="127" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="57" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="77" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="97" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="117" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="137" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="157" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="177" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="197" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="217" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="237" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="257" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="277" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="297" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="317" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="337" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="357" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="377" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="397" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="417" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="437" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="457" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="477" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="497" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="517" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="537" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="557" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="577" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="597" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="617" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="637" y="147" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="57" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="77" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="97" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="117" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="137" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="157" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="177" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="197" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="217" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="237" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="257" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="277" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="297" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="317" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="337" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="357" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="377" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="397" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="417" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="437" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="457" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="477" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="497" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="517" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="537" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="557" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="577" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="597" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="617" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="637" y="167" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="57" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="77" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="97" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="117" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="137" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="157" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="177" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="197" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="217" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="237" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="257" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="277" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="297" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="317" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="337" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="357" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="377" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="397" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="417" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="437" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="457" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="477" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="497" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="517" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="537" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="557" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="577" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="597" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="617" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="637" y="202" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="57" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="77" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="97" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="117" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="137" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="157" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="177" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="197" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="217" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="237" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="257" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="277" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="297" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="317" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="337" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="357" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="377" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="397" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="417" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="437" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="457" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="477" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="497" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="517" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="537" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="557" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="577" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="597" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="617" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<rect x="637" y="222" width="6" height="6" rx="1" fill="#5d5a52"/>
+<text class="lb" x="40" y="94" text-anchor="middle">e</text>
+<text class="lb" x="40" y="114" text-anchor="middle">d</text>
+<text class="lb" x="40" y="134" text-anchor="middle">c</text>
+<text class="lb" x="40" y="154" text-anchor="middle">b</text>
+<text class="lb" x="40" y="174" text-anchor="middle">a</text>
+<text class="lb" x="60" y="190" text-anchor="middle">1</text>
+<text class="lb" x="100" y="190" text-anchor="middle">3</text>
+<text class="lb" x="120" y="190" text-anchor="middle">4</text>
+<text class="lb" x="200" y="190" text-anchor="middle">8</text>
+<text class="lb" x="240" y="190" text-anchor="middle">10</text>
+<text class="lb" x="340" y="190" text-anchor="middle">15</text>
+<text class="lb" x="440" y="190" text-anchor="middle">20</text>
+<text class="lb" x="540" y="190" text-anchor="middle">25</text>
+<text class="lb" x="640" y="190" text-anchor="middle">30</text>
+<path d="M100 90 V48" stroke="#777" stroke-width="2.5"/>
+<path d="M120 90 V72 L116 64 V48" stroke="#777" stroke-width="2.5" fill="none"/>
+<rect x="94" y="20" width="32" height="30" rx="14" fill="#e5484d" stroke="#9b1c1c"/>
+<text class="hl" x="86" y="16" fill="#9b1c1c" text-anchor="end">LED</text>
+<path d="M120 130 H200" stroke="#777" stroke-width="2.5"/>
+<rect x="137" y="123" width="46" height="14" rx="6" fill="#d9b98a" stroke="#8a6d3b"/>
+<rect x="145" y="123" width="4" height="14" fill="#8b4513"/>
+<rect x="155" y="123" width="4" height="14" fill="#000"/>
+<rect x="165" y="123" width="4" height="14" fill="#8b4513"/>
+<path d="M200 90 L280 14 H330" stroke="#f08c00" stroke-width="4" fill="none" stroke-linecap="round"/>
+<text class="hl" x="340" y="18" fill="#c26d00">до піна 12 Arduino</text>
+<path d="M100 170 V205" stroke="#222" stroke-width="4" stroke-linecap="round"/>
+<path d="M60 205 V262 H40" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/>
+<text class="hl" x="74" y="266" fill="#222">від GND Arduino (один дріт на всю плату)</text>
+<circle cx="50" cy="284" r="6" fill="#2fb36b"/><text class="hl" x="64" y="289" fill="#333">Колонка 4: анод (e4) і ліва ніжка резистора (c4) зʼєднані, хоча не торкаються</text>
+<circle cx="50" cy="304" r="6" fill="#f08c00"/><text class="hl" x="64" y="309" fill="#333">Колонка 8: права ніжка резистора (c8) і дріт від піна 12 (e8)</text>
+<circle cx="50" cy="324" r="6" fill="#6b7280"/><text class="hl" x="64" y="329" fill="#333">Колонка 3: катод (e3) і чорний дріт (a3) до лінії «−» під ним</text>
+</svg></div>
+    <ol class="sub">
+      <li>Постав <b>світлодіод</b>, клацни на нього і в полі <b>Color</b> обери <b>Red</b>. Встром ніжки в рядок <b>e</b>: <b>катод</b> (пряма ніжка) у колонку <b>3</b>, <b>анод</b> (зігнута) у колонку <b>4</b>.</li>
+      <li>Постав <b>резистор</b> і встанови <b>220 Ω</b>. Ліву ніжку встром у <b>c4</b>, тобто в ту саму колонку, що й анод. Права ніжка стане приблизно в <b>c8</b>.</li>
+      <li><b>Дріт</b> від піна <b>12</b> Arduino до <b>e8</b> (колонка правої ніжки резистора).</li>
+      <li><b>Дріт</b> від <b>a3</b> (колонка катода) вниз до лінії <b>−</b> під рядком a.</li>
+      <li><b>Дріт</b> від <b>GND</b> Arduino (внизу, біля POWER) до тієї ж лінії <b>−</b>. Цей дріт потрібен <b>один на всю плату</b>.</li>
+    </ol>
+    <div class="callout ok">🔁 <b>Шлях струму:</b> пін 12 → дріт → колонка 8 → резистор → колонка 4 → анод → світлодіод → катод → колонка 3 → дріт → лінія − → GND. Коло замкнулося!</div>
+    <p><b>Тепер так само жовтий і зелений</b>, тільки правіше:</p>
+    <div class="scroll"><table>
+      <tr><th>LED</th><th>Катод (пряма)</th><th>Анод (зігнута)</th><th>Резистор</th><th>Дріт від Arduino</th><th>Дріт до −</th></tr>
+      <tr><td>🔴 червоний</td><td>e3</td><td>e4</td><td>c4 → c8</td><td>пін 12 → e8</td><td>a3 → −</td></tr>
+      <tr><td>🟡 жовтий</td><td>e11</td><td>e12</td><td>c12 → c16</td><td>пін 11 → e16</td><td>a11 → −</td></tr>
+      <tr><td>🟢 зелений</td><td>e19</td><td>e20</td><td>c20 → c24</td><td>пін 10 → e24</td><td>a19 → −</td></tr>
+    </table></div>
+    <p class="small">Права ніжка резистора стала не в ту колонку? Не страшно: просто веди дріт від піна в ту колонку, де вона опинилася. Головне, щоб у тій колонці не було інших ніжок. Колонки 26–30 залиш вільними для кнопки.</p>
+    <p class="expect">Три однакові кола. Наведи мишку на анод кожного LED: має підсвітитися колонка з ніжкою резистора.</p>
+  </div></div>
+  <div class="step"><span class="sn">4</span><div>
+    <p>Відкрий <b>Code</b> → <b>Text</b> (погодься замінити блоки). Встав <b>Код 1</b> і натисни <b>Start Simulation</b>.</p>
+    <div class="codehead">Код 1. Автоматичний світлофор (перевірка схеми)</div>
+<pre><code><span class="c">// Імена для пінів</span>
+<span class="k">const int</span> RED = <span class="n">12</span>;
+<span class="k">const int</span> YELLOW = <span class="n">11</span>;
+<span class="k">const int</span> GREEN = <span class="n">10</span>;
+
+<span class="k">void</span> setup() {
+  pinMode(RED, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+}
+
+<span class="k">void</span> loop() {
+  digitalWrite(GREEN, HIGH);   <span class="c">// зелений</span>
+  delay(<span class="n">3000</span>);
+  digitalWrite(GREEN, LOW);
+
+  digitalWrite(YELLOW, HIGH);  <span class="c">// жовтий</span>
+  delay(<span class="n">1000</span>);
+  digitalWrite(YELLOW, LOW);
+
+  digitalWrite(RED, HIGH);     <span class="c">// червоний</span>
+  delay(<span class="n">3000</span>);
+  digitalWrite(RED, LOW);
+}</code></pre>
+    <p class="expect">По колу: зелений 3 с → жовтий 1 с → червоний 3 с. Кожен світлодіод загоряється. Якщо якийсь ні, переверни його.</p>
+  </div></div>
+</section>
+
+<section class="card">
+  <h2>🔘 Частина 2. Кнопка і пищалка</h2>
+  <div class="step"><span class="sn">5</span><div>
+    <p>Зупини симуляцію. Постав <b>кнопку</b> над жолобком у вільних колонках праворуч (26–30), як минулого разу. Одну ніжку зʼєднай дротом із піном <b>2</b>, а протилежну по діагоналі — з лінією <b>−</b> (це теж GND).</p>
+    <p class="expect">Кнопка стоїть над жолобком, підключені пін 2 і GND по діагоналі.</p>
+  </div></div>
+  <div class="step"><span class="sn">6</span><div>
+    <p>Знайди в компонентах <b>Piezo</b> і постав <b>поруч</b> із платою (на саму плату не обовʼязково). Наведи мишку на ніжки й підключи дротами: <b>Positive (+)</b> → пін <b>8</b>, <b>Negative (−)</b> → лінія <b>−</b> на макетній платі.</p>
+    <p class="expect">Пищалка підключена до піна 8 і GND.</p>
+  </div></div>
+  <div class="step"><span class="sn">7</span><div>
+    <p>Заміни код на <b>Код 2</b> і запусти симуляцію. Увімкни звук у браузері 🔊.</p>
+    <div class="codehead">Код 2. Пішохідний світлофор</div>
+<pre><code><span class="k">const int</span> RED = <span class="n">12</span>;
+<span class="k">const int</span> YELLOW = <span class="n">11</span>;
+<span class="k">const int</span> GREEN = <span class="n">10</span>;
+<span class="k">const int</span> BUTTON = <span class="n">2</span>;
+<span class="k">const int</span> BUZZER = <span class="n">8</span>;
+
+<span class="k">void</span> setup() {
+  pinMode(RED, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);   <span class="c">// кнопка, як на минулому уроці</span>
+}
+
+<span class="k">void</span> loop() {
+  digitalWrite(GREEN, HIGH);       <span class="c">// звичайний стан: машинам зелений</span>
+
+  <span class="k">if</span> (digitalRead(BUTTON) == LOW) {   <span class="c">// пішохід натиснув кнопку</span>
+    delay(<span class="n">1000</span>);                       <span class="c">// світлофор «думає»</span>
+    digitalWrite(GREEN, LOW);
+
+    digitalWrite(YELLOW, HIGH);        <span class="c">// жовтий</span>
+    delay(<span class="n">1500</span>);
+    digitalWrite(YELLOW, LOW);
+
+    digitalWrite(RED, HIGH);           <span class="c">// машинам червоний, пішоходи йдуть</span>
+    tone(BUZZER, <span class="n">1000</span>);               <span class="c">// звук для незрячих пішоходів</span>
+    delay(<span class="n">5000</span>);
+    noTone(BUZZER);
+    digitalWrite(RED, LOW);
+
+    digitalWrite(YELLOW, HIGH);        <span class="c">// знову жовтий</span>
+    delay(<span class="n">1500</span>);
+    digitalWrite(YELLOW, LOW);
+  }
+}</code></pre>
+    <p class="expect">Горить зелений. Натиснув кнопку: через 1 с жовтий, потім червоний і писк 5 с, потім жовтий, і знову зелений. Без натискання нічого не змінюється.</p>
+  </div></div>
+  <div class="step"><span class="sn">8</span><div>
+    <p><b>Звір свою схему зі зразком.</b> Подивись на схему-зразок і порівняй її зі своєю схемою в Tinkercad.</p>
+    <figure class="shot">
+      <img src="scheme.png" alt="Схема Arduino Uno з трьома світлодіодами на пінах 12, 11, 10 і резисторами на макетній платі" loading="lazy">
+      <figcaption>Схема-зразок: три світлодіоди (кнопку і пищалку на ній не показано).</figcaption>
+    </figure>
+    <p>Перевір по черзі:</p>
+    <ol class="sub">
+      <li>Пін <b>12</b> → дріт → колонка <b>8</b> → резистор → анод червоного (колонка 4).</li>
+      <li>Пін <b>11</b> → колонка <b>16</b> → резистор → анод жовтого (колонка 12).</li>
+      <li>Пін <b>10</b> → колонка <b>24</b> → резистор → анод зеленого (колонка 20).</li>
+      <li>Катоди (колонки <b>3, 11, 19</b>) → дроти → нижня лінія <b>−</b>.</li>
+      <li><b>GND</b> Arduino → нижня лінія <b>−</b>.</li>
+      <li>Кнопка: пін <b>2</b> і лінія <b>−</b> по діагоналі, кнопка над жолобком. Пищалка: «+» → пін <b>8</b>, «−» → лінія <b>−</b>.</li>
+    </ol>
+    <p class="expect">Усі пункти збігаються, світлофор працює як у кроці 7.</p>
+  </div></div>
+  <div class="step"><span class="sn">9</span><div>
+    <p>Покажи вчителю запущену симуляцію: натисни кнопку і пройди весь цикл світлофора.</p>
+  </div></div>
+</section>
+
+
+<section class="card">
+  <h2>⭐ Бонус</h2>
+  <div class="step"><span class="sn">Б1</span><div>
+    <p><b>Світлофор для пішоходів.</b> Додай ще два світлодіоди, <b>червоний</b> (пін 7) і <b>зелений</b> (пін 6), кожен через резистор 220 Ω. Це «чоловічок» для пішоходів. Коли машинам зелений, пішоходам червоний, і навпаки.</p>
+    <p class="small">Підказка: додай <code>const int P_RED = 7;</code>, <code>const int P_GREEN = 6;</code>, два <code>pinMode</code> і вмикай/вимикай їх у потрібні моменти.</p>
+  </div></div>
+  <div class="step"><span class="sn">Б2</span><div>
+    <p><b>Мелодія замість писку.</b> Коли пішоходам дозволено йти, програй коротку мелодію з 3–4 нот (наприклад, 262, 330, 392, 523 Гц).</p>
+  </div></div>
+</section>
+
+<section class="card" id="blank">
+  <h2>📝 Бланк відповідей</h2>
+  <div class="who">
+    <input type="text" data-key="name" placeholder="Прізвище та імʼя">
+    <input type="text" data-key="class" placeholder="Клас (наприклад, 10-А)">
+  </div>
+  <div class="scroll"><table id="answers"><tr><th>№</th><th>Питання</th><th>Твоя відповідь</th></tr></table></div>
+  <div class="actions">
+    <button class="btn" id="copyBtn">📋 Скопіювати відповіді</button>
+    <span class="toast" id="toast"></span>
+  </div>
+  <p class="small">Питання скопіюються разом із відповідями. Відповіді зберігаються лише на цьому пристрої.</p>
+  <div class="callout ok">📤 <b>Що здати:</b> показати вчителю запущену симуляцію і надіслати скопійовані відповіді.</div>
+</section>
+
+<section class="card check">
+  <h2>✅ Перевір себе</h2>
+  <label><input type="checkbox"><span>Я зібрав коло з трьох світлодіодів, кожен через свій резистор.</span></label>
+  <label><input type="checkbox"><span>Я можу пояснити, навіщо писати <code>const int RED = 12;</code>.</span></label>
+  <label><input type="checkbox"><span>Я знаю, що роблять <code>tone()</code> і <code>noTone()</code>.</span></label>
+  <label><input type="checkbox"><span>Мій світлофор перемикається лише після натискання кнопки.</span></label>
+</section>
+
+<section class="card">
+  <h2>🏠 Домашнє завдання: «Світлофор біля мене» (≈10 хв)</h2>
+  <p>Знайди пішохідний перехід зі світлофором біля дому чи школи і, <b>стоячи в безпечному місці</b>, поспостерігай за ним. Сфотографуй його і заповни таблицю:</p>
+  <table>
+    <tr><th>Питання</th><th>Відповідь</th></tr>
+    <tr><td>Скільки секунд горить зелений для пішоходів?</td><td></td></tr>
+    <tr><td>Чи є кнопка для пішоходів?</td><td></td></tr>
+    <tr><td>Чи є звук? Він безперервний чи «цокає»?</td><td></td></tr>
+    <tr><td>Чи блимає зелений перед перемиканням? Чи є табло з секундами?</td><td></td></tr>
+  </table>
+  <p class="small">Принеси фото і таблицю на наступний урок: порівняємо зі своїми світлофорами.</p>
+</section>
+
+</div>
+<script>
+(function(){
+  var root=document.documentElement, KEY='cs9-theme', AKEY='cs-rob10-l5-answers';
+  function apply(t){root.setAttribute('data-theme',t)}
+  var saved=null; try{saved=localStorage.getItem(KEY)}catch(e){}
+  apply(saved || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
+  document.getElementById('themeBtn').onclick=function(){
+    var t=root.getAttribute('data-theme')==='dark'?'light':'dark'; apply(t);
+    try{localStorage.setItem(KEY,t)}catch(e){}
+  };
+
+  var Q=[
+    ['П1','Навіщо писати const int RED = 12, а не просто 12?'],
+    ['П2','Що станеться, якщо забути noTone()?'],
+    ['Б1','Що додав для світлофора пішоходів'],
+    ['Б2','Твоя мелодія (частоти нот)'],
+    ['К1','Квиток: які піни входи, а які виходи?'],
+    ['К2','Квиток: навіщо пішохідному світлофору звук?'],
+    ['К3','Квиток: одне речення, що нового я сьогодні дізнався']
+  ];
+  var store={}; try{store=JSON.parse(localStorage.getItem(AKEY)||'{}')||{}}catch(e){store={}}
+  function save(){try{localStorage.setItem(AKEY,JSON.stringify(store))}catch(e){}}
+  var tbl=document.getElementById('answers');
+  Q.forEach(function(q){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="no">'+q[0]+'</td><td class="q">'+q[1]+'</td><td><input type="text" data-key="'+q[0]+'"></td>';
+    tbl.appendChild(tr);
+  });
+  document.querySelectorAll('input[data-key]').forEach(function(inp){
+    var k=inp.getAttribute('data-key'); if(store[k]) inp.value=store[k];
+    inp.addEventListener('input',function(){store[k]=inp.value;save()});
+  });
+
+  document.getElementById('copyBtn').onclick=function(){
+    var lines=['Робототехніка 10 клас, урок 5 — Пішохідний світлофор','Учень: '+(store.name||'')+'  Клас: '+(store['class']||''),''];
+    Q.forEach(function(q){lines.push(q[0]+'. '+q[1]+': '+(store[q[0]]||'—'))});
+    var txt=lines.join('\n'), toast=document.getElementById('toast');
+    var done=function(){toast.textContent='✓ Скопійовано!';setTimeout(function(){toast.textContent=''},2000)};
+    if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done,function(){fallback(txt);done()})}else{fallback(txt);done()}
+  };
+  function fallback(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()}
+})();
+
+(function(){
+  document.querySelectorAll('pre').forEach(function(pre){
+    var b=document.createElement('button'); b.className='copy'; b.textContent='Копіювати';
+    b.onclick=function(){
+      var txt=pre.querySelector('code').innerText;
+      var done=function(){b.textContent='✓ Скопійовано';setTimeout(function(){b.textContent='Копіювати'},1500)};
+      if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done,function(){fb(txt);done()})}else{fb(txt);done()}
+    };
+    pre.appendChild(b);
+  });
+  function fb(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()}
+})();
+
+document.querySelectorAll('figure.shot img').forEach(function(i){i.onclick=function(){window.open(i.src,'_blank')}});
+</script>
+</body>
+</html>
