@@ -1,0 +1,1563 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CapCut: наш перший шортс за один урок</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">УРОК 1 З 7 • 10 КЛАС • ЧАСТИНА БАГАТОУРОЧНОЇ ТЕМИ</p>
+  <h1>CapCut: наш перший шортс за один урок</h1>
+<p class="lesson-subtitle">Монтуємо вертикальне відео на 20–30 секунд із безкоштовних стокових кліпів: імпорт, обрізка, порядок, напис, музика й експорт.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Створити проєкт у CapCut Desktop (Create project), поставити формат кадру 9:16 кнопкою «Співвідношення сторін» (Ratio), імпортувати кліпи через «Медіа → Імпорт» (Media → Import) і розставити їх на таймлайні в потрібному порядку.</li>
+  <li>Обрізати кліпи інструментом «Розділити» (Split, Ctrl+B) і клавішею Delete, додати напис через «Текст → Додати текст» (Text → Add text) і музику через «Аудіо → Музика» (Audio → Music) без платних елементів з короною (Pro).</li>
+  <li>Експортувати вертикальне відео 9:16 кнопкою «Експорт» (Export) з параметрами «Роздільність» (Resolution) 1080p і «Формат» (Format) MP4, знайти готовий файл на комп&#39;ютері й перевірити, що він програється.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Монтаж — це вибір: що залишити, що вирізати і в якому порядку показати.</li>
+  <li>Короткі кліпи по 2–3 секунди, музика й один сильний напис роблять відео таким, що його додивляються.</li>
+  <li>Для шортсів, Reels і TikTok формат кадру 9:16 (вертикальний), файл MP4, роздільність 1080×1920.</li>
+  <li>Проєкт CapCut — це лише план монтажу; готове відео з&#39;являється тільки після експорту в MP4.</li>
+  <li>Якщо немає власної зйомки, кадри беруть із безкоштовних стоків (Pexels, Pixabay, Mixkit, Coverr) або з вбудованої бібліотеки CapCut.</li>
+</ul>
+
+  <div class="theory"><h3>Що таке відеомонтаж простими словами</h3>
+<p>Відеомонтаж — це складання одного відео з кількох шматочків. Ти береш готові кліпи (короткі відеофрагменти), <strong>вирізаєш зайве</strong>, <strong>ставиш у потрібному порядку</strong>, додаєш <strong>напис</strong> і <strong>музику</strong>, а потім зберігаєш усе як один файл. Більшість шортсів у TikTok, Reels і YouTube Shorts зроблені саме так: це 6–12 коротких кадрів по 2–3 секунди під музику з одним-двома написами.</p>
+<p>Сьогодні ми працюємо в <strong>CapCut Desktop</strong> — безкоштовному відеоредакторі для комп'ютера від тих самих розробників, що й TikTok. Знімати нічого не потрібно: кліпи беремо з безкоштовних стокових сайтів, де відео дозволено використовувати без оплати.</p>
+<h3>З чого складається вікно CapCut</h3>
+<table>
+<thead>
+<tr>
+<th>Зона</th>
+<th>Де</th>
+<th>Навіщо</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Медіатека (Media)</td>
+<td>ліворуч угорі</td>
+<td>тут лежать твої кліпи, музика, тексти, ефекти</td>
+</tr>
+<tr>
+<td>Плеєр</td>
+<td>посередині вгорі</td>
+<td>показує, як виглядає відео зараз</td>
+</tr>
+<tr>
+<td>Панель властивостей</td>
+<td>праворуч угорі</td>
+<td>налаштування того, що виділено: розмір, текст, гучність</td>
+</tr>
+<tr>
+<td>Таймлайн</td>
+<td>уся нижня частина</td>
+<td>стрічка, на якій ти складаєш відео</td>
+</tr>
+</tbody>
+</table>
+<p>На таймлайні є <strong>біла вертикальна лінія</strong> — це «повзунок» (playhead). Він показує, на якій секунді ти зараз. Усі розрізи робляться саме там, де стоїть повзунок.</p>
+<h3>П'ять базових дій</h3>
+<ol>
+<li><strong>Імпорт.</strong> Media → Import → обираєш файли. Кліпи з'являються в медіатеці, але у відео їх ще немає.</li>
+<li><strong>На таймлайн.</strong> Перетягни кліп мишею з медіатеки вниз на таймлайн. Порядок зліва направо — це порядок у відео. Щоб переставити кліп, перетягни його в інше місце.</li>
+<li><strong>Обрізка.</strong> Постав повзунок у потрібне місце і натисни <strong>Ctrl+B</strong> (Split). Кліп розріжеться на дві частини. Клацни зайву частину і натисни <strong>Delete</strong>. Ще один спосіб: потягни мишею за лівий чи правий край кліпу.</li>
+<li><strong>Напис.</strong> Вкладка Text → додай текст → він з'явиться на окремій доріжці над відео. Текст набирається в панелі праворуч.</li>
+<li><strong>Експорт.</strong> Кнопка Export угорі праворуч → обираєш 1080p і MP4 → Export. Тільки тепер з'являється готовий відеофайл.</li>
+</ol>
+<h3>Чому 9:16 і MP4</h3>
+<p><strong>9:16</strong> — це вертикальний кадр, як екран телефона, який тримаєш у руці. Шортси, Reels і TikTok показують саме так. Якщо зробити відео 16:9 (як телевізор), на телефоні воно буде маленькою смужкою посередині. <strong>MP4</strong> — найпоширеніший формат відео: його відкриває будь-який телефон, комп'ютер і соцмережа. <strong>1080p</strong> (1080×1920 пікселів) — достатньо чітко і не надто важко для комп'ютера.</p>
+<h3>Приклад: як обрізати довгий кліп</h3>
+<p>У тебе кліп кави на 12 секунд, а потрібно лише 3 секунди з середини, де ллється молоко. Ставиш повзунок на 4-ту секунду → Ctrl+B. Ставиш повзунок на 7-му секунду → Ctrl+B. Тепер кліп має три частини: виділяєш першу → Delete, виділяєш останню → Delete. Залишились 3 найкращі секунди.</p>
+<h3>Навіщо це в житті</h3>
+<p>Так створюють рекламу кав'ярень і магазинів, ролики для шкільних сторінок, портфоліо, анонси подій. SMM-спеціалісти й маркетологи постійно монтують зі стокових кадрів, коли немає власної зйомки. Уміння зробити 30-секундне відео — корисна навичка для будь-якої професії, де треба щось показати людям.</p>
+<h3>Типові пастки і як їх уникнути</h3>
+<ul>
+<li><strong>Забув експортувати.</strong> Проєкт CapCut — це ще не відео. Без Export файла MP4 не буде.</li>
+<li><strong>Чорні смуги зверху і знизу.</strong> Кліп горизонтальний, а кадр вертикальний. Виділи кліп і збільш Scale праворуч або обирай на стоку вертикальні кліпи.</li>
+<li><strong>Музика довша за відео.</strong> Наприкінці буде чорний екран з музикою. Обріж музику через Ctrl+B там, де закінчується останній кліп.</li>
+<li><strong>Кліпи з короною.</strong> Позначка корони означає платну функцію (Pro). Якщо її використати, експорт може попросити оплату. Беремо лише безкоштовне.</li>
+<li><strong>Гальмує перегляд.</strong> Ти завантажив кліп 4K. Завантаж той самий кліп у розмірі HD 1080p.</li>
+</ul>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">П&#39;ять базових дій монтажу</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Import: кліпи в медіатеку</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Перетягнути на таймлайн</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Обрізати: Ctrl+B і Delete</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Додати напис і музику</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Export: файл MP4</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Шлях кліпу зі стоку в проєкт</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Pexels або Pixabay: пошук англійською</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Фільтр: Портретна (Vertical)</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Завантажити HD 1080p, не 4K</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">Зберегти в папку CapCut_Урок1</li>
+<li class="scheme-arrow" aria-hidden="true">→</li>    <li class="scheme-step">CapCut: Media - Import</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Проєкт CapCut і готове відео</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Проєкт CapCut</h4><ul><li>Відкривається лише в CapCut</li><li>Можна змінювати будь-коли</li><li>Потребує вихідних кліпів у папці</li><li>Зберігається автоматично</li><li>Не можна надіслати другові</li></ul></div>
+    <div class="scheme-column"><h4>Відео MP4 після Export</h4><ul><li>Відкривається на будь-якому пристрої</li><li>Змінити вже не можна, лише змонтувати заново</li><li>Не залежить від папки з кліпами</li><li>З&#39;являється лише після натискання Export</li><li>Можна опублікувати чи надіслати</li></ul></div>
+  </div>
+</figure>
+
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Обрізати довгий кліп до 3 найкращих секунд</h4>
+    <p>Кліп «латте-арт» триває 12 секунд. Найкрасивіший момент, коли молоко малює серце, — з 4-ї по 7-му секунду. Треба залишити лише його.</p>
+
+    <div class="example-explanation"><ol>
+<li>Клацни кліп на таймлайні, щоб він виділився (з'явиться біла рамка).</li>
+<li>Постав повзунок (білу лінію) на 4-ту секунду: клацни на лінійці часу над доріжками.</li>
+<li>Натисни <strong>Ctrl+B</strong> — кліп розрізався на дві частини.</li>
+<li>Постав повзунок на 7-му секунду і знову <strong>Ctrl+B</strong>. Тепер частин три.</li>
+<li>Клацни першу частину (0–4 с) → <strong>Delete</strong>. Клацни останню (7–12 с) → <strong>Delete</strong>.</li>
+</ol>
+<p>Результат: на таймлайні залишився шматок 3 секунди. Наступний кліп автоматично присунувся впритул, порожнечі немає. Вихідний файл на комп'ютері не змінився — CapCut просто показує лише потрібну частину.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Музика довша за відео</h4>
+    <p>Відео з 8 кліпів триває 26 секунд. Ти додав трек з бібліотеки Audio, який триває 2 хвилини 40 секунд. Під час перегляду після 26-ї секунди чорний екран, а музика грає далі.</p>
+
+    <div class="example-explanation"><ol>
+<li>Постав повзунок точно в кінець останнього відеокліпу (26 с). Щоб було точніше, збільш масштаб таймлайну повзунком масштабу над таймлайном.</li>
+<li>Клацни доріжку музики, щоб виділити саме її.</li>
+<li>Натисни <strong>Ctrl+B</strong> — музика розрізалась у місці 26 с.</li>
+<li>Клацни праву (довгу) частину музики → <strong>Delete</strong>.</li>
+</ol>
+<p>Результат: музика закінчується разом з відео. Наприкінці може бути різкий обрив звуку — на наступному уроці зробимо плавне затухання (Fade out), а хто вже встиг — у додатковому завданні.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Горизонтальний кліп у вертикальному кадрі</h4>
+    <p>Ти знайшов гарний кліп гір, але він горизонтальний (16:9). У проєкті 9:16 він займає лише смугу посередині, а зверху й знизу чорні поля.</p>
+
+    <div class="example-explanation"><ol>
+<li>Виділи кліп на таймлайні.</li>
+<li>Праворуч у панелі властивостей відкрий Video → Basic і знайди <strong>Scale</strong> (масштаб).</li>
+<li>Збільшуй значення, доки чорні смуги не зникнуть: для кліпу 16:9 у кадрі 9:16 це приблизно 316%. Можна також тягнути кут рамки прямо в плеєрі.</li>
+<li>Якщо важливий об'єкт (наприклад, вершина гори) опинився за краєм, перетягни зображення в плеєрі вліво чи вправо (параметр <strong>Position</strong>).</li>
+</ol>
+<p>Результат: кадр заповнений без смуг, але частина зображення з боків обрізана, а якість трохи гірша, бо картинку збільшили. Тому для шортсів краще одразу шукати вертикальні кліпи (фільтр «Портретна»).</p>
+</div>
+  </article>
+</div>
+
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=CapCut+PC+%D0%B4%D0%BB%D1%8F+%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2+%D1%8F%D0%BA+%D0%BC%D0%BE%D0%BD%D1%82%D1%83%D0%B2%D0%B0%D1%82%D0%B8+%D0%B2%D1%96%D0%B4%D0%B5%D0%BE+%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">CapCut на комп&#39;ютері для початківців<span class="resource-hint">пошук на YouTube: «CapCut PC для початківців як монтувати відео українською»</span></span></a>
+
+<div class="resource-note">Короткий відеоурок, де видно інтерфейс CapCut Desktop у русі: імпорт, обрізка, текст, експорт. Подивись, якщо пропустив показ на дошці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=CapCut+desktop+interface+timeline+player+media+panel+screenshot" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Показати 4 зони вікна CapCut Desktop — знайти зображення<span class="resource-hint">пошук у Google Картинках: «CapCut desktop interface timeline player media panel screenshot»</span></span></a>
+
+<div class="resource-note">Учень побачить, де в CapCut медіатека, плеєр, панель властивостей і таймлайн, і зможе звірити зі своїм екраном.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&amp;q=9%3A16+vs+16%3A9+aspect+ratio+comparison+vertical+horizontal+video" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Порівняти формати кадру 9:16 і 16:9 — знайти зображення<span class="resource-hint">пошук у Google Картинках: «9:16 vs 16:9 aspect ratio comparison vertical horizontal video»</span></span></a>
+
+<div class="resource-note">Видно, чому вертикальне відео займає весь екран телефона, а горизонтальне — лише вузьку смугу.</div>  </div>
+</div>
+
+</section>
+
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+  <ul>
+  <li>Таймлайн — як стрічка конвеєра: кліпи їдуть зліва направо в тому порядку, в якому ти їх поставив, і саме так їх побачить глядач.</li>
+  <li>Split (Ctrl+B) — як ножиці: ти розрізаєш стрічку в місці, де стоїть біла вертикальна лінія, а зайвий шматок викидаєш.</li>
+  <li>Доріжки на таймлайні — як шари бутерброда: нижній шар відео, над ним текст, під ним музика. Що вище, те видно поверх.</li>
+  <li>Проєкт CapCut — це рецепт, а експорт у MP4 — готова страва. Рецепт не з&#39;їси і другові в Telegram не надішлеш, а страву можна.</li>
+  <li>Стокові кліпи — як готові інгредієнти з супермаркету: не треба вирощувати овочі самому, щоб приготувати смачний салат.</li>
+</ul>
+
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.capcut.com/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">CapCut — офіційний сайт</span></a>
+
+<div class="resource-note">Звідси завантажують CapCut Desktop для Windows. Знадобиться, якщо хочеш продовжити проєкт удома.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://shotcut.org/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Shotcut — безкоштовний відеоредактор</span></a>
+
+<div class="resource-note">Безкоштовна програма без акаунта і водяних знаків. Може знадобитися на наступних уроках, якщо функцій CapCut забракне.</div>  </div>
+</div>
+
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 9-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Мій перший шортс на 20–30 секунд</h3>
+    <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=Pexels+%E2%80%94+%D0%B1%D0%B5%D0%B7%D0%BA%D0%BE%D1%88%D1%82%D0%BE%D0%B2%D0%BD%D1%96+%D0%B2%D1%96%D0%B4%D0%B5%D0%BE" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Pexels — безкоштовні відео<span class="resource-hint">пошук у Google: «Pexels — безкоштовні відео»</span></span></a>
+
+<div class="resource-note">Головне джерело кліпів для шортса. Шукай англійськими словами, увімкни фільтр орієнтації «Портретна» і завантажуй розмір HD (1080×1920), а не 4K.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=Pixabay+%E2%80%94+%D0%B1%D0%B5%D0%B7%D0%BA%D0%BE%D1%88%D1%82%D0%BE%D0%B2%D0%BD%D1%96+%D0%B2%D1%96%D0%B4%D0%B5%D0%BE" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Pixabay — безкоштовні відео<span class="resource-hint">пошук у Google: «Pixabay — безкоштовні відео»</span></span></a>
+
+<div class="resource-note">Запасне джерело кліпів, якщо на Pexels мало відео на твою тему. Обирай вертикальні кліпи й розмір 1080p під час завантаження.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://mixkit.co/free-stock-video/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Mixkit — безкоштовні стокові відео</span></a>
+
+<div class="resource-note">Короткі якісні кліпи за категоріями (їжа, місто, спорт, природа). Зручно гортати, коли не знаєш, що шукати.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://coverr.co/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Coverr — безкоштовні відео</span></a>
+
+<div class="resource-note">Ще один стоковий сайт, де багато кадрів для реклами, технологій і способу життя.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?q=Pixabay+Music+%E2%80%94+%D0%B1%D0%B5%D0%B7%D0%BA%D0%BE%D1%88%D1%82%D0%BE%D0%B2%D0%BD%D0%B0+%D0%BC%D1%83%D0%B7%D0%B8%D0%BA%D0%B0" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">Pixabay Music — безкоштовна музика<span class="resource-hint">пошук у Google: «Pixabay Music — безкоштовна музика»</span></span></a>
+
+<div class="resource-note">Якщо в бібліотеці Audio в CapCut не знайшлося потрібного треку без корони, завантаж MP3 звідси й імпортуй так само, як кліпи.</div>  </div>
+</div>
+
+    <p><strong>Мета:</strong> змонтувати власне вертикальне відео 9:16 тривалістю 20–30 секунд із 5–7 стокових кліпів на обрану тему, з одним написом і музикою, та зберегти його як файл MP4.</p>
+<p><strong>Результат:</strong> файл <code>Прізвище_тема.mp4</code> у твоїй папці і збережений проєкт CapCut. Це чернетка, яку ти покращуватимеш наступні 6 уроків, тому нічого не видаляй.</p>
+<p>Можна працювати самостійно або в парі.</p>
+<p><strong>Ідеї тем (і англійські слова для пошуку):</strong></p>
+<ol>
+<li>Реклама вигаданої кав'ярні «Кава за 30 секунд» — coffee, barista, latte art, cafe</li>
+<li>«Топ-3 місця, куди я поїду» — travel, mountains, beach, city aerial</li>
+<li>Рецепт за 30 секунд — cooking, pancakes, pizza making</li>
+<li>Мотиваційне відео про спорт — gym, running, football</li>
+<li>«Ранок продуктивної людини» — alarm clock, morning coffee, laptop, sunrise</li>
+<li>Цікавий факт про космос чи природу — space, galaxy, ocean, animals</li>
+<li>Тизер шкільної події — party lights, crowd, basketball</li>
+<li>Реклама гаджета чи інтернет-магазину — smartphone, headphones, unboxing</li>
+</ol>
+<p>Перед монтажем скопіюй заготовку-план і коротко запиши, які кліпи й у якому порядку будуть.</p>
+
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Обери тему і завантаж 5–7 кліпів</strong></p>
+        <ol>
+<li>Створи папку <code>CapCut_Урок1</code> у Документах, а в ній папку з назвою твоєї теми.</li>
+<li>Відкрий pexels.com/videos (або pixabay.com/videos), введи англійське слово з теми.</li>
+<li>Увімкни фільтр орієнтації <strong>Портретна</strong> (Portrait / Vertical).</li>
+<li>Відкрий кліп тривалістю 5–15 с, натисни стрілку біля кнопки завантаження, обери <strong>HD (1080×1920)</strong>, не 4K і не Original.</li>
+<li>Збережи файл у свою папку. Повтори для 5–7 кліпів.</li>
+</ol>
+<p>Якщо інтернет дуже повільний — пропусти цей крок і на кроці 3 бери кліпи з <strong>Media → Library</strong> в самому CapCut.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У папці твоєї теми лежать 5–7 файлів MP4, вертикальних, кожен 5–15 секунд.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Створи проєкт і постав формат 9:16</strong></p>
+        <ol>
+<li>Запусти CapCut і натисни <strong>Create project</strong>.</li>
+<li>Угорі над плеєром клацни назву проєкту і перейменуй його: <code>Прізвище_тема</code>.</li>
+<li>Під плеєром праворуч натисни кнопку <strong>Ratio</strong> і обери <strong>9:16</strong>.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Плеєр став вертикальним, як екран телефона; проєкт має твою назву.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Імпортуй кліпи</strong></p>
+        <ol>
+<li>Ліворуч угорі вкладка <strong>Media</strong> → кнопка <strong>Import</strong>.</li>
+<li>Перейди у свою папку, натисни <strong>Ctrl+A</strong>, щоб виділити всі кліпи, і натисни <strong>Відкрити</strong>.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Усі кліпи з&#39;явилися в медіатеці ліворуч у вигляді мініатюр.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Розстав кліпи на таймлайні</strong></p>
+        <ol>
+<li>Перетягни мишею перший кліп за планом з медіатеки на таймлайн унизу.</li>
+<li>Перетягуй решту кліпів так, щоб кожен став праворуч від попереднього.</li>
+<li>Щоб поміняти порядок, затисни кліп на таймлайні й перетягни в інше місце.</li>
+<li>Якщо кліпи дуже дрібні, збільш масштаб таймлайну повзунком масштабу над доріжками.</li>
+<li>Натисни <strong>Пробіл</strong>, щоб переглянути, і ще раз <strong>Пробіл</strong>, щоб зупинити.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Усі кліпи стоять на одній нижній доріжці в порядку плану, відео програється без чорних пауз між кліпами.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Обріж кожен кліп до 2–4 секунд</strong></p>
+        <ol>
+<li>Клацни кліп, щоб виділити.</li>
+<li>Постав білу лінію (повзунок) на початок найкращого моменту → <strong>Ctrl+B</strong>.</li>
+<li>Постав повзунок на кінець найкращого моменту → <strong>Ctrl+B</strong>.</li>
+<li>Виділи зайві шматки й натисни <strong>Delete</strong>.</li>
+<li>Так само обріж усі кліпи. Інший спосіб — потягни мишею за край кліпу.</li>
+<li>Подивись на лінійку часу: загальна тривалість має бути 20–30 с.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Кожен кліп триває 2–4 секунди, усе відео 20–30 секунд, без порожнеч.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Прибери чорні смуги (якщо є)</strong></p>
+        <p>Якщо якийсь кліп має чорні поля зверху й знизу:</p>
+<ol>
+<li>Виділи цей кліп на таймлайні.</li>
+<li>Праворуч у панелі <strong>Video → Basic</strong> збільшуй <strong>Scale</strong>, доки смуги не зникнуть (для горизонтального кліпу приблизно 316%).</li>
+<li>За потреби перетягни зображення в плеєрі, щоб головне було в кадрі.</li>
+</ol>
+<p>Якщо всі кліпи вертикальні й смуг немає — переходь до наступного кроку.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Кожен кліп заповнює весь вертикальний кадр, чорних смуг немає.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Додай напис на початку</strong></p>
+        <ol>
+<li>Постав повзунок на початок відео (0 с).</li>
+<li>Відкрий вкладку <strong>Text</strong> → <strong>Add text</strong> (або Default text) і натисни <strong>+</strong> чи перетягни на таймлайн.</li>
+<li>Праворуч у полі тексту напиши короткий заголовок, до 7 слів, наприклад «Кава, яка будить краще за будильник».</li>
+<li>Збільш розмір шрифту, обери чіткий колір, перетягни напис у плеєрі у верхню чи середню частину кадру.</li>
+<li>На таймлайні потягни правий край напису, щоб він тривав приблизно 3 секунди.</li>
+</ol>
+<p>Шрифти й стилі з короною не обирай.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Перші 3 секунди відео на екрані видно чіткий напис, потім він зникає.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Додай музику і обріж її</strong></p>
+        <ol>
+<li>Вкладка <strong>Audio</strong> → <strong>Music</strong>. Введи в пошук настрій: upbeat, chill, energetic, cinematic.</li>
+<li>Клацни трек, щоб прослухати. Обирай треки без корони.</li>
+<li>Натисни <strong>+</strong> на треку (або перетягни на таймлайн під відео на початок).</li>
+<li>Постав повзунок у кінець останнього кліпу, виділи доріжку музики → <strong>Ctrl+B</strong> → виділи зайвий хвіст → <strong>Delete</strong>.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Музика звучить від початку й закінчується разом з останнім кліпом, після відео немає чорного екрана.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір увесь ролик</strong></p>
+        <ol>
+<li>Постав повзунок на початок і натисни <strong>Пробіл</strong>.</li>
+<li>Перевір: немає чорних смуг і пауз, напис читається, музика не обривається посеред відео, тривалість 20–30 с.</li>
+<li>Якщо щось не так — виправ лише цю частину.</li>
+</ol>
+
+<p class="step-result"><strong>Має вийти:</strong> Ролик від початку до кінця програється так, як ти задумав.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Експортуй у MP4</strong></p>
+        <ol>
+<li>Натисни <strong>Export</strong> угорі праворуч.</li>
+<li>Назва: <code>Прізвище_тема</code>. Місце збереження: твоя папка <code>CapCut_Урок1</code>.</li>
+<li>Resolution: <strong>1080p</strong>, Format: <strong>MP4</strong>, Frame rate: <strong>30fps</strong>.</li>
+<li>Натисни <strong>Export</strong> і дочекайся 100%.</li>
+<li>Відкрий папку і запусти файл, щоб переконатися, що він програється.</li>
+</ol>
+<p>Якщо CapCut просить увійти в акаунт чи оплатити — поклич вчителя.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У папці є файл `Прізвище_тема.mp4`, він відкривається і програється у звичайному плеєрі.</p>      </li>
+    </ol>
+    
+    <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-task-1"><table>
+<thead>
+<tr>
+<th>Кліп</th>
+<th>Що на кліпі (2–4 слова)</th>
+<th>Скільки секунд залишити</th>
+<th>Порядок у відео</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Кліп 1</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Кліп 2</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Кліп 3</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Кліп 4</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Кліп 5</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Кліп 6</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Кліп 7</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Тема шортса:</strong></p>
+<p><strong>Напис на початку (до 7 слів):</strong></p>
+<p><strong>Настрій музики:</strong></p>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-task-1">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+    <p class="deliverable"><strong>Що здати:</strong> Файл Прізвище_тема.mp4 (вертикальний 9:16, 20–30 с, з написом і музикою) у папці CapCut_Урок1 і збережений проєкт CapCut з тією ж назвою.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Мій перший шортс на 20–30 секунд" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: Плавний фінал і живий напис</h3>
+    <p>Покращ свій шортс трьома деталями, як у справжніх блогерів:</p>
+<ol>
+<li><strong>Плавне затухання музики.</strong> Виділи доріжку музики → праворуч у панелі <strong>Audio → Basic</strong> знайди <strong>Fade out</strong> і постав 1–2 секунди.</li>
+<li><strong>Анімація напису.</strong> Виділи напис → праворуч вкладка <strong>Animation</strong> → <strong>In</strong> → обери безкоштовну анімацію появи (без корони), наприклад плавну появу чи виїзд збоку.</li>
+<li><strong>Фінальний заклик.</strong> На останні 2–3 секунди додай другий напис-заклик: «Підписуйся», «Чекаємо в суботу» або назву своєї вигаданої кав'ярні чи магазину.</li>
+</ol>
+<p>Перевір ролик і експортуй ще раз з назвою <code>Прізвище_тема_v2</code>.</p>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: Плавний фінал і живий напис" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">✅</span>Перевір себе</h2>
+  <ul class="self-check">
+    <li><label><input type="checkbox"> Я можу створити проєкт у CapCut, імпортувати кліпи й розставити їх на таймлайні в потрібному порядку.</label></li>
+    <li><label><input type="checkbox"> Я можу обрізати кліп через Ctrl+B і Delete та додати напис і музику з бібліотеки CapCut.</label></li>
+    <li><label><input type="checkbox"> Я можу експортувати вертикальне відео 9:16 у MP4 і знайти цей файл на комп&#39;ютері.</label></li>
+  </ul>
+  <h3>Вихідний квиток</h3>
+  <ol class="exit-ticket">
+    <li>Яка клавіша розрізає кліп у CapCut і що потрібно натиснути, щоб видалити зайвий шматок?<div class="answer-box">
+  <label for="answer-ticket-1">Твоя відповідь</label>
+  <textarea id="answer-ticket-1" data-answer="Вихідний квиток 1: Яка клавіша розрізає кліп у CapCut і що потрібно натиснути, щоб видалити зайвий шматок?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Чим проєкт CapCut відрізняється від файла MP4?<div class="answer-box">
+  <label for="answer-ticket-2">Твоя відповідь</label>
+  <textarea id="answer-ticket-2" data-answer="Вихідний квиток 2: Чим проєкт CapCut відрізняється від файла MP4?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+    <li>Чому для шортса обираємо формат 9:16, а не 16:9?<div class="answer-box">
+  <label for="answer-ticket-3">Твоя відповідь</label>
+  <textarea id="answer-ticket-3" data-answer="Вихідний квиток 3: Чому для шортса обираємо формат 9:16, а не 16:9?" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+</li>
+  </ol>
+</section>
+
+<section class="block block-homework">
+  <h2><span class="icon" aria-hidden="true">🏠</span>Домашнє завдання</h2>
+  <h3>Розбір чужого шортса і запас кліпів <span class="duration">≈ 15 хв</span></h3>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/shorts" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">YouTube Shorts</span></a>
+
+<div class="resource-note">Тут знайди 2 шортси на свою тему для домашнього завдання і порахуй, як часто змінюються кадри.</div>  </div>
+</div>
+
+  <ol>
+<li>Знайди в YouTube Shorts, Reels чи TikTok <strong>2 короткі відео на свою тему</strong> (кав'ярня, подорожі, рецепт тощо).</li>
+<li>У кожному порахуй, <strong>скільки разів змінюється кадр за перші 10 секунд</strong>, і подивись, який напис на початку.</li>
+<li>Помітити <strong>одну річ</strong>, яку хочеш повторити у своєму шортсі (анімація тексту, музика в ритм, заклик наприкінці). Скопіюй заготовку і заповни її кількома словами.</li>
+<li>Завантаж ще <strong>3–4 вертикальні кліпи HD</strong> на свою тему з Pexels чи Pixabay у ту саму папку або на флешку — вони знадобляться на наступному уроці.</li>
+</ol>
+
+  <div class="starter">
+  <h4>Заготовка — скопіюй собі</h4>
+  <div class="starter-body" id="starter-homework"><table>
+<thead>
+<tr>
+<th></th>
+<th>Шортс 1</th>
+<th>Шортс 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Скільки змін кадру за перші 10 с</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Напис на початку</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Що хочу повторити</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+  <button type="button" class="send-button starter-copy" data-copy="starter-homework">Скопіювати заготовку</button>
+  <span class="copy-status" role="status"></span>
+</div>
+
+  <p class="real-life"><strong>Навіщо це в житті:</strong> Так працюють SMM-спеціалісти й блогери: перш ніж монтувати, вони дивляться популярні відео конкурентів і вчаться в них ритму та подачі.</p>
+  <div class="answer-box">
+  <label for="answer-homework">Твоя відповідь</label>
+  <textarea id="answer-homework" data-answer="Домашнє завдання: Розбір чужого шортса і запас кліпів" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+</section>
+
+<section class="block block-send">
+  <h2><span class="icon" aria-hidden="true">📋</span>Скопіювати відповіді</h2>
+  <p class="muted">Відповіді зберігаються лише на цьому пристрої. Натисни кнопку — вони скопіюються, і їх можна вставити в документ (Ctrl+V або «Вставити»).</p>
+  <button type="button" id="copy-answers" class="send-button">Скопіювати відповіді</button>
+  <p id="copy-status" class="copy-status" role="status"></p>
+  <textarea id="copy-fallback" class="copy-fallback" rows="6" readonly hidden aria-label="Відповіді для копіювання"></textarea>
+</section>
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+  function collect() {
+    var name = document.getElementById("student-name").value.trim();
+    var lines = ["Ім'я: " + (name || "—"), "Урок: " + document.title, ""];
+    document.querySelectorAll("[data-answer]").forEach(function (f) {
+      if (f.value.trim()) { lines.push(f.dataset.answer, f.value.trim(), ""); }
+    });
+    return lines.join("\n");
+  }
+  var status = document.getElementById("copy-status");
+  var fallback = document.getElementById("copy-fallback");
+  document.getElementById("copy-answers").addEventListener("click", function () {
+    var text = collect();
+    function done() {
+      fallback.hidden = true;
+      status.textContent = "Скопійовано! Встав відповіді в документ.";
+    }
+    function legacyCopy() {
+      // Clipboard API is blocked on plain http and in some browsers; the old way still works.
+      fallback.hidden = false;
+      fallback.value = text;
+      fallback.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Виділи текст нижче й скопіюй його.";
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, legacyCopy);
+      return;
+    }
+    legacyCopy();
+  });
+})();
+(function () {
+  // A starter keeps its formatting when pasted: a table stays a table in Docs or Word.
+  document.querySelectorAll("[data-copy]").forEach(function (button) {
+    var body = document.getElementById(button.dataset.copy);
+    var status = button.nextElementSibling;
+    function done() { status.textContent = "Скопійовано! Встав у свій документ."; }
+    function legacyCopy() {
+      var range = document.createRange();
+      range.selectNodeContents(body);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      if (ok) { selection.removeAllRanges(); done(); return; }
+      status.textContent = "Не вдалося скопіювати автоматично. Заготовку виділено — скопіюй її.";
+    }
+    button.addEventListener("click", function () {
+      if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+        var item = new ClipboardItem({
+          "text/html": new Blob([body.innerHTML], {type: "text/html"}),
+          "text/plain": new Blob([body.innerText], {type: "text/plain"})
+        });
+        navigator.clipboard.write([item]).then(done, legacyCopy);
+        return;
+      }
+      legacyCopy();
+    });
+  });
+})();
+</script>
+</body>
+</html>
