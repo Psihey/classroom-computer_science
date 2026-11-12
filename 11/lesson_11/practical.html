@@ -1,5 +1,5 @@
-<!doctype html>
-<html lang="uk">
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -273,8 +273,13 @@ td code{word-break:break-word}
   <p class="small">Файлу немає? <a href="https://github.com/lerocha/chinook-database/releases/latest/download/Chinook_Sqlite.sqlite">Завантажити Chinook_Sqlite.sqlite</a> (не плутати з файлами <code>.sql</code>). Альтернатива: <a href="https://sqliteonline.com" target="_blank" rel="noopener">sqliteonline.com</a> → File → Open DB.</p>
   <div class="callout warn">⚠️ Не натискай «Записати зміни» і нічого не видаляй. Сьогодні ми лише <b>читаємо</b>.</div>
   <div class="callout">📌 <span class="mode rep">ПОВТОРИ</span> — перепиши запит руками (не копіюй!) і запусти. <span class="mode self">САМ</span> — заміни <span class="b">___</span> або напиши запит повністю. Відповіді записуй у <a href="#blank">бланк</a>.</div>
-  <div class="callout">📚 <b>Track</b>: Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, UnitPrice. <b>Album</b>: Title. <b>Customer</b>: FirstName, LastName, City, Country, Email, Company. <b>Employee</b>: FirstName, LastName, Title. <b>Invoice</b>: Total.<br>
+  <div class="callout">📚 <b>Track</b>: Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, UnitPrice. <b>Album</b>: Title. <b>Customer</b>: FirstName, LastName, City, Country, Email, Company. <b>Employee</b>: FirstName, LastName, Title, BirthDate. <b>Invoice</b>: Total.<br>
   🎬 <code>MediaTypeId = 3</code> — відеофайл (серія). Жанри: <code>1</code> Rock, <code>20</code> Sci Fi &amp; Fantasy, <code>21</code> Drama. 1 хв = 60 000 мс.</div>
+  <div class="callout ok">⏱️ <b>Підказка: як перевести мілісекунди в хвилини</b><br>
+  1 секунда = 1 000 мс, 1 хвилина = 60 секунд = 60 × 1 000 = <b>60 000 мс</b>.<br>
+  <b>мс → хв:</b> ділимо на 60 000. Пиши <code>60000.0</code> з крапкою, інакше дробова частина «зникне»:
+<pre><code>ROUND(Milliseconds / <span class="n">60000.0</span>, <span class="n">1</span>) <span class="k">AS</span> Хвилини    <span class="c">-- 343719 мс → 5.7 хв</span></code></pre>
+  <b>хв → мс</b> (для умов у <code>WHERE</code>): множимо на 60 000. Наприклад, 45 хв = 45 × 60 000 = <code>2700000</code>, 50 хв = <code>3000000</code>.</div>
 </section>
 
 <div id="practice"></div>
@@ -368,14 +373,21 @@ td code{word-break:break-word}
 
 <section class="card">
   <h2>⭐ Бонус <span class="pts gold">+3 бали</span></h2>
+  <div class="callout">🔃 <b>Сортування.</b> <code>ORDER BY стовпець</code> — від меншого до більшого (А→Я, давні дати → нові). <code>ORDER BY стовпець DESC</code> — навпаки, від більшого до меншого. <code>LIMIT 1</code> після сортування залишає лише <b>перший</b> рядок — тобто «найбільший» чи «найменший».
+<pre><code><span class="k">SELECT</span> Name, UnitPrice <span class="k">FROM</span> Track <span class="k">ORDER BY</span> UnitPrice <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="n">5</span>;   <span class="c">-- 5 найдорожчих треків</span></code></pre></div>
   <div class="task">
     <p><span class="tnum">Б1</span><b>(+1) Відео за ціною пісні.</b> Усі серії коштують 1.99, але є одне відео за 0.99. Що це?</p>
   </div>
   <div class="task">
-    <p><span class="tnum">Б2</span><b>(+1) Топ-3 найдовших серій.</b> Покажи назву і тривалість у хвилинах (<code>AS Хвилини</code>), від найдовшої. Скільки хвилин триває №1?</p>
+    <p><span class="tnum">Б2</span><b>(+1) Найстарший працівник.</b> Відділ кадрів хоче привітати ветерана компанії. Хто з працівників (<b>Employee</b>) найстарший? Відсортуй за датою народження (<code>BirthDate</code>) і залиш один рядок.</p>
+<pre><code><span class="k">SELECT</span> FirstName, LastName, BirthDate <span class="k">FROM</span> Employee
+<span class="k">ORDER BY</span> <span class="b">___</span>
+<span class="k">LIMIT</span> <span class="b">___</span>;</code></pre>
+    <p class="ask">Хто найстарший і в якому році народився? А хто наймолодший — що треба змінити в запиті?</p>
   </div>
   <div class="task">
-    <p><span class="tnum">Б3</span><b>(+1) Своя загадка.</b> Придумай 3–4 підказки, які разом ведуть рівно до <b>одного</b> рядка (серія, пісня або клієнт). Запиши підказки і запит, дай сусідові розгадати.</p>
+    <p><span class="tnum">Б3</span><b>(+1) Найдовша пісня.</b> Знайди найдовший трек, який <b>не є серією</b> (<code>MediaTypeId &lt;&gt; 3</code>). Покажи назву і тривалість у хвилинах (<code>AS Хвилини</code>, див. ⏱️ підказку в <a href="#practical">Кроці 0</a>). Напиши запит повністю: <code>WHERE</code> + <code>ORDER BY … DESC</code> + <code>LIMIT</code>.</p>
+    <p class="ask">Як називається ця пісня і скільки хвилин вона триває?</p>
   </div>
 </section>
 
@@ -400,6 +412,7 @@ td code{word-break:break-word}
   <label><input type="checkbox"><span>Я вмію використовувати <code>IN</code>, <code>BETWEEN</code> та <code>IS NULL</code>.</span></label>
   <label><input type="checkbox"><span>Я ставлю дужки, коли змішую <code>AND</code> та <code>OR</code>.</span></label>
   <label><input type="checkbox"><span>Я розумію, що <code>LIKE</code> шукає літери, а не зміст.</span></label>
+  <label><input type="checkbox"><span>Я вмію сортувати через <code>ORDER BY</code> / <code>DESC</code> і брати перші рядки через <code>LIMIT</code>.</span></label>
 </section>
 
 </div>
@@ -428,8 +441,8 @@ td code{word-break:break-word}
     ['5.1','Яких серіалів немає в каталозі'],
     ['5.2','Рядків після кожної підказки; назва серії'],
     ['Б1','Відео за 0.99'],
-    ['Б2','Топ-3 серій; хвилин у №1'],
-    ['Б3','Твоя загадка: підказки + запит']
+    ['Б2','Найстарший працівник і рік народження; хто наймолодший'],
+    ['Б3','Найдовша пісня (не серія): назва, хвилин, запит']
   ];
   var store={}; try{store=JSON.parse(localStorage.getItem(AKEY)||'{}')||{}}catch(e){store={}}
   function save(){try{localStorage.setItem(AKEY,JSON.stringify(store))}catch(e){}}
