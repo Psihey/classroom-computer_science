@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Дверний дзвінок із підсвіткою</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1d2433; --muted:#5b6478; --line:#e3e7ef;
+  --accent:#3b6fd8; --accent-soft:#e8effc; --ok:#1f9d63; --ok-soft:#e5f6ee;
+  --warn:#c77700; --warn-soft:#fff4e0; --bad:#d23f3f; --bad-soft:#fdeaea;
+  --gold:#a86b00; --gold-soft:#fff3d6;
+  --code-bg:#1e2433; --code-text:#e6e9f2; --kw:#7fb4ff; --str:#9be29b; --num:#ffc66d; --cm:#8a93a8;
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1b2029; --text:#e6e9f2; --muted:#9aa3b8; --line:#2c3341;
+  --accent:#7aa5ff; --accent-soft:#1f2a40; --ok:#4fd197; --ok-soft:#173327;
+  --warn:#ffb648; --warn-soft:#3a2c14; --bad:#ff7b7b; --bad-soft:#3a1c1c;
+  --gold:#ffcc66; --gold-soft:#3a3016; --code-bg:#0d1017;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+header{padding:28px 0 8px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:8px 0 12px}
+h2{font-size:24px;margin:0 0 10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+h3{font-size:18px;margin:18px 0 6px}
+.lead{font-size:18px;color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:22px 0}
+.theme-btn{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:14px;z-index:5}
+a{color:var(--accent)}
+.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600;border:0;cursor:pointer;font-size:16px;font-family:inherit}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.btn.sm{padding:7px 12px;font-size:14.5px;border-radius:9px}
+.btn.ghost.active{background:var(--accent);color:#fff}
+code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;background:var(--accent-soft);padding:1px 6px;border-radius:6px;font-size:.92em}
+pre{position:relative;background:var(--code-bg);color:var(--code-text);border-radius:12px;padding:14px 16px;overflow-x:auto;font:15.5px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace;margin:8px 0}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.k{color:var(--kw);font-weight:700}.n{color:var(--num)}.c{color:var(--cm);font-style:italic}
+.copy{position:absolute;top:8px;right:8px;background:#ffffff1a;color:#cfd6e6;border:0;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px}
+.copy:hover{background:#ffffff33}
+.callout{border-left:5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:12px 16px;margin:14px 0}
+.callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+.callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+.callout.bad{border-color:var(--bad);background:var(--bad-soft)}
+table{width:100%;border-collapse:collapse;font-size:15.5px}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:13.5px}
+td code{word-break:break-word}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.check input{margin-top:6px;width:18px;height:18px}
+.small{font-size:14px;color:var(--muted)}
+.scroll{overflow-x:auto}
+.section-divider{margin:56px 0 0;padding:28px 0 8px;border-top:3px solid var(--accent)}
+.toplinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+@media(max-width:560px){th,td{padding:7px 4px;font-size:14px}}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.st{border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;min-width:120px;text-align:center}
+.st small{color:var(--muted);font-size:13px}
+.st .ic{font-size:24px;line-height:1.2}
+.arrow{color:var(--muted)}
+.step{display:flex;gap:14px;align-items:flex-start;border-top:1px dashed var(--line);padding:14px 0 4px}
+.step:first-of-type{border-top:0}
+.step>div{flex:1;min-width:0}
+.sn{flex:none;width:38px;height:38px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px}
+.step p{margin:4px 0 8px}
+.expect{background:var(--ok-soft);border-left:4px solid var(--ok);border-radius:8px;padding:8px 12px}
+.expect::before{content:"👀 Має вийти: ";font-weight:700}
+.codehead{font-weight:700;font-size:14px;color:var(--muted);margin-top:8px}
+.svgwrap{overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px}
+.svgwrap svg{display:block;width:100%;min-width:560px;height:auto}
+ol.rules,ol.sub{margin:8px 0;padding-left:22px}
+ol.rules li,ol.sub li{margin:4px 0}
+
+/* ---------- макетна плата ---------- */
+.rulegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+@media(max-width:620px){.rulegrid{grid-template-columns:1fr}}
+.rule{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.rule b.t{display:block;font-size:16px;margin-bottom:4px}
+.rule svg{display:block;width:100%;height:auto;margin-top:8px}
+.bbtools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.bbbox{overflow-x:auto;border-radius:12px;border:1px solid var(--line);background:#fbfaf6}
+.bbbox svg{display:block;width:100%;min-width:640px;height:auto;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.info{border:2px solid var(--accent);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--accent-soft);min-height:76px}
+.info .h{font-weight:800}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted);margin:6px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:22px;height:5px;border-radius:3px}
+
+#bb .hole{fill:#5d5a52}
+#bb .hit{fill:transparent;cursor:pointer}
+#bb .hit:hover + .hole, #bb .hole.hov{fill:#3b6fd8}
+#bb .hole.on{fill:#3b6fd8}
+#bb .hole.pair{fill:#e5484d}
+#bb .strip{fill:#9aa4b4;opacity:0;transition:opacity .2s}
+#bb.strips .strip{opacity:.45}
+#bb .strip.on{opacity:.55;fill:#3b6fd8}
+#bb .wire{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;transition:opacity .2s}
+#bb.pathmode .wire, #bb.pathmode .part{opacity:.2}
+#bb.pathmode .wire.lit, #bb.pathmode .part.lit{opacity:1}
+#bb .wire.lit{stroke-dasharray:12 7;animation:flow .7s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-19}}
+#bb.noparts .part, #bb.noparts .wire{display:none}
+#bb .ledglow{opacity:0;transition:opacity .1s}
+#bb.pressed .ledglow{opacity:1}
+#bb .waves{opacity:0}
+#bb.pressed .waves{opacity:1;animation:wv .5s ease-in-out infinite alternate}
+@keyframes wv{from{transform:translateX(0)}to{transform:translateX(3px)}}
+#bb .bridge{opacity:0}
+#bb.pressed .bridge{opacity:1}
+#bb .btncap{cursor:pointer}
+#bb.pressed .btncap{fill:#1b4fb8}
+@media (prefers-reduced-motion: reduce){#bb .wire.lit,#bb.pressed .waves{animation:none}}
+
+.quiz{display:grid;gap:8px;margin:10px 0}
+.qi{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--bg);display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.qi .qt{flex:1 1 260px}
+.qi .fb{flex:1 1 100%;font-size:15px;display:none}
+.qi.done .fb{display:block}
+.qi.good{border-color:var(--ok)} .qi.good .fb{color:var(--ok)}
+.qi.badans{border-color:var(--bad)} .qi.badans .fb{color:var(--bad)}
+
+#btnx .bar{transition:opacity .2s}
+#btnx .bridge2{opacity:0;transition:opacity .15s}
+#btnx.pressed .bridge2{opacity:1}
+#btnx.pressed .cap2{fill:#1b4fb8}
+.okc{color:var(--ok);font-weight:700}.badc{color:var(--bad);font-weight:700}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn">🌓 Світла / темна тема</button>
+<div class="wrap">
+
+<header id="theory">
+  <div class="kicker">10 клас • Робототехніка</div>
+  <h1>🔔 Дверний дзвінок із підсвіткою</h1>
+  <p class="lead">Минулого разу кнопка вмикала маячок. Сьогодні додаємо <b>звук</b>: натискаєш кнопку, і лунає <b>«дзінь-дон»</b>, а світлодіод загоряється. А ще нарешті детально розберемося, <b>як дірочки макетної плати зʼєднані всередині</b>.</p>
+  <div class="toplinks"><a class="btn" href="#practical">Перейти до практичної ↓</a><a class="btn ghost" href="#breadboard">Як влаштована макетна плата</a></div>
+</header>
+
+<section class="card">
+  <h2>🎯 Що будуємо</h2>
+  <div class="flow">
+    <div class="st"><span class="ic">🌑🔇</span><b>Тиша</b><small>кнопку не чіпають</small></div>
+    <span class="arrow">→</span>
+    <div class="st"><span class="ic">💡🔊</span><b>Дзінь-дон!</b><small>кнопку натиснули</small></div>
+    <span class="arrow">→</span>
+    <div class="st"><span class="ic">🌑🔇</span><b>Знову тиша</b><small>чекаємо гостей</small></div>
+  </div>
+  <div class="callout">💡 <b>Навіщо світло, якщо є звук?</b> Людина, яка погано чує, або той, хто сидить у навушниках, не почує дзвінка, зате побачить спалах. Справжні дзвінки для людей із порушенням слуху саме так і працюють.</div>
+  <p>Деталі: <b>Arduino Uno R3</b>, <b>Breadboard Small</b>, <b>червоний світлодіод</b>, <b>резистор 220 Ω</b>, <b>кнопка (Pushbutton)</b>, <b>пищалка (Piezo)</b>, дроти.</p>
+</section>
+
+<!-- ======================= МАКЕТНА ПЛАТА ======================= -->
+<section class="card" id="breadboard">
+  <h2>🧱 Макетна плата зсередини</h2>
+  <p>Зовні макетна плата — це просто дошка з дірочками. Але <b>під дірочками сховані металеві смужки</b>. Встромиш ніжку в дірочку, і вона торкнеться смужки. Дві ніжки на <b>одній</b> смужці зʼєднані, ніби їх спаяли. Дві ніжки на <b>різних</b> смужках не зʼєднані, навіть якщо стоять поруч.</p>
+
+  <div class="rulegrid">
+    <div class="rule">
+      <b class="t">1️⃣ Колонка з 5 дірочок = один провід</b>
+      Дірочки <b>a, b, c, d, e</b> з одним номером (наприклад, a4–e4) сидять на одній смужці.
+      <svg viewBox="0 0 220 120" aria-hidden="true">
+        <rect x="0" y="0" width="220" height="120" rx="10" fill="#f3f1ea"/>
+        <rect x="84" y="10" width="22" height="100" rx="6" fill="#3b6fd8" opacity=".3"/>
+        <g fill="#5d5a52">
+          <rect x="52" y="17" width="7" height="7"/><rect x="52" y="37" width="7" height="7"/><rect x="52" y="57" width="7" height="7"/><rect x="52" y="77" width="7" height="7"/><rect x="52" y="97" width="7" height="7"/>
+          <rect x="131" y="17" width="7" height="7"/><rect x="131" y="37" width="7" height="7"/><rect x="131" y="57" width="7" height="7"/><rect x="131" y="77" width="7" height="7"/><rect x="131" y="97" width="7" height="7"/>
+        </g>
+        <g fill="#3b6fd8">
+          <rect x="91" y="17" width="8" height="8"/><rect x="91" y="37" width="8" height="8"/><rect x="91" y="57" width="8" height="8"/><rect x="91" y="77" width="8" height="8"/><rect x="91" y="97" width="8" height="8"/>
+        </g>
+        <text x="95" y="10" text-anchor="middle" font-size="10" fill="#333">4</text>
+        <text x="55" y="10" text-anchor="middle" font-size="10" fill="#333">3</text>
+        <text x="135" y="10" text-anchor="middle" font-size="10" fill="#333">5</text>
+        <text x="160" y="62" font-size="11" fill="#333">← одна смужка</text>
+      </svg>
+    </div>
+    <div class="rule">
+      <b class="t">2️⃣ Сусідні колонки НЕ зʼєднані</b>
+      Колонка 4 і колонка 5 — різні смужки. Тому <b>дві ніжки однієї деталі</b> завжди ставимо в <b>різні</b> колонки.
+      <svg viewBox="0 0 220 120" aria-hidden="true">
+        <rect x="0" y="0" width="220" height="120" rx="10" fill="#f3f1ea"/>
+        <rect x="64" y="10" width="22" height="100" rx="6" fill="#3b6fd8" opacity=".3"/>
+        <rect x="104" y="10" width="22" height="100" rx="6" fill="#2fb36b" opacity=".3"/>
+        <g fill="#5d5a52"><rect x="71" y="17" width="7" height="7"/><rect x="71" y="37" width="7" height="7"/><rect x="71" y="77" width="7" height="7"/><rect x="71" y="97" width="7" height="7"/>
+        <rect x="111" y="17" width="7" height="7"/><rect x="111" y="37" width="7" height="7"/><rect x="111" y="77" width="7" height="7"/><rect x="111" y="97" width="7" height="7"/></g>
+        <line x1="75" y1="60" x2="115" y2="60" stroke="#e5484d" stroke-width="3"/>
+        <rect x="71" y="57" width="7" height="7" fill="#e5484d"/><rect x="111" y="57" width="7" height="7" fill="#e5484d"/>
+        <text x="95" y="52" text-anchor="middle" font-size="18" fill="#e5484d" font-weight="700">✕</text>
+        <text x="140" y="64" font-size="11" fill="#333">не зʼєднані</text>
+      </svg>
+    </div>
+    <div class="rule">
+      <b class="t">3️⃣ Жолобок розрізає плату навпіл</b>
+      Верхня половина (<b>f–j</b>) і нижня (<b>a–e</b>) <b>не</b> зʼєднані: e4 і f4 — різні смужки. Через жолобок ставимо <b>кнопку</b>.
+      <svg viewBox="0 0 220 120" aria-hidden="true">
+        <rect x="0" y="0" width="220" height="120" rx="10" fill="#f3f1ea"/>
+        <rect x="20" y="52" width="180" height="16" fill="#e2ded2"/>
+        <text x="110" y="64" text-anchor="middle" font-size="10" fill="#555">жолобок</text>
+        <rect x="99" y="6" width="22" height="42" rx="6" fill="#2fb36b" opacity=".35"/>
+        <rect x="99" y="72" width="22" height="42" rx="6" fill="#3b6fd8" opacity=".35"/>
+        <g fill="#5d5a52"><rect x="106" y="12" width="7" height="7"/><rect x="106" y="34" width="7" height="7"/><rect x="106" y="78" width="7" height="7"/><rect x="106" y="100" width="7" height="7"/></g>
+        <text x="130" y="30" font-size="11" fill="#333">f–j</text><text x="130" y="96" font-size="11" fill="#333">a–e</text>
+        <text x="160" y="64" font-size="16" fill="#e5484d" font-weight="700">✕</text>
+      </svg>
+    </div>
+    <div class="rule">
+      <b class="t">4️⃣ Лінії вздовж краю — довгі провідники</b>
+      Лінія <b>−</b> зʼєднана <b>по всій довжині</b>. Підключаємо її до <b>GND</b> Arduino, і всі «мінуси» деталей збираються тут. Верхні й нижні лінії між собою <b>не</b> зʼєднані.
+      <svg viewBox="0 0 220 120" aria-hidden="true">
+        <rect x="0" y="0" width="220" height="120" rx="10" fill="#f3f1ea"/>
+        <rect x="14" y="44" width="192" height="16" rx="6" fill="#3b6fd8" opacity=".3"/>
+        <line x1="14" y1="40" x2="206" y2="40" stroke="#222" stroke-width="2"/>
+        <line x1="14" y1="78" x2="206" y2="78" stroke="#e5484d" stroke-width="2"/>
+        <text x="4" y="56" font-size="14" font-weight="700" fill="#222">−</text>
+        <text x="4" y="88" font-size="13" font-weight="700" fill="#e5484d">+</text>
+        <g fill="#3b6fd8"><rect x="24" y="48" width="8" height="8"/><rect x="44" y="48" width="8" height="8"/><rect x="64" y="48" width="8" height="8"/><rect x="84" y="48" width="8" height="8"/><rect x="104" y="48" width="8" height="8"/><rect x="134" y="48" width="8" height="8"/><rect x="154" y="48" width="8" height="8"/><rect x="174" y="48" width="8" height="8"/><rect x="194" y="48" width="8" height="8"/></g>
+        <g fill="#5d5a52"><rect x="24" y="64" width="7" height="7"/><rect x="44" y="64" width="7" height="7"/><rect x="64" y="64" width="7" height="7"/><rect x="84" y="64" width="7" height="7"/><rect x="104" y="64" width="7" height="7"/><rect x="134" y="64" width="7" height="7"/><rect x="154" y="64" width="7" height="7"/><rect x="174" y="64" width="7" height="7"/><rect x="194" y="64" width="7" height="7"/></g>
+        <text x="110" y="108" text-anchor="middle" font-size="11" fill="#333">уся лінія − — одна смужка</text>
+      </svg>
+    </div>
+  </div>
+
+  <h3>🔍 Досліди плату: клацни на будь-яку дірочку</h3>
+  <p>Нижче — наша схема дзвінка на макетній платі (як вона стоятиме в Tinkercad). Клацни на дірочку, і побачиш: які дірочки зʼєднані з нею, і <b>які ніжки деталей через неї зʼєднуються</b>.</p>
+  <div class="bbtools">
+    <button class="btn ghost sm" id="tStrips">🧲 Показати смужки всередині</button>
+    <button class="btn ghost sm" id="tParts">🧩 Сховати деталі</button>
+    <button class="btn ghost sm" data-path="led">💡 Коло світлодіода</button>
+    <button class="btn ghost sm" data-path="btn">🔘 Коло кнопки</button>
+    <button class="btn ghost sm" data-path="bz">🔊 Коло пищалки</button>
+    <button class="btn sm" id="pressBtn">👆 Натисни й тримай кнопку</button>
+  </div>
+  <div class="bbbox"><svg id="bb" viewBox="0 0 760 392" role="img" aria-label="Інтерактивна макетна плата зі схемою дзвінка"></svg></div>
+  <div class="legend">
+    <span><i class="sw" style="background:#e5484d"></i>пін 13 → світлодіод</span>
+    <span><i class="sw" style="background:#f5b400"></i>пін 2 → кнопка</span>
+    <span><i class="sw" style="background:#2fb36b"></i>пін 8 → пищалка</span>
+    <span><i class="sw" style="background:#222"></i>до GND (лінія −)</span>
+  </div>
+  <div class="info" id="info" aria-live="polite"><span class="h">👆 Клацни на дірочку</span> або на кнопку вгорі. Підказка: у Tinkercad працює те саме — наведи мишку на дірочку, і зеленим підсвітяться всі зʼєднані з нею.</div>
+  <p class="small">Внутрішні смужки й лінії показані так, як вони працюють у Breadboard Small у Tinkercad. Значки «−» і «+» надруковані на кінцях ліній — орієнтуйся по них.</p>
+
+  <h3>🤔 Перевір: чи зʼєднані ці дві дірочки?</h3>
+  <p class="small">Відповідай, а потім подивись на плату вище: обидві дірочки підсвітяться червоним.</p>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<!-- ======================= КНОПКА ======================= -->
+<section class="card">
+  <h2>🔘 Кнопка зсередини: чому «по діагоналі»</h2>
+  <p>У кнопки 4 ніжки, але всередині лише <b>дві металеві пластинки</b>. Кожна пластинка зʼєднує дві ніжки, які стоять <b>по різні боки жолобка</b>. Коли натискаєш, третя пластинка-місток <b>зʼєднує ліву пластинку з правою</b>.</p>
+  <div class="actions" style="margin-top:0;margin-bottom:8px"><button class="btn sm" id="pressBtn2">👆 Натисни й тримай</button><span class="small" id="btnState">Зараз: кнопку <b>відпущено</b>, ліва і права половини не зʼєднані.</span></div>
+  <div class="svgwrap" style="max-width:520px">
+  <svg id="btnx" viewBox="0 0 420 250" role="img" aria-label="Кнопка зсередини">
+    <rect x="0" y="0" width="420" height="250" rx="12" fill="#f3f1ea"/>
+    <rect x="20" y="112" width="380" height="26" fill="#e2ded2"/>
+    <text x="395" y="130" text-anchor="end" font-size="12" fill="#555">жолобок</text>
+    <text x="30" y="40" font-size="13" fill="#555">рядок f (верх)</text>
+    <text x="30" y="220" font-size="13" fill="#555">рядок e (низ)</text>
+    <rect class="cap2" x="140" y="55" width="140" height="140" rx="14" fill="#3b6fd8" opacity=".18" stroke="#3b6fd8" stroke-width="2"/>
+    <!-- пластинки -->
+    <rect class="bar" x="158" y="62" width="14" height="126" rx="5" fill="#9aa4b4"/>
+    <rect class="bar" x="248" y="62" width="14" height="126" rx="5" fill="#9aa4b4"/>
+    <rect class="bridge2" x="165" y="118" width="90" height="14" rx="5" fill="#f5b400"/>
+    <!-- ніжки -->
+    <g font-weight="700" font-size="15">
+      <circle cx="165" cy="60" r="11" fill="#5d5a52"/><text x="165" y="65" text-anchor="middle" fill="#fff">1</text>
+      <circle cx="255" cy="60" r="11" fill="#5d5a52"/><text x="255" y="65" text-anchor="middle" fill="#fff">2</text>
+      <circle cx="165" cy="190" r="11" fill="#5d5a52"/><text x="165" y="195" text-anchor="middle" fill="#fff">3</text>
+      <circle cx="255" cy="190" r="11" fill="#5d5a52"/><text x="255" y="195" text-anchor="middle" fill="#fff">4</text>
+    </g>
+    <text x="165" y="35" text-anchor="middle" font-size="12" fill="#333">f26</text>
+    <text x="255" y="35" text-anchor="middle" font-size="12" fill="#333">f28</text>
+    <text x="165" y="224" text-anchor="middle" font-size="12" fill="#333">e26</text>
+    <text x="255" y="224" text-anchor="middle" font-size="12" fill="#333">e28</text>
+    <text x="300" y="80" font-size="12" fill="#333">сірі пластинки:</text>
+    <text x="300" y="96" font-size="12" fill="#333">1↔3 і 2↔4 — завжди</text>
+    <text x="300" y="170" font-size="12" fill="#a86b00">жовтий місток —</text>
+    <text x="300" y="186" font-size="12" fill="#a86b00">лише коли натиснуто</text>
+  </svg>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>Які ніжки беремо для піна 2 і GND</th><th>Що буде</th></tr>
+    <tr><td><b>1 і 4</b> (по діагоналі)</td><td><span class="okc">✅ Працює.</span> Вони зʼєднуються лише через місток, тобто тільки під час натискання. Це правило, яке ніколи не підводить.</td></tr>
+    <tr><td><b>1 і 2</b> (обидві вгорі)</td><td><span class="okc">✅ Теж працює:</span> ліва і права пластинки, між ними місток.</td></tr>
+    <tr><td><b>1 і 3</b> (одна колонка через жолобок)</td><td><span class="badc">❌ Не працює:</span> вони на одній пластинці, зʼєднані <b>завжди</b>. Arduino думає, що кнопку тримають весь час, і дзвінок дзвонить без зупинки.</td></tr>
+  </table></div>
+</section>
+
+<!-- ======================= ЩО НОВОГО ======================= -->
+<section class="card">
+  <h2>🆕 Що нового сьогодні: пищалка</h2>
+  <p><b>Пʼєзо-пищалка (Piezo)</b> — маленька «колонка». Усередині тонка пластинка. Arduino дуже швидко вмикає й вимикає пін, пластинка тремтить, і ми чуємо звук. Чим частіше тремтить, тим <b>вищий</b> звук.</p>
+<pre><code>tone(<span class="n">8</span>, <span class="n">1000</span>);   <span class="c">// пін 8: почати пищати на частоті 1000 Гц</span>
+noTone(<span class="n">8</span>);       <span class="c">// пін 8: замовкнути</span></code></pre>
+  <table>
+    <tr><th>Частота (Гц)</th><th>Як звучить</th></tr>
+    <tr><td><code>262</code></td><td>нота «до» — низько, спокійно</td></tr>
+    <tr><td><code>523</code></td><td>«до» на октаву вище — звук «дон»</td></tr>
+    <tr><td><code>660</code></td><td>нота «мі» — звук «дзінь»</td></tr>
+    <tr><td><code>1000</code></td><td>гучний «біп», як у мікрохвильовці</td></tr>
+    <tr><td><code>2000</code></td><td>дуже високо й різко</td></tr>
+  </table>
+  <div class="callout warn">⚠️ <code>tone()</code> лише <b>починає</b> звук, і пищалка не замовкне сама. Обовʼязково пиши <code>noTone(8);</code>, коли звук більше не потрібен.</div>
+  <h3>Дві дії в одному <code>if</code></h3>
+  <p>Минулого разу в <code>if</code> ми лише вмикали світлодіод. Тепер у фігурних дужках <b>дві команди</b>: світло <b>і</b> звук. А в <code>else</code> — дві команди, щоб усе вимкнути.</p>
+</section>
+
+<!-- ======================= СХЕМА ======================= -->
+<section class="card">
+  <h2>🔌 Схема підключення</h2>
+  <div class="svgwrap">
+  <svg viewBox="0 0 720 300" role="img" aria-label="Схема підключення дзвінка">
+    <style>
+      .ln{stroke:var(--text);stroke-width:2.5;fill:none}
+      .gnd{stroke:var(--text);stroke-width:3.5;fill:none}
+      .tx{fill:var(--text);font:600 15px system-ui,sans-serif}
+      .tm{fill:var(--muted);font:13px system-ui,sans-serif}
+      .box{fill:var(--card);stroke:var(--text);stroke-width:2.5}
+      .ard{fill:#1f6fb2;stroke:#174f80;stroke-width:2}
+      .pin{fill:#fff;font:700 15px ui-monospace,Consolas,monospace}
+    </style>
+    <rect class="ard" x="20" y="30" width="150" height="240" rx="14"/>
+    <text x="95" y="62" text-anchor="middle" fill="#fff" style="font:700 16px system-ui">Arduino</text>
+    <text x="95" y="82" text-anchor="middle" fill="#cfe3ff" style="font:13px system-ui">Uno R3</text>
+    <text class="pin" x="160" y="115" text-anchor="end">13</text>
+    <text class="pin" x="160" y="165" text-anchor="end">8</text>
+    <text class="pin" x="160" y="215" text-anchor="end">2</text>
+    <text class="pin" x="160" y="262" text-anchor="end">GND</text>
+    <path class="ln" d="M170 110 H250"/><rect class="box" x="250" y="100" width="60" height="20" rx="4"/><text class="tm" x="280" y="94" text-anchor="middle">220 Ω</text>
+    <path class="ln" d="M310 110 H390"/><circle cx="410" cy="110" r="18" fill="#e5484d" stroke="var(--text)" stroke-width="2"/>
+    <text class="tx" x="440" y="105">світлодіод</text><text class="tm" x="440" y="122">анод до резистора</text>
+    <path class="ln" d="M560 110 H640"/>
+    <path class="ln" d="M170 160 H390"/>
+    <circle cx="410" cy="160" r="18" fill="#333" stroke="var(--text)" stroke-width="2"/><text x="410" y="166" text-anchor="middle" fill="#fff" style="font:700 16px system-ui">♪</text>
+    <text class="tx" x="440" y="155">пищалка (Piezo)</text><text class="tm" x="440" y="172">«+» до піна 8</text>
+    <path class="ln" d="M590 160 H640"/>
+    <path class="ln" d="M170 210 H385"/>
+    <rect class="box" x="385" y="196" width="50" height="28" rx="5"/><circle cx="410" cy="210" r="8" fill="var(--muted)"/>
+    <text class="tx" x="450" y="205">кнопка</text><text class="tm" x="450" y="222">по діагоналі</text>
+    <path class="ln" d="M560 210 H640"/>
+    <path class="gnd" d="M640 100 V262 H170"/>
+    <text x="652" y="150" fill="var(--text)" style="font:700 14px system-ui" transform="rotate(90 652 150)">спільний GND (−)</text>
+  </svg>
+  </div>
+  <p class="small">Три окремі кола, і всі закінчуються на одній лінії GND. На макетній платі це нижня лінія «−».</p>
+  <div class="scroll"><table>
+    <tr><th>Елемент</th><th>Звідки</th><th>Куди</th></tr>
+    <tr><td>🔴 Світлодіод</td><td>пін 13 → резистор → анод (зігнута ніжка)</td><td>катод (пряма) → GND</td></tr>
+    <tr><td>🔊 Piezo</td><td>пін 8 → «+» (Positive)</td><td>«−» (Negative) → GND</td></tr>
+    <tr><td>🔘 Кнопка</td><td>пін 2 → ніжка</td><td>протилежна по діагоналі ніжка → GND</td></tr>
+  </table></div>
+</section>
+
+<!-- ======================= ПОМИЛКИ ======================= -->
+<section class="card">
+  <h2>🪲 Типові помилки</h2>
+  <div class="scroll"><table>
+    <tr><th>Що бачиш</th><th>Причина</th></tr>
+    <tr><td>Світлодіод не світиться ніколи</td><td>Перевернутий, або <b>обидві ніжки в одній колонці</b> (тоді струм іде смужкою повз світлодіод)</td></tr>
+    <tr><td>Tinkercad показує попередження про великий струм</td><td>Обидві ніжки резистора в одній колонці: струм обходить резистор</td></tr>
+    <tr><td>Дзвонить і світиться весь час, без натискання</td><td>Дроти на ніжках кнопки в одній колонці (1 і 3), а не по діагоналі</td></tr>
+    <tr><td>Кнопка нічого не робить</td><td>Кнопка стоїть не над жолобком, або дріт іде не на пін 2</td></tr>
+    <tr><td>Нічого не працює зовсім</td><td>Немає дроту від <b>GND</b> Arduino до лінії «−». Без нього лінія ні з чим не зʼєднана</td></tr>
+    <tr><td>Пищить і не замовкає після відпускання</td><td>Немає <code>noTone(8);</code> в <code>else</code></td></tr>
+    <tr><td>Нічого не чути</td><td>Увімкни звук у браузері; «+» пищалки має йти на пін 8</td></tr>
+    <tr><td>Кінець дроту «висить»</td><td>Він не потрапив у дірочку. Наведи мишку: дірочка має підсвітитися</td></tr>
+  </table></div>
+  <p style="text-align:center;margin-top:18px"><a class="btn" href="#practical">Переходимо до практичної ↓</a></p>
+</section>
+
+<!-- ======================= ПРАКТИЧНА ======================= -->
+<header class="section-divider" id="practical">
+  <div class="kicker">10 клас • Робототехніка • Практична робота</div>
+  <h1 style="font-size:clamp(26px,4.5vw,36px)">🛠️ Збираємо дзвінок крок за кроком</h1>
+  <p class="lead">Працюй у <b>Tinkercad Circuits</b>. Ставимо деталі <b>точно в ті дірочки</b>, що вказані: так легше звірятися з інтерактивною платою вгорі. Після кожного кроку дивись на рядок <b>«Має вийти»</b>.</p>
+  <div class="actions">
+    <a class="btn" href="https://www.tinkercad.com/joinclass/G4ZMM4ASB" target="_blank" rel="noopener">🌐 Увійти в клас Tinkercad</a>
+    <a class="btn ghost" href="#breadboard">↑ До макетної плати</a>
+  </div>
+  <p class="small">Логін — номер твого столу: <b>table1 … table7</b>. Пароль не потрібен.</p>
+</header>
+
+<section class="card">
+  <h2>🧱 Частина 1. Світлодіод і кнопка</h2>
+  <div class="step"><span class="sn">1</span><div>
+    <p>Увійди в клас → ліворуч <b>Circuits</b> → <b>Create</b> → <b>Circuit</b>. Клацни на назву проєкту вгорі ліворуч і напиши <b>«Дзвінок Прізвище»</b>.</p>
+    <p class="expect">Порожнє робоче поле з твоєю назвою.</p>
+  </div></div>
+  <div class="step"><span class="sn">2</span><div>
+    <p>Постав <b>Arduino Uno R3</b> і праворуч від неї <b>Breadboard Small</b>.</p>
+    <p><b>Міні-дослід (1 хв):</b> наведи мишку на дірочку <b>c4</b>. Tinkercad підсвітить зеленим 5 дірочок колонки 4 (a–e). Тепер наведи на <b>f4</b>: підсвітиться інша п'ятірка, бо жолобок розділяє плату. Наведи на лінію <b>−</b> внизу: підсвітиться вся лінія.</p>
+    <p class="expect">Ти побачив своїми очима всі правила макетної плати, як у досліді вище.</p>
+  </div></div>
+  <div class="step"><span class="sn">3</span><div>
+    <p><b>Світлодіод і резистор.</b></p>
+    <ol class="sub">
+      <li>Постав <b>LED</b> (колір Red) у рядок <b>e</b>: <b>катод</b> (пряма ніжка) у <b>e3</b>, <b>анод</b> (зігнута) у <b>e4</b>. Натисни <b>R</b>, якщо треба повернути.</li>
+      <li>Постав <b>резистор</b>, встанови <b>220 Ω</b>. Ліва ніжка — у <b>c4</b> (та сама колонка, що й анод), права стане приблизно в <b>c8</b>.</li>
+      <li><b>Червоний дріт</b>: пін <b>13</b> Arduino → <b>e8</b>.</li>
+      <li><b>Чорний дріт</b>: <b>a3</b> → нижня лінія <b>−</b> (просто під ним).</li>
+      <li><b>Чорний дріт</b>: <b>GND</b> Arduino (поруч із піном 13) → нижня лінія <b>−</b>. Він потрібен <b>один на всю плату</b>.</li>
+    </ol>
+    <div class="callout ok">🔁 <b>Шлях струму:</b> пін 13 → колонка 8 → резистор → колонка 4 → анод → світлодіод → катод → колонка 3 → дріт → лінія − → GND. Натисни на інтерактивній платі «💡 Коло світлодіода», щоб побачити цей шлях.</div>
+    <p class="small">Права ніжка резистора стала не в c8? Не страшно: веди червоний дріт у ту колонку, де вона опинилася. Головне, щоб у цій колонці не було інших ніжок.</p>
+    <p class="expect">Наведи мишку на анод: підсвітиться колонка 4 разом з лівою ніжкою резистора.</p>
+  </div></div>
+  <div class="step"><span class="sn">4</span><div>
+    <p><b>Кнопка.</b> Знайди <b>Pushbutton</b> і постав <b>над жолобком</b> у колонках <b>26–28</b>: дві ніжки в рядку <b>f</b>, дві в рядку <b>e</b>.</p>
+    <ol class="sub">
+      <li><b>Жовтий дріт</b>: пін <b>2</b> → <b>j26</b> (верхня половина, колонка лівої верхньої ніжки).</li>
+      <li><b>Чорний дріт</b>: <b>a28</b> (нижня половина, колонка правої нижньої ніжки) → лінія <b>−</b>.</li>
+    </ol>
+    <div class="callout">🧩 Чому j26, а не прямо в ніжку? Бо j26 і f26 — <b>одна смужка</b> (колонка 26, верхня половина). Дріт можна ставити в будь-яку дірочку тієї самої п'ятірки. Так само a28 зʼєднана з e28.</div>
+    <p class="small">💡 Ніжки кнопки стали в інші колонки (наприклад, 26 і 29)? Тоді жовтий дріт — у колонку лівої верхньої ніжки, чорний — у колонку правої нижньої. Правило діагоналі не змінюється.</p>
+    <p class="expect">Кнопка над жолобком; жовтий дріт у колонці лівої верхньої ніжки, чорний у колонці правої нижньої.</p>
+  </div></div>
+</section>
+
+<section class="card">
+  <h2>🔊 Частина 2. Пищалка і код</h2>
+  <div class="step"><span class="sn">5</span><div>
+    <p>Знайди <b>Piezo</b> і постав <b>поруч із платою</b>, праворуч. Наведи мишку на ніжки й підключи:</p>
+    <ol class="sub">
+      <li><b>Зелений дріт</b>: <b>Positive (+)</b> → пін <b>8</b>.</li>
+      <li><b>Чорний дріт</b>: <b>Negative (−)</b> → лінія <b>−</b> на макетній платі.</li>
+    </ol>
+    <p class="expect">На лінії «−» тепер 4 дроти: від GND Arduino, від світлодіода, від кнопки, від пищалки. Усі вони зʼєднані між собою.</p>
+  </div></div>
+  <div class="step"><span class="sn">6</span><div>
+    <p>Відкрий <b>Code</b> → у списку <b>Blocks</b> обери <b>Text</b> → <b>Continue</b>. Видали все (<b>Ctrl + A</b>, <b>Delete</b>), встав <b>Код 1</b> і натисни <b>Start Simulation</b>. Увімкни звук у браузері 🔊.</p>
+    <div class="codehead">Код 1. Простий дзвінок: поки тримаєш — світло і звук</div>
+<pre><code><span class="k">void</span> setup() {
+  pinMode(<span class="n">13</span>, OUTPUT);        <span class="c">// світлодіод</span>
+  pinMode(<span class="n">8</span>, OUTPUT);         <span class="c">// пищалка</span>
+  pinMode(<span class="n">2</span>, INPUT_PULLUP);   <span class="c">// кнопка, як на минулому уроці</span>
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">if</span> (digitalRead(<span class="n">2</span>) == LOW) {   <span class="c">// кнопку натиснули</span>
+    digitalWrite(<span class="n">13</span>, HIGH);      <span class="c">// світло</span>
+    tone(<span class="n">8</span>, <span class="n">1000</span>);               <span class="c">// звук 1000 Гц</span>
+  } <span class="k">else</span> {                       <span class="c">// кнопку відпустили</span>
+    digitalWrite(<span class="n">13</span>, LOW);       <span class="c">// темно</span>
+    noTone(<span class="n">8</span>);                   <span class="c">// тиша</span>
+  }
+}</code></pre>
+    <p class="expect">Без натискання темно й тихо. Тримаєш кнопку — світлодіод світить і пищить. Відпустив — усе вимикається.</p>
+  </div></div>
+  <div class="step"><span class="sn">7</span><div>
+    <p>Зупини симуляцію. Заміни <b>весь</b> код на <b>Код 2</b> і запусти знову.</p>
+    <div class="codehead">Код 2. Справжній «дзінь-дон»</div>
+<pre><code><span class="k">void</span> setup() {
+  pinMode(<span class="n">13</span>, OUTPUT);
+  pinMode(<span class="n">8</span>, OUTPUT);
+  pinMode(<span class="n">2</span>, INPUT_PULLUP);
+}
+
+<span class="k">void</span> loop() {
+  <span class="k">if</span> (digitalRead(<span class="n">2</span>) == LOW) {   <span class="c">// гість натиснув кнопку</span>
+    digitalWrite(<span class="n">13</span>, HIGH);      <span class="c">// спалах світла</span>
+    tone(<span class="n">8</span>, <span class="n">660</span>);                <span class="c">// «дзінь» (висока нота)</span>
+    delay(<span class="n">400</span>);
+    tone(<span class="n">8</span>, <span class="n">523</span>);                <span class="c">// «дон» (нижча нота)</span>
+    delay(<span class="n">600</span>);
+    noTone(<span class="n">8</span>);                   <span class="c">// тиша</span>
+    digitalWrite(<span class="n">13</span>, LOW);       <span class="c">// світло вимкнути</span>
+    delay(<span class="n">300</span>);                   <span class="c">// маленька пауза</span>
+  }
+}</code></pre>
+    <p class="expect">Коротке натискання — один «дзінь-дон» і спалах. Тримаєш довго — дзвінок повторюється, поки не відпустиш.</p>
+  </div></div>
+  <div class="step"><span class="sn">8</span><div>
+    <p><b>Свій дзвінок.</b> Зміни числа в <code>tone</code> і <code>delay</code>: спробуй <code>784</code> і <code>392</code> або зроби «дзінь» довшим. Обери варіант, який подобається найбільше.</p>
+    <p class="expect">Ти можеш пояснити, яке число відповідає за висоту звуку, а яке — за тривалість.</p>
+  </div></div>
+  <div class="step"><span class="sn">9</span><div>
+    <p><b>Звір свою схему зі зразком</b> — з інтерактивною платою у розділі <a href="#breadboard">«Макетна плата зсередини»</a>. Перевір по черзі:</p>
+    <ol class="sub">
+      <li>Пін <b>13</b> → <b>e8</b>; резистор <b>c4–c8</b>; світлодіод: анод <b>e4</b>, катод <b>e3</b>.</li>
+      <li><b>a3</b> → лінія <b>−</b>.</li>
+      <li>Кнопка над жолобком; пін <b>2</b> → <b>j26</b>; <b>a28</b> → лінія <b>−</b>.</li>
+      <li>Piezo: «+» → пін <b>8</b>, «−» → лінія <b>−</b>.</li>
+      <li><b>GND</b> Arduino → лінія <b>−</b>.</li>
+    </ol>
+    <p class="small">Колір дротів і точне місце деталей можуть трохи відрізнятися. Головне, щоб зʼєднання (хто з ким в одній смужці) були такі самі.</p>
+    <p class="expect">Усі пункти збігаються, дзвінок працює як у кроці 7.</p>
+  </div></div>
+  <div class="step"><span class="sn">10</span><div>
+    <p>Покажи вчителю запущену симуляцію: натисни кнопку, щоб пролунав «дзінь-дон».</p>
+  </div></div>
+</section>
+
+<section class="card">
+  <h2>⭐ Бонус</h2>
+  <div class="step"><span class="sn">Б1</span><div>
+    <p><b>Мелодія з трьох нот.</b> Зроби дзвінок «дзінь-дзінь-дон»: додай ще один <code>tone</code> і <code>delay</code>. Наприклад, 523 → 659 → 784 Гц.</p>
+  </div></div>
+  <div class="step"><span class="sn">Б2</span><div>
+    <p><b>Другий світлодіод.</b> Постав <b>зелений</b> LED на вільне місце (наприклад, катод <b>e11</b>, анод <b>e12</b>, резистор <b>c12 → c16</b>, дріт від піна <b>12</b> → <b>e16</b>, <b>a11</b> → лінія −). Нехай на «дзінь» світить червоний, а на «дон» — зелений.</p>
+    <p class="small">Підказка: додай <code>pinMode(12, OUTPUT);</code> і вмикай/вимикай пін 12 між нотами.</p>
+  </div></div>
+</section>
+
+<section class="card check">
+  <h2>✅ Перевір себе</h2>
+  <label><input type="checkbox"><span>Я знаю, які дірочки макетної плати зʼєднані між собою, а які ні.</span></label>
+  <label><input type="checkbox"><span>Я ставлю дві ніжки однієї деталі в різні колонки.</span></label>
+  <label><input type="checkbox"><span>Я можу пояснити, чому кнопку підключаємо по діагоналі.</span></label>
+  <label><input type="checkbox"><span>Я знаю, що роблять <code>tone()</code> і <code>noTone()</code>.</span></label>
+  <label><input type="checkbox"><span>Мій дзвінок працює лише після натискання кнопки.</span></label>
+</section>
+
+</div>
+
+<script>
+/* ---------- тема ---------- */
+(function(){
+  var root=document.documentElement, KEY='cs9-theme';
+  function apply(t){root.setAttribute('data-theme',t)}
+  var saved=null; try{saved=localStorage.getItem(KEY)}catch(e){}
+  apply(saved || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
+  document.getElementById('themeBtn').onclick=function(){
+    var t=root.getAttribute('data-theme')==='dark'?'light':'dark'; apply(t);
+    try{localStorage.setItem(KEY,t)}catch(e){}
+  };
+})();
+
+/* ---------- кнопки «Копіювати» ---------- */
+(function(){
+  document.querySelectorAll('pre').forEach(function(pre){
+    var b=document.createElement('button'); b.className='copy'; b.textContent='Копіювати';
+    b.onclick=function(){
+      var txt=pre.querySelector('code').innerText;
+      var done=function(){b.textContent='✓ Скопійовано';setTimeout(function(){b.textContent='Копіювати'},1500)};
+      if(navigator.clipboard){navigator.clipboard.writeText(txt).then(done,function(){fb(txt);done()})}else{fb(txt);done()}
+    };
+    pre.appendChild(b);
+  });
+  function fb(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()}
+})();
+
+/* ---------- інтерактивна макетна плата ---------- */
+(function(){
+  var NS='http://www.w3.org/2000/svg', svg=document.getElementById('bb'), info=document.getElementById('info');
+  function el(tag,attrs,parent,text){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;(parent||svg).appendChild(e);return e}
+  function X(c){return 60+(c-1)*20}
+  var ROWY={j:116,i:136,h:156,g:176,f:196,e:236,d:256,c:276,b:296,a:316};
+  var RAILY={TP:62,TM:80,BM:352,BP:370};
+  var RAILCOLS=[]; [2,8,14,20,26].forEach(function(s){for(var i=0;i<5;i++)RAILCOLS.push(s+i)});
+  var LOW='abcde', UP='fghij';
+  var RAILNAME={TP:'верхня лінія «+»',TM:'верхня лінія «−»',BM:'нижня лінія «−»',BP:'нижня лінія «+»'};
+
+  /* хто в якій дірочці */
+  var OCC={
+    e3:'катод світлодіода (пряма ніжка)', e4:'анод світлодіода (зігнута ніжка)',
+    c4:'ліва ніжка резистора', c8:'права ніжка резистора', e8:'червоний дріт від піна 13',
+    a3:'чорний дріт до лінії −',
+    f26:'ніжка кнопки 1 (ліва верхня)', f28:'ніжка кнопки 2 (права верхня)',
+    e26:'ніжка кнопки 3 (ліва нижня)', e28:'ніжка кнопки 4 (права нижня)',
+    j26:'жовтий дріт від піна 2', a28:'чорний дріт до лінії −',
+    'BM-2':'чорний дріт від GND Arduino', 'BM-3':'дріт від катода світлодіода (з a3)',
+    'BM-28':'дріт від кнопки (з a28)', 'BM-30':'«−» пищалки'
+  };
+  var NOTE={
+    L3:'✅ Катод світлодіода зʼєднаний із дротом, що йде до лінії −.',
+    L4:'✅ Анод світлодіода і ліва ніжка резистора зʼєднані: струм іде з резистора в світлодіод.',
+    L8:'✅ Дріт від піна 13 зʼєднаний з правою ніжкою резистора.',
+    U26:'✅ Дріт від піна 2 зʼєднаний з ніжкою 1 кнопки (j26 і f26 — одна смужка).',
+    L26:'ℹ️ Ніжка 3 кнопки. Вона завжди зʼєднана з ніжкою 1 всередині кнопки, тому сюди дріт не потрібен.',
+    L28:'✅ Ніжка 4 кнопки (по діагоналі від ніжки 1) зʼєднана з дротом до лінії −.',
+    U28:'ℹ️ Ніжка 2 кнопки. Вона всередині кнопки зʼєднана з ніжкою 4.',
+    BM:'✅ Спільний «мінус»: тут сходяться GND Arduino, світлодіод, кнопка і пищалка. Усі 25 дірочок лінії — один провідник.',
+    TM:'Ця лінія не зʼєднана з нижньою «−». Ми її не використовуємо.',
+    TP:'Ця лінія не зʼєднана з нижньою «+». Ми її не використовуємо.',
+    BP:'Лінія «+». У нашій схемі вона вільна.'
+  };
+
+  function groupOf(id){
+    if(id.indexOf('-')>0) return id.split('-')[0];
+    var r=id[0], c=+id.slice(1);
+    return (LOW.indexOf(r)>=0?'L':'U')+c;
+  }
+  function groupName(g){
+    if(RAILNAME[g]) return RAILNAME[g];
+    var c=g.slice(1); return 'колонка '+c+', '+(g[0]==='L'?'нижня половина (рядки a–e)':'верхня половина (рядки f–j)');
+  }
+  function groupHoles(g){
+    if(RAILNAME[g]) return RAILCOLS.map(function(c){return g+'-'+c});
+    var c=g.slice(1), rows=g[0]==='L'?LOW:UP;
+    return rows.split('').map(function(r){return r+c});
+  }
+  function holeLabel(id){ if(id.indexOf('-')>0){var p=id.split('-');return RAILNAME[p[0]]+' під колонкою '+p[1]} return id }
+
+  /* фон плати */
+  el('rect',{x:4,y:0,width:500,height:24,rx:6,fill:'#1f6fb2'});
+  el('text',{x:12,y:17,fill:'#fff','font-size':13,'font-weight':700,'font-family':'system-ui'},null,'Arduino');
+  var HDR={GND:120,13:150,12:180,11:210,10:240,9:270,8:300,7:330,6:360,5:390,4:420,3:450,2:480};
+  Object.keys(HDR).forEach(function(k){
+    var used=(k==='GND'||k==='13'||k==='8'||k==='2');
+    el('text',{x:HDR[k],y:14,fill:used?'#fff':'#9cc3ea','font-size':k==='GND'?10:12,'font-weight':700,'text-anchor':'middle','font-family':'ui-monospace,Consolas,monospace'},null,k);
+    el('rect',{x:HDR[k]-3,y:17,width:6,height:6,fill:used?'#fff':'#5b8fc4'});
+  });
+  el('rect',{x:30,y:44,width:640,height:342,rx:10,fill:'#f3f1ea',stroke:'#c9c4b5'});
+  el('rect',{x:50,y:206,width:600,height:20,fill:'#e2ded2'});
+  el('text',{x:350,y:220,'text-anchor':'middle','font-size':11,fill:'#777','font-family':'system-ui'},null,'жолобок — половини тут НЕ зʼєднані');
+  [['TP','#e5484d','+'],['TM','#222','−'],['BM','#222','−'],['BP','#e5484d','+']].forEach(function(r){
+    var y=RAILY[r[0]], off=(r[0]==='TP'||r[0]==='BM')?-9:9;
+    el('line',{x1:62,y1:y+off,x2:648,y2:y+off,stroke:r[1],'stroke-width':2});
+    el('text',{x:654,y:y+5,fill:r[1],'font-size':16,'font-weight':700,'font-family':'system-ui'},null,r[2]);
+  });
+  for(var c=1;c<=30;c++){ if(c===1||c%5===0){
+    el('text',{x:X(c),y:101,'text-anchor':'middle','font-size':10,fill:'#666','font-family':'system-ui'},null,c);
+    el('text',{x:X(c),y:337,'text-anchor':'middle','font-size':10,fill:'#666','font-family':'system-ui'},null,c);
+  }}
+  Object.keys(ROWY).forEach(function(r){ el('text',{x:654,y:ROWY[r]+4,'font-size':11,fill:'#666','font-family':'system-ui'},null,r) });
+
+  /* смужки */
+  var strips={};
+  for(c=1;c<=30;c++){
+    strips['U'+c]=el('rect',{class:'strip',x:X(c)-8,y:ROWY.j-9,width:16,height:ROWY.f-ROWY.j+18,rx:5});
+    strips['L'+c]=el('rect',{class:'strip',x:X(c)-8,y:ROWY.e-9,width:16,height:ROWY.a-ROWY.e+18,rx:5});
+  }
+  Object.keys(RAILY).forEach(function(g){ strips[g]=el('rect',{class:'strip',x:X(2)-9,y:RAILY[g]-7,width:X(30)-X(2)+18,height:14,rx:5}) });
+
+  /* дірочки */
+  var holes={};
+  function addHole(id,x,y){
+    var hit=el('rect',{class:'hit',x:x-9,y:y-9,width:18,height:18,'data-id':id});
+    var h=el('rect',{class:'hole',x:x-3.5,y:y-3.5,width:7,height:7,rx:1});
+    holes[id]=h;
+    hit.addEventListener('click',function(){select(id)});
+    hit.addEventListener('mouseenter',function(){h.classList.add('hov')});
+    hit.addEventListener('mouseleave',function(){h.classList.remove('hov')});
+  }
+  for(c=1;c<=30;c++){ (LOW+UP).split('').forEach(function(r){ addHole(r+c,X(c),ROWY[r]) }) }
+  Object.keys(RAILY).forEach(function(g){ RAILCOLS.forEach(function(c){ addHole(g+'-'+c,X(c),RAILY[g]) }) });
+
+  /* дроти (pointer-events off, щоб не заважали клікати дірочки) */
+  function wire(id,d,color){ return el('path',{class:'wire',id:id,d:d,stroke:color,'pointer-events':'none'}) }
+  wire('w13','M150 23 C150 80, 200 80, 200 236','#e5484d');
+  wire('wGND','M120 23 C120 40, 40 34, 40 70 V338 Q40 352 54 352 H80','#222');
+  wire('w2','M480 23 C480 70, 560 60, 560 116','#f5b400');
+  wire('w8','M300 23 C300 34, 310 34, 326 34 H708 Q725 34 725 52 V158','#2fb36b');
+  wire('wA3','M100 316 V352','#222');
+  wire('wA28','M600 316 V352','#222');
+  wire('wBZ','M725 222 V352 H640','#222');
+
+  /* деталі */
+  function part(id){ return el('g',{class:'part',id:id,'pointer-events':'none'}) }
+  var pRes=part('pRes');
+  el('line',{x1:120,y1:276,x2:200,y2:276,stroke:'#888','stroke-width':2.5},pRes);
+  el('rect',{x:138,y:268,width:44,height:16,rx:7,fill:'#d9b77a',stroke:'#9b7a42'},pRes);
+  [148,156,164,172].forEach(function(x,i){ el('rect',{x:x,y:268,width:3,height:16,fill:['#c0392b','#c0392b','#6b3d14','#c9a227'][i]},pRes) });
+  var pLed=part('pLed');
+  el('line',{x1:100,y1:236,x2:104,y2:216,stroke:'#888','stroke-width':2.5},pLed);
+  el('path',{d:'M120 236 L118 226 L114 222 L114 216',stroke:'#888','stroke-width':2.5,fill:'none'},pLed);
+  el('circle',{class:'ledglow',cx:109,cy:206,r:24,fill:'#ff5a5f',opacity:.0},pLed).setAttribute('style','filter:blur(4px)');
+  el('path',{d:'M97 216 V202 A12 12 0 0 1 121 202 V216 Z',fill:'#e5484d',stroke:'#a52a2a','stroke-width':1.5},pLed);
+  el('text',{x:109,y:198,'text-anchor':'middle','font-size':9,fill:'#fff','font-family':'system-ui'},pLed,'LED');
+  var pBtn=part('pBtn');
+  el('rect',{x:548,y:184,width:64,height:64,rx:6,fill:'#2c2f36',opacity:.85},pBtn);
+  el('rect',{x:556,y:190,width:8,height:52,rx:3,fill:'#9aa4b4'},pBtn);
+  el('rect',{x:596,y:190,width:8,height:52,rx:3,fill:'#9aa4b4'},pBtn);
+  el('rect',{class:'bridge',x:560,y:209,width:40,height:10,rx:3,fill:'#f5b400'},pBtn);
+  var cap=el('circle',{class:'btncap',cx:580,cy:216,r:13,fill:'#3b6fd8',opacity:.85,'pointer-events':'all'},pBtn);
+  [[560,196],[600,196],[560,236],[600,236]].forEach(function(p){ el('circle',{cx:p[0],cy:p[1],r:4,fill:'#ddd'},pBtn) });
+  var pBz=part('pBz');
+  el('line',{x1:725,y1:158,x2:725,y2:168,stroke:'#888','stroke-width':2.5},pBz);
+  el('line',{x1:725,y1:212,x2:725,y2:222,stroke:'#888','stroke-width':2.5},pBz);
+  el('circle',{cx:725,cy:190,r:22,fill:'#2c2f36'},pBz);
+  el('circle',{cx:725,cy:190,r:6,fill:'#555'},pBz);
+  el('text',{x:712,y:166,'font-size':11,fill:'#2fb36b','font-weight':700,'font-family':'system-ui'},pBz,'+');
+  el('text',{x:712,y:222,'font-size':12,fill:'#333','font-weight':700,'font-family':'system-ui'},pBz,'−');
+  var wv=el('g',{class:'waves'},pBz);
+  el('path',{d:'M700 176 Q692 190 700 204',stroke:'#2fb36b','stroke-width':2.5,fill:'none'},wv);
+  el('path',{d:'M692 170 Q680 190 692 210',stroke:'#2fb36b','stroke-width':2.5,fill:'none'},wv);
+  el('text',{x:708,y:250,'font-size':11,fill:'#333','font-family':'system-ui'},pBz,'Piezo');
+
+  /* вибір дірочки */
+  var selected=[];
+  function clearSel(){ selected.forEach(function(h){h.classList.remove('on','pair')}); selected=[];
+    Object.keys(strips).forEach(function(k){strips[k].classList.remove('on')}) }
+  function select(id){
+    clearPath(); clearSel();
+    var g=groupOf(id), list=groupHoles(g);
+    strips[g].classList.add('on');
+    list.forEach(function(h){holes[h].classList.add('on');selected.push(holes[h])});
+    var occ=list.filter(function(h){return OCC[h]}).map(function(h){return '<li><b>'+holeLabel(h)+'</b>: '+OCC[h]+'</li>'});
+    var html='<span class="h">Дірочка '+holeLabel(id)+'</span> → смужка «'+groupName(g)+'».<br>';
+    html+= RAILNAME[g] ? 'Зʼєднана з <b>усіма 25 дірочками</b> цієї лінії. ' : 'Зʼєднані дірочки: <b>'+list.join(', ')+'</b>. ';
+    html+= occ.length ? '<br>Що в цій смужці:<ul style="margin:4px 0 4px 18px;padding:0">'+occ.join('')+'</ul>' : '<br>Тут нічого не стоїть: смужка вільна.';
+    if(NOTE[g]) html+='<div>'+NOTE[g]+'</div>';
+    info.innerHTML=html;
+  }
+  /* показати пару (для вікторини) */
+  window.bbShowPair=function(a,b){
+    clearPath(); clearSel();
+    [a,b].forEach(function(id){ var g=groupOf(id); strips[g].classList.add('on'); holes[id].classList.add('pair'); selected.push(holes[id]) });
+  };
+
+  /* шляхи струму */
+  var PATHS={
+    led:{wires:['w13','wA3','wGND'],parts:['pRes','pLed'],groups:['L8','L4','L3','BM'],
+      text:'<span class="h">💡 Коло світлодіода:</span> пін 13 → червоний дріт → колонка 8 → резистор → колонка 4 → анод → світлодіод → катод → колонка 3 → дріт → лінія − → чорний дріт → GND.'},
+    btn:{wires:['w2','wA28','wGND'],parts:['pBtn'],groups:['U26','L28','BM'],
+      text:'<span class="h">🔘 Коло кнопки:</span> пін 2 → жовтий дріт → колонка 26 (верх) → ніжка 1 → <b>місток кнопки (лише коли натиснуто!)</b> → ніжка 4 → колонка 28 (низ) → дріт → лінія − → GND. Натиснули: пін 2 зʼєднався з GND і читає <code>LOW</code>.'},
+    bz:{wires:['w8','wBZ','wGND'],parts:['pBz'],groups:['BM'],
+      text:'<span class="h">🔊 Коло пищалки:</span> пін 8 → зелений дріт → «+» пищалки → «−» пищалки → дріт → лінія − → GND. Пищалка стоїть поза платою, але «мінус» теж іде на спільну лінію.'}
+  };
+  var pathBtns=document.querySelectorAll('[data-path]');
+  function clearPath(){ svg.classList.remove('pathmode'); svg.querySelectorAll('.lit').forEach(function(e){e.classList.remove('lit')});
+    pathBtns.forEach(function(b){b.classList.remove('active')}) }
+  pathBtns.forEach(function(b){ b.addEventListener('click',function(){
+    var was=b.classList.contains('active'); clearSel(); clearPath(); if(was){info.innerHTML='<span class="h">👆 Клацни на дірочку</span> або на кнопку вгорі.';return}
+    var p=PATHS[b.getAttribute('data-path')]; b.classList.add('active'); svg.classList.add('pathmode');
+    p.wires.concat(p.parts).forEach(function(id){document.getElementById(id).classList.add('lit')});
+    p.groups.forEach(function(g){strips[g].classList.add('on'); groupHoles(g).forEach(function(h){holes[h].classList.add('on');selected.push(holes[h])})});
+    info.innerHTML=p.text;
+  })});
+
+  document.getElementById('tStrips').addEventListener('click',function(){ svg.classList.toggle('strips'); this.classList.toggle('active');
+    this.textContent=svg.classList.contains('strips')?'🧲 Сховати смужки':'🧲 Показати смужки всередині' });
+  document.getElementById('tParts').addEventListener('click',function(){ svg.classList.toggle('noparts'); this.classList.toggle('active');
+    this.textContent=svg.classList.contains('noparts')?'🧩 Показати деталі':'🧩 Сховати деталі' });
+
+  /* натискання кнопки */
+  var ac=null, osc=null;
+  function beep(on){
+    try{
+      if(on){ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); osc=ac.createOscillator(); var g=ac.createGain(); g.gain.value=0.04;
+        osc.frequency.value=1000; osc.connect(g); g.connect(ac.destination); osc.start(); }
+      else if(osc){ osc.stop(); osc=null; }
+    }catch(e){}
+  }
+  var pressed=false;
+  function press(on){
+    if(on===pressed) return; pressed=on;
+    svg.classList.toggle('pressed',on);
+    var bx=document.getElementById('btnx'); if(bx) bx.classList.toggle('pressed',on);
+    var st=document.getElementById('btnState');
+    if(st) st.innerHTML=on?'Зараз: кнопку <b>натиснуто</b>, жовтий місток зʼєднав ліву і праву половини.':'Зараз: кнопку <b>відпущено</b>, ліва і права половини не зʼєднані.';
+    beep(on);
+    if(on){ info.innerHTML='<span class="h">🔘 Кнопку натиснуто.</span> Місток зʼєднав ніжку 1 з ніжкою 4, тому пін 2 зʼєднався з GND → <code>digitalRead(2) == LOW</code> → програма вмикає світло (<code>digitalWrite(13, HIGH)</code>) і звук (<code>tone(8, 1000)</code>).' }
+    else { info.innerHTML='<span class="h">Кнопку відпущено.</span> Пін 2 ні з чим не зʼєднаний, і завдяки <code>INPUT_PULLUP</code> читає <code>HIGH</code> → спрацьовує <code>else</code>: світло вимкнено, <code>noTone(8)</code>.' }
+  }
+  function holdable(node){
+    node.addEventListener('pointerdown',function(e){e.preventDefault();press(true)});
+    node.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();press(true)}});
+    node.addEventListener('keyup',function(e){if(e.key===' '||e.key==='Enter')press(false)});
+  }
+  holdable(document.getElementById('pressBtn')); holdable(document.getElementById('pressBtn2')); holdable(cap);
+  window.addEventListener('pointerup',function(){press(false)}); window.addEventListener('pointercancel',function(){press(false)});
+  window.addEventListener('blur',function(){press(false)});
+})();
+
+/* ---------- вікторина «чи зʼєднані?» ---------- */
+(function(){
+  var Q=[
+    ['a4','e4',true,'a4 і e4','Так: одна колонка, одна половина (a–e) — одна смужка.'],
+    ['e4','f4',false,'e4 і f4','Ні: між ними жолобок. Верхня і нижня половини не зʼєднані.'],
+    ['c4','c5',false,'c4 і c5','Ні: сусідні колонки — різні смужки, хоч дірочки й поруч.'],
+    ['BM-3','BM-28',true,'нижня лінія «−» під колонкою 3 і під колонкою 28','Так: уся лінія вздовж краю — один довгий провідник.'],
+    ['TM-10','BM-10',false,'верхня лінія «−» і нижня лінія «−»','Ні: верхні та нижні лінії окремі. Щоб їх зʼєднати, потрібен дріт.'],
+    ['j26','f26',true,'j26 і f26','Так: обидві в колонці 26, верхня половина. Тому дріт від піна 2 можна ставити в j26, а не прямо біля ніжки.']
+  ];
+  var box=document.getElementById('quiz');
+  Q.forEach(function(q,i){
+    var d=document.createElement('div'); d.className='qi';
+    d.innerHTML='<span class="qt"><b>'+(i+1)+'.</b> '+q[3]+'</span><button class="btn ghost sm" data-a="1">Так, зʼєднані</button><button class="btn ghost sm" data-a="0">Ні</button><div class="fb"></div>';
+    d.querySelectorAll('button').forEach(function(b){ b.onclick=function(){
+      var ok=(b.getAttribute('data-a')==='1')===q[2];
+      d.classList.add('done'); d.classList.toggle('good',ok); d.classList.toggle('badans',!ok);
+      d.querySelector('.fb').textContent=(ok?'✅ Правильно! ':'❌ Не зовсім. ')+q[4];
+      if(window.bbShowPair) window.bbShowPair(q[0],q[1]);
+    }});
+    box.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>
