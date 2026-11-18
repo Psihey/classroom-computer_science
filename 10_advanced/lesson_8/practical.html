@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Інтернет-магазин: типи даних у Python</title>
+<style>
+:root{--bg:#f5f7fa;--ink:#16213a;--muted:#5b6578;--line:#cfd6e2;--tag:#ffd23f;--tag-ink:#3a2d00;--code:#e9edf4;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#12151c;--ink:#e8ecf4;--muted:#9aa4b8;--line:#2d3546;--tag:#c99a00;--tag-ink:#fff8dc;--code:#1d2330;--card:#181d27}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 20px 64px}
+h1{font-size:2rem;line-height:1.2;margin:.2em 0 .4em}
+h2{font-size:1.35rem;margin:2.2em 0 .5em;padding-bottom:.3em;border-bottom:2px solid var(--line)}
+h3{font-size:1.02rem;margin:1.4em 0 .3em;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.meta{color:var(--muted);font-size:.95rem}
+.pts{display:inline-block;background:var(--tag);color:var(--tag-ink);font-weight:700;font-size:.85rem;padding:1px 10px;border-radius:999px 4px 4px 999px;margin-left:8px;vertical-align:middle}
+code,pre{font-family:ui-monospace,Consolas,"Courier New",monospace;background:var(--code);border-radius:4px}
+code{padding:1px 5px;font-size:.92em}
+pre{padding:12px 14px;overflow-x:auto;font-size:.92rem;margin:10px 0}
+.rule{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--tag);border-radius:4px;padding:12px 16px;margin:18px 0}
+.ex{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 16px 8px;margin:14px 0}
+.wide{overflow-x:auto}
+table{border-collapse:collapse;width:100%;background:var(--card);margin:12px 0}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--code);font-size:.92rem}
+ol,ul{padding-left:1.3em}
+li{margin:.35em 0}
+.tag{background:var(--card);border:2px dashed var(--ink);border-radius:6px;padding:14px 18px;margin:14px 0;font-family:ui-monospace,Consolas,monospace;font-size:.95rem}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--tag);outline-offset:2px}
+@media print{body{font-size:12pt;background:#fff;color:#000}main{padding:0}h2{break-after:avoid}table,.rule,.ex{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main>
+
+<p class="meta">10 клас · поглиблений · практична</p>
+<h1>Інтернет-магазин: типи даних у Python</h1>
+<p>Ти відкриваєш власний інтернет-магазин. Усе, що в ньому є — назва, ціна, кількість, наявність, кольори — це <strong>дані</strong>, і в кожних даних є свій <strong>тип</strong>. Якщо переплутати тип, Python видасть помилку або, ще гірше, порахує неправильно.</p>
+
+<p><strong>Після практичної ти зможеш:</strong></p>
+<ul>
+<li>без підказки назвати 5 основних типів: <code>int</code>, <code>float</code>, <code>str</code>, <code>bool</code>, <code>list</code>;</li>
+<li>за виглядом значення сказати, якого воно типу, і перевірити це через <code>type()</code>;</li>
+<li>передбачити, який тип вийде після <code>+</code>, <code>*</code>, <code>/</code> з різними типами, і чому інколи буде помилка.</li>
+</ul>
+
+<div class="rule"><strong>Як працюємо.</strong> Усе робиш у Thonny, у двох файлах: <code>shop.py</code> (частини 1–3 і питання) та <code>receipt.py</code> (частина 4). Свої прогнози й пояснення пишеш <strong>коментарями</strong> — рядками, що починаються з <code>#</code>. Як їх ставити і які для цього клавіші — в кінці сторінки. Наприкінці показуєш вчителю обидва файли на екрані.<br>Перед кожним завданням є <strong>приклад</strong> із іншою темою. Дивись, як він зроблений, і роби так само зі своїми даними: копіювати приклад не можна.</div>
+
+<h2>Нагадування: 5 типів</h2>
+<div class="wide">
+<table>
+<tr><th>Тип</th><th>Що це</th><th>Як виглядає</th></tr>
+<tr><td><code>int</code></td><td>ціле число</td><td>без лапок і без крапки</td></tr>
+<tr><td><code>float</code></td><td>число з дробовою частиною</td><td>є крапка, не кома</td></tr>
+<tr><td><code>str</code></td><td>текст</td><td>завжди в лапках, навіть якщо всередині цифри</td></tr>
+<tr><td><code>bool</code></td><td>так / ні</td><td>лише два значення, обидва з великої літери</td></tr>
+<tr><td><code>list</code></td><td>список значень</td><td>квадратні дужки, елементи через кому</td></tr>
+</table>
+</div>
+
+<h2>Частина 1. Вгадай тип <span class="pts">3 бали</span></h2>
+
+<div class="ex">
+<h3>Приклад</h3>
+<p>Для кожного значення спочатку пишемо <strong>прогноз коментарем</strong>, потім рядок, що виводить тип. Запускаємо (F5) і дивимось, чи збігся прогноз:</p>
+<pre># 1. прогноз: int
+print(type(25))
+
+# 2. прогноз: int
+print(type('25'))</pre>
+<p>Python виведе:</p>
+<pre>&lt;class 'int'&gt;
+&lt;class 'str'&gt;</pre>
+<p>Другий прогноз був неправильний. Тоді під ним дописуємо, чому:</p>
+<pre># 2. прогноз: int
+print(type('25'))
+# помилився: це str, бо число в лапках — це текст</pre>
+</div>
+
+<h3>Завдання</h3>
+<p>Ось картка товару:</p>
+<div class="tag">
+Навушники JBL<br>
+Ціна: 1499 · Рейтинг: 4.7<br>
+Артикул: '1499' · Є в наявності: True
+</div>
+<p>У новому файлі <code>shop.py</code> зроби так, як у прикладі, для кожного з 8 значень. Якщо прогноз не збігся, допиши коментар: <em>чому я помилився</em>.</p>
+<ol>
+<li><code>1499</code></li>
+<li><code>4.7</code></li>
+<li><code>'1499'</code></li>
+<li><code>'Навушники JBL'</code></li>
+<li><code>True</code></li>
+<li><code>'True'</code></li>
+<li><code>['чорний', 'білий']</code></li>
+<li><code>0</code></li>
+</ol>
+
+<h2>Частина 2. Мій товар <span class="pts">3 бали</span></h2>
+
+<div class="ex">
+<h3>Приклад</h3>
+<p>Книжка в магазині. Для кожної характеристики створюємо змінну, а потім виводимо її значення і тип:</p>
+<pre>title = 'Кобзар'
+price = 289.5
+copies = 40
+is_sale = False
+tags = ['поезія', 'класика']
+
+print(title, type(title))
+print(price, type(price))
+print(copies, type(copies))
+print(is_sale, type(is_sale))
+print(tags, type(tags))</pre>
+<p>Python виведе:</p>
+<pre>Кобзар &lt;class 'str'&gt;
+289.5 &lt;class 'float'&gt;
+40 &lt;class 'int'&gt;
+False &lt;class 'bool'&gt;
+['поезія', 'класика'] &lt;class 'list'&gt;</pre>
+<p>Зверни увагу: у змінної завжди одне ім’я англійською без пробілів, а в кожної з п’яти — свій тип.</p>
+</div>
+
+<h3>Завдання</h3>
+<p>Придумай <strong>свій</strong> товар (не книжку і не навушники). Він не має повторюватись у класі: узгодь його з учителем. У цьому ж <code>shop.py</code>, нижче частини 1:</p>
+<ol>
+<li>Створи 5 змінних: назва, ціна з копійками, кількість на складі, чи є знижка, список із трьох кольорів або розмірів.</li>
+<li>Для <strong>кожної</strong> змінної виведи її значення і тип, як у прикладі.</li>
+<li>Усі п’ять типів мають бути різні.</li>
+</ol>
+<p><strong>Покажи вчителю:</strong> змініть разом одне значення так, щоб тип став іншим (наприклад, з <code>int</code> на <code>str</code>), і передбач, що виведе програма.</p>
+
+<h2>Частина 3. Що буде, якщо змішати типи <span class="pts">3 бали</span></h2>
+
+<div class="ex">
+<h3>Приклад</h3>
+<p>Результат дії теж має тип. Кладемо результат у змінну і виводимо її разом із типом. Перед цим, як завжди, прогноз:</p>
+<pre># прогноз: 7, int
+result = 3 + 4
+print(result, type(result))</pre>
+<p>Python виведе <code>7 &lt;class 'int'&gt;</code>. Тепер приклад із помилкою:</p>
+<pre>result = '5' + 3
+print(result, type(result))</pre>
+<p>Python зупиниться з червоним повідомленням: <code>TypeError: can only concatenate str (not "int") to str</code>. Це значить: текст і число складати не можна. Щоб програма далі працювала, <strong>закоментуй</strong> цей рядок і поясни:</p>
+<pre># result = '5' + 3
+# print(result, type(result))
+# TypeError: не можна скласти текст і число</pre>
+</div>
+
+<h3>Завдання</h3>
+<p>У <code>shop.py</code>, нижче частини 2, зроби так само для шести виразів. Для кожного: прогноз коментарем → результат і тип → якщо помилка, закоментуй рядки й напиши, чому вона.</p>
+<ol>
+<li><code>3 + 4.0</code></li>
+<li><code>'3' + '4'</code></li>
+<li><code>'3' + 4</code></li>
+<li><code>'3' * 4</code></li>
+<li><code>10 / 2</code></li>
+<li><code>1499 * 2</code></li>
+</ol>
+<p>Окремо одним коментарем відповідай: <em>чому в пунктах 3 і 4 вийшло так по-різному?</em></p>
+
+<h2>Частина 4. Чек магазину <span class="pts">3 бали</span></h2>
+
+<div class="ex">
+<h3>Приклад</h3>
+<p>Чек для книжки. Усі дані — змінні, сума рахується з них, а біля кожного значення виводимо його тип:</p>
+<pre>title = 'Кобзар'
+price = 289.5
+copies = 2
+total = price * copies
+
+print('Товар:', title, type(title))
+print('Ціна:', price, type(price))
+print('Кількість:', copies, type(copies))
+print('Разом:', total, type(total))</pre>
+<p>Python виведе:</p>
+<pre>Товар: Кобзар &lt;class 'str'&gt;
+Ціна: 289.5 &lt;class 'float'&gt;
+Кількість: 2 &lt;class 'int'&gt;
+Разом: 579.0 &lt;class 'float'&gt;</pre>
+</div>
+
+<h3>Завдання</h3>
+<p>Створи новий файл <code>receipt.py</code> і зроби чек для <strong>свого</strong> товару з частини 2. У чеку має бути 6 рядків:</p>
+<ol>
+<li>товар,</li>
+<li>ціна,</li>
+<li>кількість (вигадай, скільки купують),</li>
+<li>знижка (<code>bool</code>),</li>
+<li>кольори або розміри (<code>list</code>),</li>
+<li>разом: ціна, помножена на кількість.</li>
+</ol>
+<p>Біля кожного значення виведи його тип. Потім <strong>зміни кількість і ціну</strong>, запусти ще раз і переконайся, що «Разом» перерахувалось.</p>
+
+<h2>Питання наприкінці</h2>
+<p>Відповіді запиши коментарями в кінці <code>shop.py</code>, без запуску коду. Перевірити себе можна після.</p>
+<ol>
+<li>Який тип мають значення <code>3.0</code>, <code>'3'</code>, <code>True</code>, <code>[3]</code>?</li>
+<li>Чому <code>'5' + 3</code> дає помилку, а <code>'5' * 3</code> ні? Що вийде в другому випадку?</li>
+<li>Який тип у результату <code>2 + 3.5</code> і в результату <code>10 / 2</code>?</li>
+<li>Чим відрізняються <code>True</code> і <code>'True'</code>?</li>
+</ol>
+
+<h2>Оцінювання</h2>
+<div class="wide">
+<table>
+<tr><th>Частина</th><th>Бали</th><th>За що</th></tr>
+<tr><td>1. Вгадай тип</td><td>3</td><td>8 прогнозів у коментарях, пояснення помилок</td></tr>
+<tr><td>2. Мій товар</td><td>3</td><td>5 змінних різних типів, власний товар, зміна типу на очах у вчителя</td></tr>
+<tr><td>3. Що буде, якщо змішати типи</td><td>3</td><td>6 виразів, помилки закоментовані й пояснені</td></tr>
+<tr><td>4. Чек</td><td>3</td><td>6 рядків, типи виведені, «Разом» перераховується</td></tr>
+<tr><td><strong>Разом</strong></td><td><strong>12</strong></td><td>питання наприкінці — окремо</td></tr>
+</table>
+</div>
+<p><strong>Бонус +2:</strong> знайди чотири різні значення, для яких <code>type()</code> покаже <code>str</code>, хоча на вигляд вони схожі на ціле число, дробове число, <code>True</code> і список. Запиши їх коментарем у кінці <code>shop.py</code>.</p>
+
+<h2>Як ставити коментарі та які клавіші потрібні</h2>
+<div class="wide">
+<table>
+<tr><th>Що зробити</th><th>Як</th></tr>
+<tr><td>Написати коментар у новому рядку</td><td>Надрукувати <code>#</code>, пробіл і текст: <code># це мій прогноз</code></td></tr>
+<tr><td>Коментар після коду в тому ж рядку</td><td><code>price = 289.5  # ціна</code>: перед <code>#</code> два пробіли</td></tr>
+<tr><td>Закоментувати рядок із кодом</td><td>Став курсор на рядок (або виділи кілька рядків) і натисни <strong>Ctrl + 3</strong> (на Mac: <strong>Cmd + 3</strong>)</td></tr>
+<tr><td>Прибрати коментар з рядка</td><td>Ті самі <strong>Ctrl + 3</strong>: вони перемикають туди й назад</td></tr>
+<tr><td>Якщо Ctrl + 3 не спрацювало</td><td>У старіших версіях Thonny: <strong>Alt + 3</strong> закоментувати, <strong>Alt + 4</strong> розкоментувати. Або меню <strong>Edit</strong>: там поряд із пунктами про коментар показані клавіші саме для твого комп’ютера</td></tr>
+<tr><td>Запустити програму</td><td><strong>F5</strong></td></tr>
+<tr><td>Зберегти файл</td><td><strong>Ctrl + S</strong> (Mac: Cmd + S)</td></tr>
+<tr><td>Скасувати останню дію</td><td><strong>Ctrl + Z</strong></td></tr>
+<tr><td>Очистити вікно результатів</td><td><strong>Ctrl + L</strong> у вікні Shell</td></tr>
+</table>
+</div>
+<p>Закоментований рядок Python пропускає: він змінює колір, але не виконується. Саме тому рядки з помилками з частини 3 треба коментувати: інакше програма зупиниться і не дійде до наступних рядків.</p>
+
+</main>
+</body>
+</html>

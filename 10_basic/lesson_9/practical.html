@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CapCut: переходи, які мають сенс</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">УРОК 2 З 7 • 10 КЛАС • ЧАСТИНА БАГАТОУРОЧНОЇ ТЕМИ</p>
+  <h1>CapCut: переходи, які мають сенс</h1>
+<p class="lesson-subtitle">Додаємо до свого шортса 2–3 переходи (Transitions), кожен з причиною: розчинення, зум, ривок. А хто встиг, додає один ефект (Effects).</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Відкрити вкладку «Переходи» (Transitions), перетягнути перехід на стик двох кліпів і поставити тривалість 0,3–0,5 с.</li>
+  <li>Для кожного стику відповісти на запитання «Що змінилося між цими кліпами?» (час, місце, настрій, удар музики) і за відповіддю обрати: розріз (cut), розчинення (Dissolve), ривок (Slide/Swipe), зум (Zoom) чи інший.</li>
+  <li>Поставити лише 2–3 переходи одного стилю, решту стиків залишити розрізом, і не брати платні переходи з короною (Pro).</li>
+  <li>Експортувати вдосконалену версію <code>Прізвище_тема_v2.mp4</code> і порівняти її з першою.</li>
+</ul>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Перехід (Transition) — це «місток» між двома кліпами. Без нього кліпи просто змінюють один одного розрізом (cut), і це найчастіше найкращий варіант.</li>
+  <li>Перехід має щось означати: минув час, змінилося місце чи настрій, вдарила музика. Якщо відповісти нічого, перехід не потрібен.</li>
+  <li>У шортсі достатньо 2–3 переходів одного стилю й однієї тривалості (0,3–0,5 с). Ролик на 20–30 секунд, у якому перехід між усіма кліпами, виглядає як ярмарок.</li>
+  <li>Перехід «з'їдає» частину сусідніх кліпів: він не може бути довшим за короткий кліп поруч.</li>
+  <li>Стиль переходу має збігатися з настроєм відео: спокійне відео — м'які переходи, енергійне — швидкі.</li>
+</ul>
+  <div class="theory"><h3>Що таке перехід простими словами</h3>
+<p>Коли один кліп закінчується, а інший починається, ми бачимо <strong>стик</strong>. Найпростіший стик — <strong>розріз</strong> (cut): перший кліп одразу змінюється другим. <strong>Перехід</strong> (Transition) — це коротка анімація на стику: кліпи розчиняються, один виїжджає, інший наближається чи спалахує біле світло.</p>
+<p>Головне запитання: <strong>«Що змінилося між цими двома кліпами?»</strong> Якщо змінився час чи настрій — підійде м'який перехід. Якщо вдарила музика чи почалась дія — швидкий. Якщо нічого не змінилося — залишаємо розріз.</p>
+<h3>Як додати перехід у CapCut</h3>
+<ol>
+  <li>Постав кліпи на таймлайні впритул один до одного (без порожнечі між ними).</li>
+  <li>Угорі зліва відкрий вкладку <strong>Transitions</strong> і обери категорію (Basic, Camera, Slide, Glitch, Light Effect та інші).</li>
+  <li>Клацни перехід, щоб побачити попередній перегляд, а потім перетягни його <strong>на стик</strong> між двома кліпами на таймлайні (або натисни <strong>+</strong> на перехіді при встановленому повзунку на стику).</li>
+  <li>Клацни позначку переходу на таймлайні, праворуч у панелі властивостей знайди <strong>Duration</strong> і постав <strong>0,3–0,5 с</strong>.</li>
+  <li>Натисни <strong>Пробіл</strong> і подивись, як це виглядає в плеєрі.</li>
+</ol>
+<h3>Які переходи коли використовувати</h3>
+<p>Повний і актуальний список переходів є лише в самій програмі (вкладка Transitions), на сайті CapCut його немає. Назви й категорії інколи змінюються між версіями. Якщо не знайшов точну назву, відкрий категорію й обери найближчий за виглядом перехід. Не обирай переходи з короною (Pro).</p>
+<table>
+<thead><tr><th>Що змінилося між кліпами</th><th>Який перехід</th><th>Назви в CapCut (шукай у вкладці Transitions)</th></tr></thead>
+<tbody>
+<tr><td>Нічого: це та сама дія</td><td><strong>Без переходу</strong> (розріз, cut)</td><td>нічого не додаємо</td></tr>
+<tr><td>Минув час, м'який або задумливий настрій</td><td>Розчинення</td><td>категорія <strong>Basic</strong>: Dissolve, Fade; ще Mix, Superimpose</td></tr>
+<tr><td>Початок чи кінець ролика, новий розділ</td><td>Затемнення або спалах</td><td>Black Fade (у чорне), White Flash (у біле)</td></tr>
+<tr><td>Дія, спорт, удар музики</td><td>Зум, струс, ривок камери</td><td>категорія <strong>Camera</strong>: Zoom In, Zoom Out, Pull In, Pull Out, Shake; також Blur &amp; Zoom, Tremble Zoom, Zoom Shake 2</td></tr>
+<tr><td>Нове місце, камера рухається вбік</td><td>Ривок у напрямку руху</td><td>категорія <strong>Slide</strong>: Slide Left, Slide Right, Swipe Left, Wipe</td></tr>
+<tr><td>Техніка, гаджети, ігри, «цифровий» настрій</td><td>Глітч</td><td>категорія <strong>Glitch</strong> (обери один) і Comic Cut для жартівливого стилю</td></tr>
+<tr><td>Тепла ностальгія, світло, блиск</td><td>Світловий перехід</td><td>категорія <strong>Light Effect</strong>: Glare та схожі</td></tr>
+</tbody>
+</table>
+<h3>Приклади для різних тем шортса</h3>
+<table>
+<thead><tr><th>Тема шортса</th><th>Де поставити перехід</th><th>Який і чому</th></tr></thead>
+<tbody>
+<tr><td>☕ Кав'ярня</td><td>«зерна → чашка кави»</td><td>Dissolve 0,5 с: спокійно й затишно. Спін тут зайвий.</td></tr>
+<tr><td>🌍 Топ-3 місця</td><td>між місцями</td><td>Slide Left чи Swipe Left, <strong>завжди в один бік</strong>, ніби камера їде далі.</td></tr>
+<tr><td>🍳 Рецепт</td><td>перед готовою стравою</td><td>Один White Flash як «та-дам!», між кроками розрізи.</td></tr>
+<tr><td>💪 Спорт</td><td>на ударі музики</td><td>Zoom In чи Shake 0,3 с, максимум двічі за ролик.</td></tr>
+<tr><td>🌅 Ранок</td><td>«будильник → кава», кінець</td><td>Dissolve, а наприкінці Black Fade.</td></tr>
+<tr><td>🚀 Космос і природа</td><td>між кадрами</td><td>повільний Dissolve 0,5 с, жодних швидких ривків.</td></tr>
+<tr><td>🎉 Шкільна подія</td><td>початок і кульмінація</td><td>White Flash на старті та Zoom на кульмінації.</td></tr>
+<tr><td>🎧 Гаджет</td><td>«до → після»</td><td>один Glitch між «до» і «після».</td></tr>
+</tbody>
+</table>
+<h3>Золоте правило: настрій і напрямок</h3>
+<p><strong>Настрій:</strong> спокійне відео (кава, космос, ранок) — Dissolve і Fade; енергійне (спорт, вечірка, гаджет) — Zoom, Shake, Glitch. <strong>Напрямок:</strong> якщо камера у кліпі їде вправо, наступний кліп «в'їжджає» справа; тоді Slide виглядає природно.</p>
+<h3>Навіщо це в житті</h3>
+<p>Різниця між відео, яке «просто склеїли», і відео, яке «приємно дивитись», майже завжди в акуратних переходах. Так працюють відеографи, SMM-спеціалісти, блогери. Навичка вчить ще й ширше: <strong>кожен ефект у роботі має мати причину</strong>, а не з'являтись «бо можна».</p>
+<h3>Типові пастки і як їх уникнути</h3>
+<ul>
+<li><strong>Перехід між усіма кліпами.</strong> Ролик стає «ярмарком». Залиш 2–3 найважливіші місця, решта розрізом.</li>
+<li><strong>Різні стилі в одному ролику.</strong> Спін, глітч і розчинення разом виглядають хаотично. Обери один стиль.</li>
+<li><strong>Перехід довший за кліп.</strong> Кліп 1,5 с, перехід 1 с: «з'їдено» майже весь кадр. Зменш Duration до 0,3 с.</li>
+<li><strong>Перехід з короною (Pro).</strong> Експорт може попросити оплату. Беремо безкоштовні.</li>
+<li><strong>Не додається.</strong> Між кліпами порожнеча або кліпи на різних доріжках. Підсунь кліпи впритул на одну доріжку.</li>
+<li><strong>Не переглянув.</strong> Перехід «стрибає» чи надто різкий. Завжди натискай Пробіл і дивись.</li>
+</ul>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Як додати перехід</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Кліпи впритул на таймлайні</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Вкладка Transitions: обрати категорію</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Перетягнути перехід на стик</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Duration: 0,3–0,5 с</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Пробіл: переглянути</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Питання перед кожним переходом</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Що змінилося між кліпами?</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Нічого → розріз (cut)</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Час чи настрій → Dissolve, Fade</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Дія чи музика → Zoom, Shake, Slide</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Перевір: стиль той самий?</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Розріз чи перехід</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Розріз (cut)</h4><ul><li>Миттєва зміна кліпу</li><li>Підходить для тієї самої дії</li><li>Найчастіше виглядає «професійно»</li><li>Не потребує налаштувань</li></ul></div>
+    <div class="scheme-column"><h4>Перехід (Transition)</h4><ul><li>Коротка анімація на стику</li><li>Підходить, коли змінився час, місце чи настрій</li><li>Працює, коли їх мало (2–3)</li><li>Потрібно налаштувати Duration</li></ul></div>
+  </div>
+</figure>
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Кав'ярня: м'який перехід «зерна → чашка»</h4>
+    <p>У шортсі «Кава за 30 секунд» вісім кліпів. Між кліпом із кавовими зернами й кліпом із чашкою минув час: з зерен зварили каву. Решта кліпів — одна дія в різних ракурсах.</p>
+
+    <div class="example-explanation"><ol>
+  <li>Підсунь кліп зі зернами й кліп із чашкою впритул один до одного.</li>
+  <li>Відкрий <strong>Transitions → Basic</strong> і перетягни <strong>Dissolve</strong> на стик між ними.</li>
+  <li>Клацни перехід на таймлайні, постав <strong>Duration 0,5 с</strong>.</li>
+  <li>Решту стиків (наливання молока, латте-арт) залиш розрізом. Натисни Пробіл.</li>
+</ol>
+<p>Результат: один спокійний перехід на єдиній зміні часу. Глядач відчуває плавність, а ролик не виглядає перевантаженим.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Спорт: Zoom на ударі музики</h4>
+    <p>Мотиваційний ролик про біг. Музика має сильний удар на 8-й секунді, а там якраз змінюється кліп: біг по стежці → фінішна лінія.</p>
+
+    <div class="example-explanation"><ol>
+  <li>Постав повзунок на стик цих двох кліпів (приблизно 8 с).</li>
+  <li>Відкрий <strong>Transitions → Camera</strong> і обери <strong>Zoom In</strong> (або <strong>Blur &amp; Zoom</strong>, якщо вони без корони).</li>
+  <li>Постав <strong>Duration 0,3 с</strong>, щоб він «влучив» в удар.</li>
+  <li>Подивись, чи збігається зум з ударом. Якщо ні, посунь кліпи, щоб стик припав на удар.</li>
+</ol>
+<p>Результат: перехід «вдаряє» разом із музикою. Це можна повторити ще раз у фіналі, але не частіше, щоб не набридло.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Перехід довший за кліп</h4>
+    <p>Кліп з чайкою триває 1,5 с, а ти поставив перехід на 1 секунду. У плеєрі кліп майже не видно, лише розмите «щось».</p>
+
+    <div class="example-explanation"><ol>
+  <li>Клацни перехід на таймлайні.</li>
+  <li>Праворуч у панелі зменши <strong>Duration</strong> до <strong>0,3 с</strong>.</li>
+  <li>Подивись ще раз. Якщо кліп усе одно надто короткий, прибери перехід і залиш розріз.</li>
+</ol>
+<p>Результат: чайку знову видно. Правило: перехід має бути не довшим за третину найкоротшого кліпу поруч.</p>
+</div>
+  </article>
+</div>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=CapCut%20%D0%BF%D0%B5%D1%80%D0%B5%D1%85%D0%BE%D0%B4%D0%B8%20%D0%B4%D0%BB%D1%8F%20%D0%BF%D0%BE%D1%87%D0%B0%D1%82%D0%BA%D1%96%D0%B2%D1%86%D1%96%D0%B2%20%D1%8F%D0%BA%20%D0%B4%D0%BE%D0%B4%D0%B0%D1%82%D0%B8%20transition%20%D1%83%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%BE%D1%8E" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">CapCut: переходи для початківців<span class="resource-hint">пошук на YouTube: «CapCut переходи для початківців»</span></span></a>
+<div class="resource-note">Короткий відеоурок: як додати перехід і змінити Duration. Подивись, якщо пропустив показ на дошці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&q=CapCut%20transitions%20dissolve%20slide%20zoom%20glitch%20examples" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Подивитись переходи Dissolve, Slide, Zoom, Glitch<span class="resource-hint">пошук у Google Картинках: «CapCut transitions dissolve slide zoom glitch examples»</span></span></a>
+<div class="resource-note">Картинки допоможуть зрозуміти, як виглядає кожен тип переходу, ще до того, як застосовуєш його.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.capcut.com/help/capcut-transitions" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📖</span><span class="resource-text">CapCut: переходи, довідка</span></a>
+<div class="resource-note">Стаття CapCut (англійською) про популярні типи переходів. Це ідеї, а не повний перелік назв.</div>  </div>
+</div>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+<ul>
+  <li>Перехід — як міст між двома берегами: якщо береги поруч, міст не потрібен (розріз), а якщо далеко, без нього не обійтись.</li>
+  <li>Розріз — як крапка в реченні, а перехід — як слова зв'язки «потім», «але», «тим часом». Якщо їх у кожному реченні, текст читати важко.</li>
+  <li>Перехід — як сіль у супі: потрібна щіпка, а не жменя. Багато переходів перетворюють ролик на «пересолений» суп.</li>
+  <li>Напрямок Slide — як рух у метро: поїзд їде в один бік, а не туди-сюди; так глядачу легше не загубитись.</li>
+  <li>Швидкий Zoom на ударі музики — як барабанний акцент у пісні: працює лише тоді, коли збігається з ритмом.</li>
+</ul>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+<div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.capcut.com/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">CapCut — офіційний сайт</span></a>
+<div class="resource-note">Звідси завантажують CapCut Desktop для Windows. Знадобиться, якщо хочеш продовжити проєкт удома.</div>  </div>
+</div>
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 10-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Мій шортс v2: переходи з причиною</h3>
+    <p><strong>Мета:</strong> додати до свого шортса з уроку 1 <strong>2–3 переходи</strong> одного стилю, кожен із чіткою причиною, і зберегти нову версію як MP4.</p>
+<p><strong>Результат:</strong> файл <code>Прізвище_тема_v2.mp4</code> (9:16, 20–30 с, з написом, музикою і переходами) та проєкт CapCut із тією ж назвою. Це знову чернетка для наступних уроків, тому нічого не видаляй.</p>
+<p>Працюй самостійно, а в кінці зроби огляд у парах.</p>
+    <p><strong>Нагадування:</strong> шукай переходи у вкладці <strong>Transitions</strong>. Нижче головні категорії й приклади назв:</p>
+    <ul>
+  <li><strong>Basic:</strong> Dissolve, Fade, Mix: спокійні переходи</li>
+  <li><strong>Camera:</strong> Zoom In, Zoom Out, Pull In, Shake: для дії</li>
+  <li><strong>Slide:</strong> Slide Left, Swipe Left, Wipe: для зміни місця</li>
+  <li><strong>Glitch:</strong> один глітч для тематики техніки</li>
+  <li><strong>Black Fade, White Flash:</strong> для початку, кінця чи «та-дам»</li>
+</ul>
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Відкрий проєкт і збережи копію v2</strong></p>
+        <ol>
+  <li>Запусти CapCut і відкрий свій проєкт з уроку 1 (<code>Прізвище_тема</code>).</li>
+  <li>Угорі клацни назву проєкту й перейменуй на <code>Прізвище_тема_v2</code>, щоб не зіпсувати першу версію.</li>
+  <li>Натисни <strong>Пробіл</strong> і ще раз перегляди ролик.</li>
+</ol>
+<p>Якщо проєкт не відкривається, поклич вчителя. Не створюй новий.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Відкритий проєкт <code>Прізвище_тема_v2</code>, ролик програється.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Познач на папері 2–3 місця для переходів</strong></p>
+        <ol>
+  <li>Дивись ролик кліп за кліпом і для кожного стику відповідай: <strong>що змінилося</strong>?</li>
+  <li>Запиши на папері або в Нотатках 2–3 стики, де щось змінилося (час, місце, настрій, удар музики).</li>
+  <li>Біля кожного напиши, який перехід вибереш і чому. Використай таблицю вище.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> Список із 2–3 стиків і причин, наприклад «кліп 3→4: минув час, Dissolve».</p>      </li>
+      <li>
+        <p class="step-title"><strong>Знайди вкладку Transitions і подивись категорії</strong></p>
+        <ol>
+  <li>Угорі зліва відкрий <strong>Transitions</strong>.</li>
+  <li>Пройдись по категоріях Basic, Camera, Slide, Glitch, Light Effect. Клацай переходи, щоб побачити прев'ю.</li>
+  <li>Обери для кожного стику перехід <strong>без корони</strong> і запам'ятай його назву.</li>
+</ol>
+<p>Якщо точної назви немає, обери найближчий за виглядом перехід тієї самої категорії.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Ти знаєш назви 2–3 безкоштовних переходів, які підходять до твоїх стиків.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Додай перший перехід</strong></p>
+        <ol>
+  <li>Переконайся, що кліпи на стику стоять <strong>впритул</strong>, без порожнечі.</li>
+  <li>Перетягни обраний перехід з вкладки на стик між двома кліпами.</li>
+  <li>Клацни позначку переходу на таймлайні й праворуч постав <strong>Duration 0,3–0,5 с</strong>.</li>
+  <li>Натисни <strong>Пробіл</strong> і подивись.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> На стику з'явилась позначка переходу, і в плеєрі він плавно змінює кліпи.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Додай ще 1–2 переходи</strong></p>
+        <ol>
+  <li>Повтори крок 4 для інших стиків зі свого списку.</li>
+  <li>Використовуй <strong>той самий стиль</strong>: наприклад, лише Dissolve і один Zoom, а не спін, глітч і слайд разом.</li>
+  <li>Усі інші стики залиш розрізом.</li>
+</ol>
+<p>Не більше 3 переходів у ролику.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У ролику 2–3 переходи одного стилю, решта стиків без переходу.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Перевір довжину й чергу</strong></p>
+        <ol>
+  <li>Клацни кожен перехід і перевір <strong>Duration</strong>: не довший за 0,5 с.</li>
+  <li>Подивись на найкоротший кліп поруч із переходом. Якщо перехід «з'їв» його, зменш Duration або прибери перехід.</li>
+  <li>Подивись на лінійку часу: ролик має залишитись 20–30 с.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> Усі переходи 0,3–0,5 с, кліпи не «з'їдені», ролик 20–30 с.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Подивись увесь ролик з початку</strong></p>
+        <ol>
+  <li>Постав повзунок на початок і натисни <strong>Пробіл</strong>.</li>
+  <li>Для кожного переходу спитай себе: <strong>чи є причина?</strong> Якщо ні, виділи позначку переходу й натисни <strong>Delete</strong>.</li>
+  <li>Перевір: напис читається, музика не обривається, немає чорних смуг.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> Кожен перехід має причину, ролик виглядає чистим, а не «ярмарком».</p>      </li>
+      <li>
+        <p class="step-title"><strong>Огляд у парах «знайди зайвий перехід»</strong></p>
+        <ol>
+  <li>Сядь поруч із сусідом, обміняйтесь комп'ютерами й перегляньте ролики один одного.</li>
+  <li>Знайдіть <strong>один перехід, який міг би бути зайвим або іншим</strong>, і поясніть, чому.</li>
+  <li>Поверніться до свого ролика і виправте, якщо згодні з порадою.</li>
+</ol>
+<p>Поради даємо ввічливо: спершу називаємо те, що вдалося, потім пропонуємо одну зміну.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> Ти отримав одну пораду від сусіда й врахував її або пояснив, чому ні.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Експортуй v2</strong></p>
+        <ol>
+  <li>Натисни <strong>Export</strong> угорі праворуч.</li>
+  <li>Назва: <code>Прізвище_тема_v2</code>, папка <code>CapCut_Урок1</code>.</li>
+  <li>Resolution <strong>1080p</strong>, Format <strong>MP4</strong>, Frame rate <strong>30fps</strong>.</li>
+  <li>Натисни <strong>Export</strong> і дочекайся 100%. Відкрий файл і перевір, що він програється.</li>
+</ol>
+<p>Якщо CapCut просить увійти в акаунт чи оплатити, поклич вчителя.</p>
+
+<p class="step-result"><strong>Має вийти:</strong> У папці є файл <code>Прізвище_тема_v2.mp4</code>, він програється зі своїми переходами.</p>      </li>
+    </ol>
+
+    <p class="deliverable"><strong>Що здати:</strong> Файл Прізвище_тема_v2.mp4 (9:16, 20–30 с, 2–3 переходи одного стилю) у папці CapCut_Урок1 і збережений проєкт CapCut. У відповіді нижче напиши, які переходи ти використав і чому.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Мій шортс v2: переходи з причиною" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: Effects, один ефект для настрою</h3>
+    <p>Переходи змінюють стик між кліпами, а <strong>ефекти</strong> (Effects) змінюють вигляд самого кадру: зерно плівки, блиск, віньєтка, легке світіння. Додай <strong>один</strong> ефект під настрій твоєї теми:</p>
+<ol>
+<li><strong>Обери ефект.</strong> Вкладка <strong>Effects → Video effects</strong>. Обирай без корони, під настрій: тепла плівка для кав'ярні, легке світіння для космосу, блиск для вечірки. Не бери «блимання» чи «тряску» на весь ролик.</li>
+<li><strong>Накинь на ролик.</strong> Перетягни ефект на таймлайн над відео й розтягни його правий край на весь ролик або лише на кульмінацію (3–4 с).</li>
+<li><strong>Зменш силу.</strong> Клацни ефект і в панелі праворуч зменш параметри (наприклад, Intensity), якщо ефект «кричить».</li>
+<li><strong>Перевір напис.</strong> Напис має лишатись чітко видно. Якщо ефект накриває напис, скороти ефект або зніми його з цієї ділянки.</li>
+</ol>
+<p><strong>Правило:</strong> один ефект на весь ролик або максимум два на різні фрагменти, так само як з переходами. Експортуй ще раз з назвою <code>Прізвище_тема_v3</code>.</p>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: Effects, один ефект для настрою" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+  </article>
+</section>
+
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+})();
+</script>
+</body>
+</html>
