@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Урок 9: Діджей бази даних</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1d2433; --muted:#5b6478; --line:#e3e7ef;
+  --accent:#3b6fd8; --accent-soft:#e8effc; --ok:#1f9d63; --ok-soft:#e5f6ee;
+  --warn:#c77700; --warn-soft:#fff4e0; --bad:#d23f3f; --bad-soft:#fdeaea;
+  --gold:#a86b00; --gold-soft:#fff3d6;
+  --code-bg:#1e2433; --code-text:#e6e9f2; --kw:#7fb4ff; --str:#9be29b; --num:#ffc66d; --cm:#8a93a8; --blank:#ff8fb1;
+}
+:root[data-theme="dark"]{
+  --bg:#12151c; --card:#1b2029; --text:#e6e9f2; --muted:#9aa3b8; --line:#2c3341;
+  --accent:#7aa5ff; --accent-soft:#1f2a40; --ok:#4fd197; --ok-soft:#173327;
+  --warn:#ffb648; --warn-soft:#3a2c14; --bad:#ff7b7b; --bad-soft:#3a1c1c;
+  --gold:#ffcc66; --gold-soft:#3a3016; --code-bg:#0d1017;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+header{padding:28px 0 8px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:8px 0 12px}
+h2{font-size:24px;margin:0 0 10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+h3{font-size:18px;margin:18px 0 6px}
+.pts{font-size:13px;font-weight:700;background:var(--accent-soft);color:var(--accent);padding:3px 10px;border-radius:999px}
+.pts.gold{background:var(--gold-soft);color:var(--gold)}
+.lead{font-size:18px;color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin:22px 0}
+.card.story{border:2px solid var(--gold);background:linear-gradient(180deg,var(--gold-soft),var(--card) 140px)}
+.theme-btn{position:fixed;top:12px;right:12px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:14px;z-index:5}
+a{color:var(--accent)}
+.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:600;border:0;cursor:pointer;font-size:16px}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+code{font-family:ui-monospace,"Cascadia Code",Consolas,monospace;background:var(--accent-soft);padding:1px 6px;border-radius:6px;font-size:.92em}
+pre{background:var(--code-bg);color:var(--code-text);border-radius:12px;padding:14px 16px;overflow-x:auto;font:15.5px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace;margin:8px 0}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.k{color:var(--kw);font-weight:700}.s{color:var(--str)}.n{color:var(--num)}.c{color:var(--cm);font-style:italic}
+.b{color:var(--blank);font-weight:700}
+.callout{border-left:5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:12px 16px;margin:14px 0}
+.callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+.callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+.callout.bad{border-color:var(--bad);background:var(--bad-soft)}
+.task{border-top:1px dashed var(--line);padding-top:12px;margin-top:14px}
+.task:first-of-type{border-top:0;padding-top:0}
+.tnum{display:inline-block;min-width:38px;font-weight:800;color:var(--accent)}
+.mode{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;margin-right:6px;vertical-align:2px}
+.mode.rep{background:var(--ok-soft);color:var(--ok)}
+.mode.self{background:var(--warn-soft);color:var(--warn)}
+.ask{margin:6px 0 0;font-weight:600}
+.ask::before{content:"✍️ "}
+table{width:100%;border-collapse:collapse;font-size:15.5px}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:13.5px}
+td.q{width:46%}
+td.no{width:46px;font-weight:700;color:var(--accent)}
+input[type=text],textarea{width:100%;font:inherit;font-size:15.5px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+textarea{min-height:120px;resize:vertical;font-family:ui-monospace,Consolas,monospace;font-size:14px}
+input[type=text]:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+.who{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:560px){.who{grid-template-columns:1fr}}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.toast{color:var(--ok);font-weight:600}
+.check label{display:flex;gap:10px;align-items:flex-start;padding:6px 0;cursor:pointer}
+.check input{margin-top:6px;width:18px;height:18px}
+.small{font-size:14px;color:var(--muted)}
+.scroll{overflow-x:auto}
+
+pre{position:relative}
+.copy{position:absolute;top:8px;right:8px;background:#ffffff1a;color:#cfd6e6;border:0;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:13px}
+.copy:hover{background:#ffffff33}
+.translate{display:grid;grid-template-columns:1fr;gap:6px;margin:12px 0}
+.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.lang{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted);min-width:34px}
+.en{font-size:19px;font-style:italic}
+.ua{color:var(--muted)}
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:12px 0}
+.word{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}
+.word.new{border:2px solid var(--accent);background:var(--accent-soft)}
+.word b{font-family:ui-monospace,Consolas,monospace;color:var(--accent);font-size:18px;display:block}
+.word span{color:var(--muted);font-size:15px}
+.word i{font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--accent);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:3px}
+.order{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.pill{background:var(--accent);color:#fff;border-radius:999px;padding:6px 14px;font-weight:700;font-family:ui-monospace,Consolas,monospace}
+.pill.opt{background:transparent;color:var(--accent);border:2px dashed var(--accent)}
+.pill.today{background:var(--gold);color:#fff;border:2px dashed #fff8}
+.arrow{color:var(--muted)}
+details.quiz{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0;background:var(--bg)}
+details.quiz summary{cursor:pointer;font-size:18px;list-style:none}
+details.quiz summary::before{content:"🗣️ ";}
+details.quiz[open] summary{margin-bottom:6px}
+.venn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:620px){.venn{grid-template-columns:1fr}}
+.section-divider{margin:56px 0 0;padding:28px 0 8px;border-top:3px solid var(--accent)}
+.toplinks{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+
+/* Превʼю скрипта */
+.file{border:2px solid var(--accent);border-radius:14px;overflow:hidden;background:var(--code-bg);margin:14px 0}
+.file-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:var(--accent);color:#fff}
+.file-head .fname{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:16px}
+.file-head .meta{font-size:13.5px;opacity:.9}
+.file-head .sp{flex:1}
+.file-head button{border:0;border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer;font-size:14px}
+.file-head .cp{background:#fff;color:var(--accent)}
+.file-head .tg{background:#ffffff2e;color:#fff}
+.file-body{position:relative;max-height:190px;overflow:hidden;cursor:pointer;transition:max-height .3s}
+.file-body pre{margin:0;border-radius:0;background:transparent}
+.file-body::after{content:"👆 Натисни, щоб відкрити весь скрипт";position:absolute;left:0;right:0;bottom:0;height:110px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;color:#fff;font-weight:700;background:linear-gradient(180deg,transparent,var(--code-bg) 75%)}
+.file.open .file-body{max-height:none;cursor:auto;overflow-x:auto}
+.file.open .file-body::after{display:none}
+.tickets{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:12px 0}
+.ticket{border:2px dashed var(--gold);border-radius:12px;padding:12px;background:var(--card)}
+.ticket b{display:block;font-size:17px;margin-bottom:4px}
+.ticket code{font-size:13.5px}
+.genres{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.genres span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:14px}
+.genres span b{color:var(--accent)}
+</style>
+</head>
+<body>
+<button class="theme-btn" id="themeBtn">🌓 Світла / темна тема</button>
+<div class="wrap">
+<div class="theory">
+
+<header id="theory">
+  <div class="kicker">9 клас • Урок 9 • Пояснення + практична</div>
+  <h1>Діджей бази даних: сортуємо, вибираємо топ і збираємо плейлист 🎧</h1>
+  <p class="lead">Минулого разу ми навчилися <b>фільтрувати</b>: <code>WHERE</code>, <code>AND</code>, <code>OR</code>, <code>LIKE</code>. Сьогодні лише <b>три нових слова</b>: <code>ORDER BY</code> (впорядкуй), <code>LIMIT</code> (не більше ніж) і <code>IN</code> (один зі списку). А потім додамо в базу <b>сучасну музику</b> і зберемо свій ефір.</p>
+  <div class="toplinks"><a class="btn" href="#practical">Перейти до практичної ↓</a><a class="btn ghost" href="#blank">Бланк відповідей</a></div>
+</header>
+
+<!-- 0. Згадаймо -->
+<section class="card">
+  <h2>🔁 Згадаймо урок 8 (2 хвилини)</h2>
+  <details class="quiz"><summary>Select names of tracks where name contains «night».</summary>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Track <span class="k">WHERE</span> Name <span class="k">LIKE</span> <span class="s">'%night%'</span>;</code></pre></details>
+  <details class="quiz"><summary>Покажи клієнтів із Канади, які живуть не в Toronto.</summary>
+<pre><code><span class="k">SELECT</span> FirstName, City <span class="k">FROM</span> Customer
+<span class="k">WHERE</span> Country = <span class="s">'Canada'</span> <span class="k">AND</span> City &lt;&gt; <span class="s">'Toronto'</span>;</code></pre></details>
+  <details class="quiz"><summary>Чому <code>WHERE Country = 'Brazil' OR 'Chile'</code> — це помилка?</summary>
+  <p>Умову треба писати <b>повністю</b> з кожного боку: <code>Country = 'Brazil' OR Country = 'Chile'</code>. А сьогодні дізнаємося, як записати це <b>коротше</b>.</p></details>
+</section>
+
+<!-- 1. Ідея -->
+<section class="card">
+  <h2>💡 Головна ідея: що потрібно діджею?</h2>
+  <p>База видає рядки «як лежать», тобто по порядку номерів <code>TrackId</code>. Але діджей так не працює. Йому треба:</p>
+  <div class="venn">
+    <div class="callout">📶 <b>Розставити пісні по порядку</b>: від короткої до довгої, за алфавітом…<br>→ <code>ORDER BY</code></div>
+    <div class="callout">🏆 <b>Взяти лише топ</b>: «3 найдовші», «найкоротша»<br>→ <code>LIMIT</code></div>
+  </div>
+  <div class="callout ok">📋 <b>Показати лише свої вибрані пісні</b> зі списку<br>→ <code>IN</code></div>
+  <div class="translate">
+    <div class="row"><span class="lang">UA</span><span class="ua">Покажи 3 найдовші рок-пісні.</span></div>
+    <div class="row"><span class="lang">EN</span><span class="en">Select tracks where genre is rock, ordered by length descending, limit 3.</span></div>
+  </div>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track
+<span class="k">WHERE</span> GenreId = <span class="n">1</span>
+<span class="k">ORDER BY</span> Milliseconds <span class="k">DESC</span>
+<span class="k">LIMIT</span> <span class="n">3</span>;</code></pre>
+</section>
+
+<!-- 2. Словник -->
+<section class="card">
+  <h2>📖 Словник: нові слова</h2>
+  <div class="words">
+    <div class="word new"><b>ORDER BY<i>NEW</i></b><span>order by — впорядкуй за</span></div>
+    <div class="word new"><b>ASC<i>NEW</i></b><span>ascending — за зростанням ↗ (від меншого)</span></div>
+    <div class="word new"><b>DESC<i>NEW</i></b><span>descending — за спаданням ↘ (від більшого)</span></div>
+    <div class="word new"><b>LIMIT<i>NEW</i></b><span>limit — не більше ніж</span></div>
+    <div class="word new"><b>IN<i>NEW</i></b><span>in — є у списку, один із…</span></div>
+    <div class="word new"><b>NOT IN<i>NEW</i></b><span>not in — немає у списку, крім…</span></div>
+  </div>
+  <h3>🧩 Граматика: порядок слів (тепер повний!)</h3>
+  <div class="order">
+    <span class="pill">SELECT</span><span class="arrow">→</span>
+    <span class="pill">FROM</span><span class="arrow">→</span>
+    <span class="pill opt">WHERE</span><span class="arrow">→</span>
+    <span class="pill today">ORDER BY</span><span class="arrow">→</span>
+    <span class="pill today">LIMIT</span>
+  </div>
+  <p class="small">Спочатку <b>відфільтрували</b> (WHERE), потім <b>вишикували</b> (ORDER BY), потім <b>відрізали</b> зайве (LIMIT). Саме в такому порядку.</p>
+</section>
+
+<!-- 3. ORDER BY -->
+<section class="card">
+  <h2>1️⃣ ORDER BY — «впорядкуй за»</h2>
+  <div class="translate">
+    <div class="row"><span class="lang">EN</span><span class="en">Select tracks ordered by length.</span></div>
+  </div>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track <span class="k">ORDER BY</span> Milliseconds;       <span class="c">-- від найкоротшої ↗</span>
+<span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track <span class="k">ORDER BY</span> Milliseconds <span class="k">DESC</span>;  <span class="c">-- від найдовшої ↘</span></code></pre>
+  <div class="callout">↗ <code>ASC</code> (за зростанням) — це <b>за замовчуванням</b>, його можна не писати.<br>↘ <code>DESC</code> (за спаданням) пишемо, коли треба «від найбільшого»: найдовші, найдорожчі, найновіші.</div>
+  <p>Текст сортується <b>за алфавітом</b>:</p>
+<pre><code><span class="k">SELECT</span> FirstName, Country <span class="k">FROM</span> Customer <span class="k">ORDER BY</span> Country;   <span class="c">-- Argentina, Australia, Austria…</span></code></pre>
+  <p>Разом із фільтром <code>ORDER BY</code> стоїть <b>після</b> <code>WHERE</code>:</p>
+<pre><code><span class="k">SELECT</span> FirstName, LastName <span class="k">FROM</span> Customer
+<span class="k">WHERE</span> Country = <span class="s">'USA'</span>
+<span class="k">ORDER BY</span> LastName;</code></pre>
+  <div class="callout warn">🧠 Для сильних: можна сортувати за <b>двома</b> стовпцями: <code>ORDER BY Country, City</code>. Спочатку за країною, а всередині однієї країни — за містом.</div>
+</section>
+
+<!-- 4. LIMIT -->
+<section class="card">
+  <h2>2️⃣ LIMIT — «не більше ніж»</h2>
+  <p>Як визначити <b>3 найвищих учнів</b> класу? Спершу <b>вишикувати</b> всіх за зростом, потім <b>взяти перших трьох</b>. У SQL так само: <code>ORDER BY</code>, потім <code>LIMIT</code>.</p>
+  <div class="translate">
+    <div class="row"><span class="lang">EN</span><span class="en">Select the 5 most expensive invoices.</span></div>
+  </div>
+<pre><code><span class="k">SELECT</span> InvoiceId, Total <span class="k">FROM</span> Invoice <span class="k">ORDER BY</span> Total <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="n">5</span>;</code></pre>
+  <div class="callout ok">🏆 <code>LIMIT 1</code> — це <b>рекорд</b>: найдовша, найкоротша, найдорожча.
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track <span class="k">WHERE</span> GenreId = <span class="n">1</span>
+<span class="k">ORDER BY</span> Milliseconds <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="n">1</span>;   <span class="c">-- Dazed And Confused, майже 27 хвилин!</span></code></pre></div>
+  <div class="callout warn">🪤 <b>Пастка:</b> <code>LIMIT 5</code> <b>без</b> <code>ORDER BY</code> дає не «топ-5», а просто <b>перші 5 будь-які</b>, як лежать у базі. Без шикування немає топу!</div>
+  <div class="callout bad">🚫 <code>... LIMIT 3 ORDER BY Milliseconds</code> — помилка. <code>LIMIT</code> завжди <b>останній</b>.</div>
+</section>
+
+<!-- 5. IN -->
+<section class="card">
+  <h2>3️⃣ IN — «один зі списку»</h2>
+  <p>Уяви охоронця на вечірці зі <b>списком гостей</b>. Якщо твоє імʼя є у списку, тебе пропустять. <code>IN</code> працює так само.</p>
+  <p>На уроці 8 ми писали так (довго):</p>
+<pre><code><span class="k">SELECT</span> FirstName, Country <span class="k">FROM</span> Customer
+<span class="k">WHERE</span> Country = <span class="s">'Brazil'</span> <span class="k">OR</span> Country = <span class="s">'Argentina'</span> <span class="k">OR</span> Country = <span class="s">'Chile'</span>;</code></pre>
+  <p>А тепер так (коротко):</p>
+  <div class="translate">
+    <div class="row"><span class="lang">EN</span><span class="en">Select customers where country is in (Brazil, Argentina, Chile).</span></div>
+  </div>
+<pre><code><span class="k">SELECT</span> FirstName, Country <span class="k">FROM</span> Customer
+<span class="k">WHERE</span> Country <span class="k">IN</span> (<span class="s">'Brazil'</span>, <span class="s">'Argentina'</span>, <span class="s">'Chile'</span>);   <span class="c">-- 7 клієнтів</span></code></pre>
+  <p>Зі <b>списком номерів</b> це ідеальний інструмент діджея — «покажи мої пісні»:</p>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track <span class="k">WHERE</span> TrackId <span class="k">IN</span> (<span class="n">1</span>, <span class="n">2</span>, <span class="n">5</span>);</code></pre>
+  <div class="callout">✏️ Список — у <b>дужках</b>, елементи — <b>через кому</b>. Текст — кожен у <code>'лапках'</code>, числа — без лапок.</div>
+  <p><b>NOT IN</b> — «крім цих» (як <code>LIKE</code> і <code>NOT LIKE</code>):</p>
+<pre><code><span class="k">SELECT</span> FirstName, Country <span class="k">FROM</span> Customer <span class="k">WHERE</span> Country <span class="k">NOT IN</span> (<span class="s">'USA'</span>, <span class="s">'Canada'</span>);</code></pre>
+</section>
+
+<!-- 6. Перекладай сам -->
+<section class="card">
+  <h2>🗣️ Перекладай сам (усно з класом)</h2>
+  <p>Читаю речення, клас перекладає на SQL. Натисніть, щоб побачити відповідь.</p>
+  <details class="quiz"><summary>Select artist names ordered by name.</summary>
+<pre><code><span class="k">SELECT</span> Name <span class="k">FROM</span> Artist <span class="k">ORDER BY</span> Name;</code></pre></details>
+  <details class="quiz"><summary>Покажи найкоротший трек у базі.</summary>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track <span class="k">ORDER BY</span> Milliseconds <span class="k">LIMIT</span> <span class="n">1</span>;</code></pre></details>
+  <details class="quiz"><summary>Select the 10 most expensive invoices.</summary>
+<pre><code><span class="k">SELECT</span> * <span class="k">FROM</span> Invoice <span class="k">ORDER BY</span> Total <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="n">10</span>;</code></pre></details>
+  <details class="quiz"><summary>Покажи клієнтів із Франції, Німеччини або Польщі.</summary>
+<pre><code><span class="k">SELECT</span> FirstName, Country <span class="k">FROM</span> Customer <span class="k">WHERE</span> Country <span class="k">IN</span> (<span class="s">'France'</span>, <span class="s">'Germany'</span>, <span class="s">'Poland'</span>);</code></pre></details>
+  <details class="quiz"><summary>Покажи американських клієнтів за алфавітом прізвищ.</summary>
+<pre><code><span class="k">SELECT</span> FirstName, LastName <span class="k">FROM</span> Customer <span class="k">WHERE</span> Country = <span class="s">'USA'</span> <span class="k">ORDER BY</span> LastName;</code></pre></details>
+  <details class="quiz"><summary>🔎 Покажи 3 найдовші треки, які <b>не</b> рок (1) і <b>не</b> метал (3).</summary>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track
+<span class="k">WHERE</span> GenreId <span class="k">NOT IN</span> (<span class="n">1</span>, <span class="n">3</span>)
+<span class="k">ORDER BY</span> Milliseconds <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="n">3</span>;   <span class="c">-- 😮 це не пісні, а серії серіалів!</span></code></pre></details>
+</section>
+
+<section class="card">
+  <h2>🧾 Шпаргалка на дошку</h2>
+<pre><code><span class="k">SELECT</span>   стовпець1, стовпець2       <span class="c">-- що показати</span>
+<span class="k">FROM</span>     Таблиця                    <span class="c">-- звідки</span>
+<span class="k">WHERE</span>    умова                      <span class="c">-- відфільтруй</span>
+<span class="k">ORDER BY</span> стовпець <span class="k">DESC</span>              <span class="c">-- вишикуй (DESC = від більшого)</span>
+<span class="k">LIMIT</span>    <span class="n">3</span>;                         <span class="c">-- відріж: не більше ніж 3</span>
+
+<span class="c">-- список:  WHERE TrackId IN (5001, 5019, 5037)</span>
+<span class="c">-- крім:    WHERE GenreId NOT IN (1, 3)</span></code></pre>
+  <p style="text-align:center;margin-top:18px"><a class="btn" href="#practical">Переходимо до практичної ↓</a></p>
+</section>
+
+</div>
+
+
+<header class="section-divider" id="practical">
+  <div class="kicker">9 клас • Практична робота 9 • до 12 балів</div>
+  <h1 style="font-size:clamp(26px,4.5vw,36px)">🎧 Я — діджей: збираю свій ефір</h1>
+  <p class="lead">Сьогодні ти додаси в базу <b>Chinook</b> сучасну музику, сам вибереш пісні для свого ефіру, розставиш їх по порядку і навіть напишеш маленький <b>алгоритм рекомендацій</b>, як у стрімінгу.</p>
+  <div class="actions">
+    <a class="btn" href="#practice">Одразу до завдань ↓</a>
+    <a class="btn ghost" href="#theory">↑ До пояснення</a>
+    <a class="btn ghost" href="#blank">Бланк відповідей</a>
+  </div>
+</header>
+
+<section class="card">
+  <h2>🧰 Крок 0. Відкрий базу</h2>
+  <p>Відкрий файл <code>Chinook_Sqlite.sqlite</code> у <b>DB Browser for SQLite</b> (Ctrl+O) і перейди на вкладку <b>Execute SQL</b>. Запит запускається клавішами <b>Ctrl+Enter</b>.</p>
+  <p class="small">Файлу немає? <a href="https://github.com/lerocha/chinook-database/releases/latest/download/Chinook_Sqlite.sqlite">Завантажити Chinook_Sqlite.sqlite</a>. Немає DB Browser? Відкрий <a href="https://sqliteonline.com" target="_blank" rel="noopener">sqliteonline.com</a> → <b>File → Open DB</b> → обери файл.</p>
+  <div class="callout">📌 <b>Як працювати:</b> <span class="mode rep">ПОВТОРИ</span> — перепиши запит руками (не копіюй!) і запусти. <span class="mode self">САМ</span> — заміни <span class="b">___</span> на потрібне або напиши запит сам. Відповіді записуй у <a href="#blank">бланк</a> унизу.</div>
+</section>
+
+<section class="card story" id="script">
+  <h2>📀 Крок 1. Завантаж у базу сучасну музику</h2>
+  <p>У Chinook переважно музика 70-х–2000-х. Додамо туди <b>57 сучасних виконавців і 76 треків</b>: від The Weeknd, Billie Eilish і BTS до KALUSH, Jamala та Океану Ельзи.</p>
+  <ol>
+    <li>Натисни <b>«📋 Скопіювати весь скрипт»</b> (або відкрий його і подивись, що всередині).</li>
+    <li>Встав у вкладку <b>Execute SQL</b> і натисни <b>Ctrl+Enter</b>.</li>
+    <li>Унизу зʼявиться число треків. Має бути <b>3579</b> (було 3503).</li>
+  </ol>
+  <div class="file" id="scriptFile">
+    <div class="file-head">
+      <span>📄</span><span class="fname">modern_music.sql</span><span class="meta">57 виконавців • 64 альбоми • 76 треків</span>
+      <span class="sp"></span>
+      <button class="tg" id="scriptToggle">Відкрити ▾</button>
+      <button class="cp" id="scriptCopy">📋 Скопіювати весь скрипт</button>
+    </div>
+    <div class="file-body" id="scriptBody"><pre><code id="scriptCode">-- 🎧 Сучасна музика для бази Chinook
+-- Скопіюй увесь цей текст у вкладку «Execute SQL» і натисни Ctrl+Enter.
+-- (Це команда INSERT — вона ДОДАЄ нові записи в базу. Ми її ще вивчимо!)
+
+INSERT OR IGNORE INTO Artist (ArtistId, Name) VALUES
+(1001, 'The Weeknd'),
+(1002, 'Billie Eilish'),
+(1003, 'Imagine Dragons'),
+(1004, 'Dua Lipa'),
+(1005, 'Harry Styles'),
+(1006, 'Sabrina Carpenter'),
+(1007, 'Benson Boone'),
+(1008, 'Lady Gaga &amp; Bruno Mars'),
+(1009, 'Måneskin'),
+(1010, 'Arctic Monkeys'),
+(1011, 'Kendrick Lamar'),
+(1012, 'Taylor Swift'),
+(1013, 'KALUSH Orchestra'),
+(1014, 'Go_A'),
+(1015, 'alyona alyona &amp; Jerry Heil'),
+(1016, 'KAZKA'),
+(1017, 'Океан Ельзи'),
+(1018, 'The Hardkiss'),
+(1019, 'YAKTAK'),
+(1020, 'Wellboy'),
+(1021, 'Ed Sheeran'),
+(1022, 'Olivia Rodrigo'),
+(1023, 'Post Malone'),
+(1024, 'Linkin Park'),
+(1025, 'Coldplay'),
+(1026, 'Teddy Swims'),
+(1027, 'Hozier'),
+(1028, 'Chappell Roan'),
+(1029, 'ROSÉ &amp; Bruno Mars'),
+(1030, 'Lil Nas X'),
+(1031, 'Glass Animals'),
+(1032, 'Alan Walker'),
+(1033, 'Twenty One Pilots'),
+(1034, 'Скрябін'),
+(1035, 'Бумбокс'),
+(1036, 'Антитіла'),
+(1037, 'Христина Соловій'),
+(1038, 'Eminem'),
+(1039, 'Bruno Mars'),
+(1040, 'SZA'),
+(1041, 'Travis Scott'),
+(1042, 'Ariana Grande'),
+(1043, 'Miley Cyrus'),
+(1044, 'Bad Bunny'),
+(1045, 'BLACKPINK'),
+(1046, 'BTS'),
+(1047, 'Daft Punk'),
+(1048, 'Avicii'),
+(1049, 'David Guetta &amp; Bebe Rexha'),
+(1050, 'Gorillaz'),
+(1051, 'Muse'),
+(1052, 'Bring Me The Horizon'),
+(1053, 'Jamala'),
+(1054, 'DakhaBrakha'),
+(1055, 'TVORCHI'),
+(1056, 'Ziferblat'),
+(1057, 'MELOVIN');
+
+INSERT OR IGNORE INTO Album (AlbumId, Title, ArtistId) VALUES
+(1001, 'After Hours', 1001),
+(1002, 'Hit Me Hard and Soft', 1002),
+(1003, 'Evolve', 1003),
+(1004, 'Future Nostalgia', 1004),
+(1005, 'Harry''s House', 1005),
+(1006, 'Short n'' Sweet', 1006),
+(1007, 'Fireworks &amp; Rollerblades', 1007),
+(1008, 'Die With A Smile (Single)', 1008),
+(1009, 'Chosen', 1009),
+(1010, 'AM', 1010),
+(1011, 'Not Like Us (Single)', 1011),
+(1012, 'Fearless (Taylor''s Version)', 1012),
+(1013, 'Стефанія (Single)', 1013),
+(1014, 'Шум (Single)', 1014),
+(1015, 'Teresa &amp; Maria (Single)', 1015),
+(1016, 'Карма', 1016),
+(1017, 'Земля', 1017),
+(1018, 'Журавлі (Single)', 1018),
+(1019, 'Ти не моя (Single)', 1019),
+(1020, 'Гуси (Single)', 1020),
+(1021, '÷ (Divide)', 1021),
+(1022, 'SOUR', 1022),
+(1023, 'Hollywood''s Bleeding', 1023),
+(1024, 'From Zero', 1024),
+(1025, 'Viva la Vida', 1025),
+(1026, 'I''ve Tried Everything But Therapy', 1026),
+(1027, 'Unheard', 1027),
+(1028, 'Good Luck, Babe! (Single)', 1028),
+(1029, 'APT. (Single)', 1029),
+(1030, '7 (EP)', 1030),
+(1031, 'Dreamland', 1031),
+(1032, 'Different World', 1032),
+(1033, 'Blurryface', 1033),
+(1034, 'Мова риб', 1034),
+(1035, 'Наодинці (Single)', 1035),
+(1036, 'TDME (Single)', 1036),
+(1037, 'Тримай (Single)', 1037),
+(1038, 'Arcane League of Legends (Soundtrack)', 1003),
+(1039, 'Соловей (Single)', 1014),
+(1040, 'When We All Fall Asleep, Where Do We Go?', 1002),
+(1041, '8 Mile (Soundtrack)', 1038),
+(1042, 'Encore', 1038),
+(1043, '24K Magic', 1039),
+(1044, 'SOS', 1040),
+(1045, 'Astroworld', 1041),
+(1046, 'thank u, next', 1042),
+(1047, 'Endless Summer Vacation', 1043),
+(1048, 'Un Verano Sin Ti', 1044),
+(1049, 'THE ALBUM', 1045),
+(1050, 'Butter (Single)', 1046),
+(1051, 'Dynamite (Single)', 1046),
+(1052, 'Random Access Memories', 1047),
+(1053, 'True', 1048),
+(1054, 'The Days / Nights (EP)', 1048),
+(1055, 'I''m Good (Blue) (Single)', 1049),
+(1056, 'Demon Days', 1050),
+(1057, 'Gorillaz', 1050),
+(1058, 'The Resistance', 1051),
+(1059, 'Sempiternal', 1052),
+(1060, '1944 (Single)', 1053),
+(1061, 'Baby (Single)', 1054),
+(1062, 'Heart of Steel (Single)', 1055),
+(1063, 'Bird of Pray (Single)', 1056),
+(1064, 'Under The Ladder (Single)', 1057);
+
+-- Жанри: 1 Rock, 3 Metal, 4 Alternative &amp; Punk, 7 Latin, 9 Pop, 10 Soundtrack, 14 R&amp;B/Soul,
+--        15 Electronica/Dance, 16 World, 17 Hip Hop/Rap, 23 Alternative
+-- MediaTypeId 1 = MPEG audio file. Тривалість (Milliseconds) — приблизна.
+INSERT OR IGNORE INTO Track (TrackId, Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, UnitPrice) VALUES
+(5001, 'Blinding Lights',       1001, 1,  9, 'The Weeknd',                 200000, 1.29),
+(5002, 'Save Your Tears',       1001, 1,  9, 'The Weeknd',                 215000, 1.29),
+(5003, 'Birds of a Feather',    1002, 1, 23, 'Billie Eilish',              210000, 1.29),
+(5004, 'Lunch',                 1002, 1, 23, 'Billie Eilish',              179000, 1.29),
+(5005, 'Believer',              1003, 1,  1, 'Imagine Dragons',            204000, 1.29),
+(5006, 'Thunder',               1003, 1,  1, 'Imagine Dragons',            187000, 1.29),
+(5007, 'Levitating',            1004, 1,  9, 'Dua Lipa',                   203000, 1.29),
+(5008, 'Don''t Start Now',      1004, 1,  9, 'Dua Lipa',                   183000, 1.29),
+(5009, 'As It Was',             1005, 1,  9, 'Harry Styles',               167000, 1.29),
+(5010, 'Espresso',              1006, 1,  9, 'Sabrina Carpenter',          175000, 1.29),
+(5011, 'Please Please Please',  1006, 1,  9, 'Sabrina Carpenter',          186000, 1.29),
+(5012, 'Beautiful Things',      1007, 1,  9, 'Benson Boone',               180000, 1.29),
+(5013, 'Die With A Smile',      1008, 1,  9, 'Lady Gaga &amp; Bruno Mars',     251000, 1.29),
+(5014, 'Beggin''',              1009, 1,  1, 'Måneskin',                   211000, 1.29),
+(5015, 'Do I Wanna Know?',      1010, 1,  4, 'Arctic Monkeys',             272000, 1.29),
+(5016, 'R U Mine?',             1010, 1,  4, 'Arctic Monkeys',             201000, 1.29),
+(5017, 'Not Like Us',           1011, 1, 17, 'Kendrick Lamar',             274000, 1.29),
+(5018, 'Love Story',            1012, 1,  9, 'Taylor Swift',               235000, 1.29),
+(5019, 'Стефанія',              1013, 1, 17, 'KALUSH Orchestra',           180000, 1.29),
+(5020, 'Шум',                   1014, 1, 15, 'Go_A',                       180000, 1.29),
+(5021, 'Teresa &amp; Maria',        1015, 1,  9, 'alyona alyona &amp; Jerry Heil', 180000, 1.29),
+(5022, 'Плакала',               1016, 1, 15, 'KAZKA',                      228000, 1.29),
+(5023, 'Обійми',                1017, 1,  1, 'Океан Ельзи',                252000, 1.29),
+(5024, 'Журавлі',               1018, 1,  1, 'The Hardkiss',               245000, 1.29),
+(5025, 'Ти не моя',             1019, 1,  9, 'YAKTAK',                     165000, 1.29),
+(5026, 'Гуси',                  1020, 1,  9, 'Wellboy',                    160000, 1.29),
+(5027, 'Shape of You',          1021, 1,  9, 'Ed Sheeran',                 234000, 1.29),
+(5028, 'Perfect',               1021, 1,  9, 'Ed Sheeran',                 263000, 1.29),
+(5029, 'drivers license',       1022, 1,  9, 'Olivia Rodrigo',             242000, 1.29),
+(5030, 'good 4 u',              1022, 1,  4, 'Olivia Rodrigo',             178000, 1.29),
+(5031, 'Circles',               1023, 1,  9, 'Post Malone',                215000, 1.29),
+(5032, 'The Emptiness Machine', 1024, 1,  1, 'Linkin Park',                190000, 1.29),
+(5033, 'Viva La Vida',          1025, 1, 23, 'Coldplay',                   242000, 1.29),
+(5034, 'Lose Control',          1026, 1, 14, 'Teddy Swims',                210000, 1.29),
+(5035, 'Too Sweet',             1027, 1, 23, 'Hozier',                     251000, 1.29),
+(5036, 'Good Luck, Babe!',      1028, 1,  9, 'Chappell Roan',              218000, 1.29),
+(5037, 'APT.',                  1029, 1,  9, 'ROSÉ &amp; Bruno Mars',          170000, 1.29),
+(5038, 'Old Town Road',         1030, 1, 17, 'Lil Nas X',                  157000, 1.29),
+(5039, 'Heat Waves',            1031, 1, 23, 'Glass Animals',              239000, 1.29),
+(5040, 'Faded',                 1032, 1, 15, 'Alan Walker',                212000, 1.29),
+(5041, 'Stressed Out',          1033, 1, 23, 'Twenty One Pilots',          202000, 1.29),
+(5042, 'Старі фотографії',      1034, 1,  1, 'Скрябін',                    252000, 1.29),
+(5043, 'Наодинці',              1035, 1,  1, 'Бумбокс',                    240000, 1.29),
+(5044, 'TDME',                  1036, 1,  9, 'Антитіла',                   205000, 1.29),
+(5045, 'Тримай',                1037, 1,  9, 'Христина Соловій',           200000, 1.29),
+(5046, 'Enemy',                 1038, 1, 10, 'Imagine Dragons',            173000, 1.29),
+(5047, 'Соловей',               1039, 1, 15, 'Go_A',                       180000, 1.29),
+(5048, 'bad guy',               1040, 1,  9, 'Billie Eilish',              194000, 1.29),
+(5049, 'Lose Yourself',         1041, 1, 17, 'Eminem',                     326000, 1.29),
+(5050, 'Mockingbird',           1042, 1, 17, 'Eminem',                     251000, 1.29),
+(5051, '24K Magic',             1043, 1,  9, 'Bruno Mars',                 226000, 1.29),
+(5052, 'That''s What I Like',   1043, 1, 14, 'Bruno Mars',                 206000, 1.29),
+(5053, 'Kill Bill',             1044, 1, 14, 'SZA',                        154000, 1.29),
+(5054, 'SICKO MODE',            1045, 1, 17, 'Travis Scott',               312000, 1.29),
+(5055, '7 rings',               1046, 1,  9, 'Ariana Grande',              179000, 1.29),
+(5056, 'thank u, next',         1046, 1,  9, 'Ariana Grande',              207000, 1.29),
+(5057, 'Flowers',               1047, 1,  9, 'Miley Cyrus',                200000, 1.29),
+(5058, 'Tití Me Preguntó',      1048, 1,  7, 'Bad Bunny',                  243000, 1.29),
+(5059, 'Me Porto Bonito',       1048, 1,  7, 'Bad Bunny',                  178000, 1.29),
+(5060, 'How You Like That',     1049, 1,  9, 'BLACKPINK',                  181000, 1.29),
+(5061, 'Butter',                1050, 1,  9, 'BTS',                        164000, 1.29),
+(5062, 'Dynamite',              1051, 1,  9, 'BTS',                        199000, 1.29),
+(5063, 'Get Lucky',             1052, 1, 15, 'Daft Punk',                  369000, 1.29),
+(5064, 'Instant Crush',         1052, 1, 15, 'Daft Punk',                  337000, 1.29),
+(5065, 'Wake Me Up',            1053, 1, 15, 'Avicii',                     247000, 1.29),
+(5066, 'The Nights',            1054, 1, 15, 'Avicii',                     176000, 1.29),
+(5067, 'I''m Good (Blue)',      1055, 1, 15, 'David Guetta &amp; Bebe Rexha',  175000, 1.29),
+(5068, 'Feel Good Inc.',        1056, 1, 23, 'Gorillaz',                   222000, 1.29),
+(5069, 'Clint Eastwood',        1057, 1, 23, 'Gorillaz',                   341000, 1.29),
+(5070, 'Uprising',              1058, 1,  1, 'Muse',                       305000, 1.29),
+(5071, 'Can You Feel My Heart', 1059, 1,  3, 'Bring Me The Horizon',       228000, 1.29),
+(5072, '1944',                  1060, 1, 16, 'Jamala',                     180000, 1.29),
+(5073, 'Baby',                  1061, 1, 16, 'DakhaBrakha',                230000, 1.29),
+(5074, 'Heart of Steel',        1062, 1, 15, 'TVORCHI',                    180000, 1.29),
+(5075, 'Bird of Pray',          1063, 1, 16, 'Ziferblat',                  180000, 1.29),
+(5076, 'Under The Ladder',      1064, 1,  9, 'MELOVIN',                    180000, 1.29);
+
+-- Перевір, що все додалось (має бути 3579 замість 3503):
+SELECT COUNT(*) FROM Track;
+</code></pre></div>
+  </div>
+  <div class="callout">🔎 Це команда <code>INSERT</code> — вона <b>додає</b> нові рядки в таблиці. Ми її ще вивчимо, а поки просто подивись: ти вже впізнаєш назви таблиць і стовпців!</div>
+  <div class="callout warn">⚠️ <b>Не зберігай</b> базу (не натискай <b>Write Changes</b> / Ctrl+S). Якщо при закритті програма спитає, чи зберегти зміни, натисни <b>No</b>. Наступного разу просто запусти скрипт ще раз: дублікатів не буде.</div>
+</section>
+
+<div id="practice"></div>
+
+<!-- Завдання 1 -->
+<section class="card">
+  <h2>1️⃣ ORDER BY і LIMIT <span class="pts">3 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">1.1</span><span class="mode rep">ПОВТОРИ</span>Покажи нових виконавців за алфавітом:</p>
+<pre><code><span class="k">SELECT</span> ArtistId, Name <span class="k">FROM</span> Artist <span class="k">WHERE</span> ArtistId &gt;= <span class="n">1001</span> <span class="k">ORDER BY</span> Name;</code></pre>
+    <p class="ask">Хто перший за алфавітом? Знайди свого улюбленого виконавця і запиши його ArtistId.</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">1.2</span><span class="mode self">САМ</span>Знайди <b>топ-5 найдовших</b> треків у всій базі:</p>
+<pre><code><span class="k">SELECT</span> Name, Milliseconds <span class="k">FROM</span> Track <span class="k">ORDER BY</span> <span class="b">___</span> <span class="b">___</span> <span class="k">LIMIT</span> <span class="b">___</span>;</code></pre>
+    <p class="ask">Як називається найдовший трек і скільки це хвилин? Чи це взагалі пісня? 🤔</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">1.3</span><span class="mode self">САМ</span>Яка <b>найкоротша</b> пісня серед сучасних (у них <code>TrackId &gt;= 5001</code>)? Тут потрібні і <code>WHERE</code>, і <code>ORDER BY</code>, і <code>LIMIT</code>.</p>
+    <p class="ask">Запиши назву пісні і свій запит.</p>
+  </div>
+</section>
+
+<!-- Завдання 2 -->
+<section class="card">
+  <h2>2️⃣ IN — «один зі списку» <span class="pts">2 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">2.1</span><span class="mode rep">ПОВТОРИ</span>Покажи клієнтів із Бразилії, Аргентини або Чилі:</p>
+<pre><code><span class="k">SELECT</span> FirstName, LastName, Country <span class="k">FROM</span> Customer
+<span class="k">WHERE</span> Country <span class="k">IN</span> (<span class="s">'Brazil'</span>, <span class="s">'Argentina'</span>, <span class="s">'Chile'</span>);</code></pre>
+    <p class="ask">Скільки клієнтів? Як звати клієнта з Чилі?</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">2.2</span><span class="mode self">САМ</span>Перепиши цей довгий запит <b>коротше</b>, через <code>IN</code>, і запусти:</p>
+<pre><code><span class="k">SELECT</span> COUNT(*) <span class="k">FROM</span> Track
+<span class="k">WHERE</span> GenreId = <span class="n">9</span> <span class="k">OR</span> GenreId = <span class="n">15</span> <span class="k">OR</span> GenreId = <span class="n">17</span>;</code></pre>
+    <p class="ask">Запиши свій запит і число (скільки треків у жанрах Pop, Electronica і Hip Hop разом).</p>
+  </div>
+</section>
+
+<!-- Завдання 3 -->
+<section class="card story">
+  <h2>🎧 3. Моя фонотека <span class="pts gold">2 бали</span></h2>
+  <p>Ти — діджей радіо. У тебе <b>20 хвилин ефіру</b>, і ти сам вирішуєш, що звучатиме. Знайди <b>мінімум 5 пісень</b>, які тобі подобаються: сучасні або старі, будь-які з бази.</p>
+  <div class="callout warn">📏 <b>Правило діджея:</b> кожну пісню треба <b>знайти запитом</b>, а не просто прогорнути таблицю. Використай <b>щонайменше 3 різні «пошукові квитки»</b>. Для кожної пісні запиши її <b>TrackId</b>, назву і квиток.</div>
+  <div class="tickets">
+    <div class="ticket"><b>🎤 Слово</b>У назві є слово, яке тобі подобається.<br><code>WHERE Name LIKE '%night%'</code></div>
+    <div class="ticket"><b>🎸 Гурт</b>Виконавець → його альбом → пісні (дивись приклад нижче).</div>
+    <div class="ticket"><b>🏆 Рекорд</b>Найдовша або найкоротша у вибраному жанрі.<br><code>WHERE GenreId = 9 ORDER BY Milliseconds DESC LIMIT 1</code></div>
+    <div class="ticket"><b>⏱ Коротка</b>Коротша за 3 хвилини у вибраному жанрі.<br><code>WHERE GenreId = 17 AND Milliseconds &lt; 180000</code></div>
+    <div class="ticket"><b>🎲 Вільний</b>Будь-який твій власний запит.</div>
+  </div>
+  <h3>🎸 Як працює квиток «Гурт» (приклад: Imagine Dragons)</h3>
+<pre><code><span class="k">SELECT</span> ArtistId, Name <span class="k">FROM</span> Artist <span class="k">WHERE</span> Name <span class="k">LIKE</span> <span class="s">'%Imagine%'</span>;   <span class="c">-- 1003</span>
+<span class="k">SELECT</span> AlbumId, Title <span class="k">FROM</span> Album <span class="k">WHERE</span> ArtistId = <span class="n">1003</span>;          <span class="c">-- 1003 і 1038</span>
+<span class="k">SELECT</span> TrackId, Name <span class="k">FROM</span> Track <span class="k">WHERE</span> AlbumId <span class="k">IN</span> (<span class="n">1003</span>, <span class="n">1038</span>);   <span class="c">-- пісні</span></code></pre>
+  <p class="small">Помітив? В останньому рядку знову знадобився <code>IN</code>, бо альбомів два.</p>
+  <h3>🎼 Жанри (GenreId)</h3>
+  <div class="genres">
+    <span><b>1</b> Rock</span><span><b>3</b> Metal</span><span><b>4</b> Alternative &amp; Punk</span><span><b>7</b> Latin</span><span><b>9</b> Pop</span><span><b>10</b> Soundtrack</span><span><b>14</b> R&amp;B/Soul</span><span><b>15</b> Electronica/Dance</span><span><b>16</b> World</span><span><b>17</b> Hip Hop/Rap</span><span><b>23</b> Alternative</span>
+  </div>
+  <p class="small">Усі жанри: <code>SELECT * FROM Genre;</code></p>
+  <div class="callout warn">⚠️ Українські назви: <code>LIKE</code> не зважає на великі й малі літери <b>лише для англійських літер</b>. <code>LIKE '%Океан%'</code> знайде Океан Ельзи, а <code>LIKE '%океан%'</code> — ні!</div>
+  <p class="ask">У бланку для кожної пісні: TrackId — назва — квиток — запит.</p>
+</section>
+
+<!-- Завдання 4 -->
+<section class="card story">
+  <h2>📻 4. Мій ефір <span class="pts gold">3 бали</span></h2>
+  <div class="task">
+    <p><span class="tnum">4.1</span><span class="mode self">САМ</span><b>Плейлист.</b> Покажи всі свої пісні <b>одним запитом</b> і розстав їх у порядку ефіру. Як починати ефір: з короткої пісні чи з довгої? За алфавітом? Вирішуєш ти.</p>
+<pre><code><span class="k">SELECT</span> TrackId, Name, Composer, Milliseconds <span class="k">FROM</span> Track
+<span class="k">WHERE</span> TrackId <span class="k">IN</span> (<span class="b">___</span>, <span class="b">___</span>, <span class="b">___</span>, <span class="b">___</span>, <span class="b">___</span>)
+<span class="k">ORDER BY</span> <span class="b">___</span>;</code></pre>
+    <p class="ask">Запиши свій запит і одне речення: чому ти вибрав такий порядок.</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">4.2</span><span class="mode self">САМ</span><b>Розігрів і хедлайнер.</b> Ефір відкриває <b>найкоротша</b> пісня з твого списку, а закриває <b>найдовша</b>. Знайди обидві: допиши до запиту 4.1 <code>LIMIT 1</code> (а для найдовшої — ще й <code>DESC</code>).</p>
+    <p class="ask">Яка пісня відкриває ефір і яка закриває?</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">4.3</span><span class="mode self">САМ</span><b>Формат радіо.</b> Продюсер каже: «У нас в ефірі <b>лише пісні до 4 хвилин</b>!» Додай до свого <code>IN</code> умову через <code>AND</code>. Скільки це мілісекунд?</p>
+<pre><code><span class="k">WHERE</span> TrackId <span class="k">IN</span> (...) <span class="k">AND</span> Milliseconds <span class="b">___</span> <span class="b">______</span></code></pre>
+    <p class="ask">Скільки твоїх пісень пройшло формат? Які «вилетіли»?</p>
+  </div>
+</section>
+
+<!-- Завдання 5 -->
+<section class="card story">
+  <h2>🤖 5. Алгоритм рекомендацій <span class="pts gold">2 бали</span></h2>
+  <p>Пригадай урок 6: стрімінги <b>радять</b> нам фільми й пісні. Напишемо свій найпростіший «алгоритм»: <i>«порадь 3 пісні того ж жанру, що й моя улюблена, яких ще немає в моєму плейлисті»</i>.</p>
+  <div class="task">
+    <p><span class="tnum">5.1</span><span class="mode self">САМ</span>Візьми жанр (<code>GenreId</code>) своєї улюбленої пісні і свій список TrackId:</p>
+<pre><code><span class="k">SELECT</span> TrackId, Name, Composer <span class="k">FROM</span> Track
+<span class="k">WHERE</span> GenreId = <span class="b">___</span>
+  <span class="k">AND</span> TrackId <span class="k">NOT IN</span> (<span class="b">___</span>, <span class="b">___</span>, <span class="b">___</span>, <span class="b">___</span>, <span class="b">___</span>)
+<span class="k">ORDER BY</span> TrackId <span class="k">DESC</span>
+<span class="k">LIMIT</span> <span class="n">3</span>;</code></pre>
+    <p class="small">💡 <code>ORDER BY TrackId DESC</code> означає «спочатку <b>найновіші надходження</b> в магазин», адже нові пісні отримують найбільші номери.</p>
+    <p class="ask">Які 3 пісні порадив твій алгоритм?</p>
+  </div>
+  <div class="task">
+    <p><span class="tnum">5.2</span><b>Чесна оцінка.</b> Чи сподобалася б тобі ця рекомендація? Чим наш алгоритм <b>гірший</b> за YouTube Music чи Spotify? Що вони знають про тебе, чого не знає наш запит?</p>
+    <p class="ask">Одне-два речення.</p>
+  </div>
+</section>
+
+<!-- Бланк -->
+<section class="card" id="blank">
+  <h2>📝 Бланк відповідей</h2>
+  <div class="who">
+    <input type="text" data-key="name" placeholder="Прізвище та імʼя">
+    <input type="text" data-key="class" placeholder="Клас (наприклад, 9-А)">
+  </div>
+  <div class="scroll">
+  <table id="answers">
+    <tr><th>№</th><th>Питання</th><th>Відповідь</th></tr>
+  </table>
+  </div>
+  <div class="actions">
+    <button class="btn" id="copyBtn">📋 Скопіювати відповіді</button>
+    <span class="toast" id="toast"></span>
+  </div>
+  <p class="small">Питання скопіюються разом із відповідями. Встав їх туди, куди скаже вчитель. Відповіді зберігаються на цьому компʼютері, навіть якщо перезавантажити сторінку.</p>
+</section>
+
+<section class="card check">
+  <h2>✅ Перевір себе</h2>
+  <label><input type="checkbox"> Я вмію сортувати результат через <code>ORDER BY</code> і знаю, що робить <code>DESC</code>.</label>
+  <label><input type="checkbox"> Я розумію, чому для «топ-3» потрібні <b>і</b> <code>ORDER BY</code>, <b>і</b> <code>LIMIT</code>.</label>
+  <label><input type="checkbox"> Я знаю правильний порядок: <code>WHERE</code> → <code>ORDER BY</code> → <code>LIMIT</code>.</label>
+  <label><input type="checkbox"> Я вмію замінити довгий ланцюжок <code>OR</code> на <code>IN (…)</code>.</label>
+  <label><input type="checkbox"> Я зібрав свій плейлист і написав запит-рекомендацію з <code>NOT IN</code>.</label>
+</section>
+
+
+</div>
+<script>
+(function(){
+  var root=document.documentElement, KEY='cs9-theme', AKEY='cs9-l9-answers';
+  function apply(t){root.setAttribute('data-theme',t)}
+  var saved=null; try{saved=localStorage.getItem(KEY)}catch(e){}
+  apply(saved || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
+  document.getElementById('themeBtn').onclick=function(){
+    var t=root.getAttribute('data-theme')==='dark'?'light':'dark'; apply(t);
+    try{localStorage.setItem(KEY,t)}catch(e){}
+  };
+
+  var Q=[
+    ['0','Скільки треків після скрипту (має бути 3579)'],
+    ['1.1','Перший за алфавітом + ArtistId улюбленого виконавця'],
+    ['1.2','Найдовший трек, скільки хвилин, чи це пісня'],
+    ['1.3','Найкоротша сучасна пісня + запит'],
+    ['2.1','Скільки клієнтів, хто з Чилі'],
+    ['2.2','Запит через IN + число'],
+    ['3','Моя фонотека: TrackId — назва — квиток — запит (мінімум 5 пісень)', true],
+    ['4.1','Запит плейлиста + чому такий порядок', true],
+    ['4.2','Яка пісня відкриває і яка закриває ефір'],
+    ['4.3','Скільки пройшло формат до 4 хв, які вилетіли'],
+    ['5.1','3 рекомендовані пісні + запит', true],
+    ['5.2','Чим наш алгоритм гірший за стрімінги']
+  ];
+  var store={}; try{store=JSON.parse(localStorage.getItem(AKEY)||'{}')||{}}catch(e){store={}}
+  function save(){try{localStorage.setItem(AKEY,JSON.stringify(store))}catch(e){}}
+  var tbl=document.getElementById('answers');
+  Q.forEach(function(q){
+    var tr=document.createElement('tr');
+    var field=q[2]?'<textarea data-key="'+q[0]+'"></textarea>':'<input type="text" data-key="'+q[0]+'">';
+    tr.innerHTML='<td class="no">'+q[0]+'</td><td class="q">'+q[1]+'</td><td>'+field+'</td>';
+    tbl.appendChild(tr);
+  });
+  document.querySelectorAll('[data-key]').forEach(function(inp){
+    var k=inp.getAttribute('data-key'); if(store[k]) inp.value=store[k];
+    inp.addEventListener('input',function(){store[k]=inp.value;save()});
+  });
+
+  function copyText(t,done){
+    if(navigator.clipboard){navigator.clipboard.writeText(t).then(done,function(){fb(t);done()})}else{fb(t);done()}
+  }
+  function fb(t){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()}
+
+  document.getElementById('copyBtn').onclick=function(){
+    var lines=['Практична 9 — Я діджей','Учень: '+(store.name||'')+'  Клас: '+(store['class']||''),''];
+    Q.forEach(function(q){lines.push(q[0]+'. '+q[1]+': '+(store[q[0]]||'—'))});
+    var toast=document.getElementById('toast');
+    copyText(lines.join('\n'),function(){toast.textContent='✓ Скопійовано!';setTimeout(function(){toast.textContent=''},2000)});
+  };
+
+  // Превʼю скрипта
+  var file=document.getElementById('scriptFile'), tg=document.getElementById('scriptToggle'), body=document.getElementById('scriptBody');
+  function setOpen(o){file.classList.toggle('open',o);tg.textContent=o?'Згорнути ▴':'Відкрити ▾'}
+  tg.onclick=function(){setOpen(!file.classList.contains('open'))};
+  body.onclick=function(){if(!file.classList.contains('open'))setOpen(true)};
+  var cp=document.getElementById('scriptCopy');
+  cp.onclick=function(){
+    copyText(document.getElementById('scriptCode').textContent,function(){cp.textContent='✓ Скопійовано! Встав у Execute SQL';setTimeout(function(){cp.textContent='📋 Скопіювати весь скрипт'},2500)});
+  };
+
+  // Кнопки «Копіювати» в теорії
+  document.querySelectorAll('.theory pre').forEach(function(pre){
+    var b=document.createElement('button'); b.className='copy'; b.textContent='Копіювати';
+    b.onclick=function(){
+      copyText(pre.querySelector('code').innerText,function(){b.textContent='✓ Скопійовано';setTimeout(function(){b.textContent='Копіювати'},1500)});
+    };
+    pre.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>
