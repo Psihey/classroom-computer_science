@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Цех типів Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: весела, але охайна шкільна гра — заводський цех даних
+   IDEA: конвеєр на фабриці, де значення сортують у контейнери-типи; потім лабіринт із замками
+   PICTURE: живий конвеєр зі стрічкою, валиками та кольоровими контейнерами; карта 3×3 з героєм
+   COLOUR and TYPE: бетонний світлий фон, гумова темна стрічка, сигнальний помаранчевий; 5 кольорів типів; Rubik + JetBrains Mono
+   LAYOUT: одна колонка до 1040px, гра вгорі, підказки під нею */
+:root{color-scheme:light dark;
+--bg:light-dark(#efede7,#16181b);--panel:light-dark(#ffffff,#212428);--ink:light-dark(#1d1f22,#eceae4);--soft:light-dark(#5d6168,#a6aab0);
+--line:light-dark(#d8d5cc,#33373d);--rubber:#2a2c30;--accent:#ff6a13;
+--int:#2f6fed;--float:#0097a7;--str:#d63c78;--bool:#7c4dea;--list:#e09300;--ok:#1f9d55;--bad:#e03b3b}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Rubik,system-ui,sans-serif;overflow-x:clip}
+code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.wrap{max-width:1040px;margin:0 auto;padding:24px max(4vw,16px) 60px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:clamp(28px,4vw,44px);line-height:1.05;margin:0;font-weight:800;text-wrap:balance}
+h2{font-size:28px;line-height:1.1;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--soft);margin:6px 0 0}
+.chip{display:inline-flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:500;white-space:nowrap}
+.btn{font:700 17px Rubik,sans-serif;border:0;border-radius:12px;padding:13px 22px;min-height:48px;background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 4px 0 #b84500;transition:transform .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b84500}
+.btn:focus-visible,.bin:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.btn.ghost{background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+.screen{display:none}.screen.on{display:block;animation:fade .35s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}}
+input[type=text]{font:16px Rubik,sans-serif;padding:12px 14px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--ink);width:min(100%,340px);min-height:48px}
+/* пам'ятка */
+.types{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
+.tcard{border-radius:14px;padding:14px;color:#fff;position:relative;overflow:hidden}
+.tcard b{font:700 24px "JetBrains Mono",monospace;display:block}
+.tcard span{opacity:.9;font-size:14px}
+.tcard code{display:block;margin-top:8px;background:rgba(0,0,0,.22);border-radius:8px;padding:5px 8px;font-size:14px}
+/* цех */
+.hud{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.bar{flex:1 1 200px;height:12px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.stage{position:relative;height:400px;background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden;touch-action:none;user-select:none}
+.question{position:absolute;left:0;right:0;top:12px;text-align:center;font-weight:500;color:var(--soft);font-size:15px}
+.belt{position:absolute;left:28px;right:28px;top:56px;height:96px;border-radius:48px;background:repeating-linear-gradient(90deg,#34373c 0 26px,#24262a 26px 52px);box-shadow:inset 0 6px 0 rgba(255,255,255,.07),inset 0 -8px 0 rgba(0,0,0,.35),0 10px 0 #191a1d;animation:roll 1s linear infinite}
+.belt.stop{animation-play-state:paused}
+@keyframes roll{to{background-position:52px 0}}
+.roller{position:absolute;top:66px;width:76px;height:76px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#8d939b,#3c4046 62%,#26282c);border:4px solid #1a1b1e}
+.roller.l{left:10px}.roller.r{right:10px}
+.item{position:absolute;z-index:5;height:64px;min-width:96px;padding:0 18px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:#fff7e8;color:#1d1f22;font:700 22px "JetBrains Mono",monospace;white-space:nowrap;border:3px solid #e2c48f;box-shadow:0 6px 0 #c9a66a,0 12px 18px rgba(0,0,0,.25);cursor:grab}
+.item.drag{cursor:grabbing;transform:scale(1.08) rotate(-3deg);box-shadow:0 14px 28px rgba(0,0,0,.35)}
+.item.fly{transition:left .45s ease-in,top .45s ease-in,transform .45s ease-in,opacity .45s ease-in}
+.item.wrong{animation:shake .4s;border-color:var(--bad)}
+.bins{position:absolute;left:16px;right:16px;bottom:16px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.bin{position:relative;height:150px;border:0;border-radius:10px 10px 18px 18px;color:#fff;cursor:pointer;font-family:Rubik,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:10px 6px 14px;box-shadow:inset 0 -10px 0 rgba(0,0,0,.18),inset 0 3px 0 rgba(255,255,255,.25);transition:transform .15s}
+.bin::before{content:"";position:absolute;left:-6px;right:-6px;top:-8px;height:16px;border-radius:6px;background:inherit;filter:brightness(.82)}
+.bin b{font:700 clamp(18px,2.6vw,28px) "JetBrains Mono",monospace}
+.bin small{font-size:13px;opacity:.92;text-align:center;line-height:1.2}
+.bin kbd{position:absolute;top:14px;right:10px;font:700 13px Rubik;background:rgba(0,0,0,.25);border-radius:6px;padding:1px 7px}
+.bin .cnt{position:absolute;top:14px;left:10px;font:700 13px Rubik;background:rgba(255,255,255,.25);border-radius:6px;padding:1px 7px}
+.bin:hover,.bin.over{transform:translateY(-6px)}
+.bin.ok{animation:jump .5s}.bin.bad{animation:shake .4s}.bin.hint{outline:4px dashed #fff;outline-offset:-10px;animation:pulse .9s infinite}
+@keyframes jump{30%{transform:translateY(-22px) scale(1.05)}60%{transform:translateY(2px)}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes pulse{50%{filter:brightness(1.25)}}
+.fb{min-height:86px;margin-top:14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:14px 18px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.fb.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,var(--panel))}
+.fb.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--panel))}
+.fb p{margin:0;flex:1 1 300px;font-size:17px}
+.overlay{position:absolute;inset:0;z-index:20;background:color-mix(in srgb,var(--panel) 92%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;gap:12px}
+.overlay[hidden]{display:none}
+/* квест */
+.quest{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+.map{position:relative;width:330px;height:330px;margin:0 auto;background:var(--rubber);border-radius:18px;box-shadow:0 8px 0 #18191c}
+.map svg{position:absolute;inset:0}
+.room{position:absolute;width:84px;height:84px;border-radius:14px;background:#3a3d43;border:3px solid #50545b;display:flex;align-items:center;justify-content:center;font:700 22px Rubik;color:#9aa0a8;transition:background .4s,border-color .4s}
+.room.cur{border-color:var(--accent);color:#fff}
+.room.done{background:#1f6f45;border-color:#2fbf75;color:#d7ffe9}
+.room.last{background:#5a4512;border-color:#e0a400}
+.hero{position:absolute;z-index:3;width:44px;height:44px;margin:-22px 0 0 -22px;font-size:34px;line-height:44px;text-align:center;transition:left .8s ease-in-out,top .8s ease-in-out;filter:drop-shadow(0 4px 2px rgba(0,0,0,.5))}
+.hero.walk{animation:bob .2s 4 alternate}
+@keyframes bob{to{transform:translateY(-6px)}}
+.qpanel .lock{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.qpanel .lock span{font-size:34px}
+pre.code{background:#1e2024;color:#e9e6df;border-radius:12px;padding:14px 16px;font-size:17px;margin:12px 0;overflow-x:auto}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.opt{font:600 16px "JetBrains Mono",monospace;text-align:left;padding:12px 14px;min-height:52px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--bg));animation:shake .4s;cursor:not-allowed}
+.opt.yes{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,var(--bg))}
+.hintbox{margin-top:12px;padding:10px 14px;border-radius:10px;background:color-mix(in srgb,var(--accent) 12%,var(--panel));border-left:4px solid var(--accent)}
+.hintbox[hidden]{display:none}
+.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:50;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+/* рейтинг */
+.final{text-align:center}
+.grade{font:800 clamp(72px,14vw,140px)/1 Rubik;color:var(--accent);margin:10px 0 0}
+.stars{font-size:38px;letter-spacing:6px;margin:6px 0}
+.rows{max-width:520px;margin:18px auto;text-align:left}
+.row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row b{white-space:nowrap}
+.mbar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:6px}.mbar i{display:block;height:100%;width:0;transition:width 1.2s .3s}
+.codeword{display:inline-block;font:700 26px "JetBrains Mono",monospace;background:var(--rubber);color:#ffd27a;padding:12px 22px;border-radius:12px;margin:8px 0;letter-spacing:1px}
+@media(max-width:820px){.quest{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.stage{height:430px}.bin{height:120px}.bin small{display:none}.item{font-size:17px;height:54px}.opts{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div><h1>Цех типів Python</h1><p class="sub">10 клас · закріплення: int, float, str, bool, list</p></div>
+  <span class="chip" id="who" hidden></span>
+</header>
+
+<!-- СТАРТ -->
+<section class="screen on" id="s-start">
+  <div class="card">
+    <h2>Твоя зміна на фабриці даних</h2>
+    <p>Ти новий працівник цеху. Конвеєром їдуть значення, і кожне треба покласти в контейнер свого типу. Коли відпрацюєш зміну, тебе чекає лабіринт із 9 замками. Відчиниш усі, отримаєш скарб і свій рейтинг.</p>
+    <div class="types" id="cheat"></div>
+    <p><b>Як сортувати:</b> перетягни значення мишкою в контейнер <i>або</i> натисни на контейнер <i>або</i> клавішу <kbd>1</kbd>–<kbd>5</kbd>.</p>
+    <form id="startForm" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:14px">
+      <input type="text" id="name" placeholder="Прізвище та ім'я" autocomplete="off" required maxlength="40">
+      <button class="btn" type="submit">Почати зміну →</button>
+    </form>
+  </div>
+</section>
+
+<!-- ЦЕХ -->
+<section class="screen" id="s-sort">
+  <div class="hud">
+    <span class="chip" id="lvlName">Рівень 1</span>
+    <span class="chip">Правильно: <b id="sScore">0</b> / 24</span>
+    <div class="bar"><i id="sBar"></i></div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="question" id="qText">Який тип цього значення?</div>
+    <div class="belt" id="belt"></div>
+    <div class="roller l"></div><div class="roller r"></div>
+    <div class="bins" id="bins"></div>
+    <div class="overlay" id="ov"><h2 id="ovT"></h2><p id="ovP" style="max-width:520px;margin:0"></p><button class="btn" id="ovB">Поїхали!</button></div>
+  </div>
+  <div class="fb" id="fb"><p id="fbText">Значення з'являться зліва. Встигни розсортувати, поки воно не доїхало до кінця стрічки.</p></div>
+</section>
+
+<!-- КВЕСТ -->
+<section class="screen" id="s-quest">
+  <div class="hud">
+    <span class="chip">Лабіринт типів</span>
+    <span class="chip">Бали квесту: <b id="qScore">0</b> / 18</span>
+    <span class="chip">1-а спроба = 2 бали · 2-а = 1 бал</span>
+  </div>
+  <div class="quest">
+    <div class="map" id="map"></div>
+    <div class="card qpanel" id="qpanel"></div>
+  </div>
+</section>
+
+<!-- РЕЙТИНГ -->
+<section class="screen" id="s-final">
+  <div class="card final" id="final"></div>
+</section>
+
+<!-- ПЕРЕВІРКА ВЧИТЕЛЯ (відкривається за адресою ...#teacher) -->
+<section class="screen" id="s-teacher">
+  <div class="card">
+    <h2>Перевірка кодового слова</h2>
+    <p class="sub">Введи ім'я учня так, як він його написав, і загальну кількість балів (з 42).</p>
+    <form id="tForm" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <input type="text" id="tName" placeholder="Прізвище та ім'я">
+      <input type="text" id="tPts" placeholder="Бали" style="width:110px" inputmode="numeric">
+      <button class="btn" type="submit">Показати код</button>
+    </form>
+    <p class="codeword" id="tOut" hidden></p>
+  </div>
+</section>
+</div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const TYPES=[
+ {t:'int',ua:'ціле число',ex:'42   -7   0',c:'var(--int)'},
+ {t:'float',ua:'дробове число',ex:'3.14   5.0',c:'var(--float)'},
+ {t:'str',ua:'текст у лапках',ex:'"кіт"   "42"',c:'var(--str)'},
+ {t:'bool',ua:'так / ні',ex:'True   False',c:'var(--bool)'},
+ {t:'list',ua:'список',ex:'[1, 2, 3]',c:'var(--list)'}];
+const LEVELS=[
+ {name:'Рівень 1 · Розминка',intro:'Стрічка їде повільно. Значення прості: дивись на крапку, лапки й дужки.',ms:9000,q:'Який тип цього значення?',items:[
+  ['42','int','Ціле число без крапки й лапок, тому int.'],
+  ['3.14','float','Є крапка, отже це дробове число: float.'],
+  ['"кіт"','str','У лапках будь-що стає текстом: str.'],
+  ['True','bool','True з великої літери й без лапок має тип bool.'],
+  ['[1, 2, 3]','list','Квадратні дужки означають список: list.'],
+  ['-7','int','Мінус нічого не змінює: це ціле число, int.'],
+  ["'Привіт'",'str','Одинарні лапки теж роблять рядок: str.'],
+  ['False','bool','False без лапок має тип bool.']]},
+ {name:'Рівень 2 · Пастки',intro:'Стрічка прискорюється. Тепер значення хитрі: цифри в лапках, порожні дужки, .0 у кінці…',ms:7000,q:'Обережно, пастки! Який тип?',items:[
+  ['"42"','str','Цифри в лапках уже текст, а не число! Тому str.'],
+  ['5.0','float','Навіть .0 робить число дробовим: float.'],
+  ['"True"','str','У лапках це просто слово, а не логічне значення. Тому str.'],
+  ['[]','list','Це порожній список, але все одно list.'],
+  ['0','int','Нуль теж ціле число: int.'],
+  ['"3.14"','str','Лапки важливіші за крапку, тому це str.'],
+  ['["a", "b"]','list','Список із рядків однаково має тип list.'],
+  ['-0.5','float','Дробове від\'ємне число: float.']]},
+ {name:'Рівень 3 · Тип результату',intro:'Найшвидша стрічка! Тепер на ній вирази. Визнач, якого типу буде результат.',ms:6000,q:'Якого типу буде РЕЗУЛЬТАТ?',items:[
+  ['10 / 2','float','Ділення / завжди дає float: 10 / 2 = 5.0'],
+  ['"ab" + "c"','str','Рядок + рядок склеюються в "abc", тобто str.'],
+  ['3 * 4','int','int * int дає int: 12'],
+  ['5 > 3','bool','Порівняння дає True або False, тобто bool.'],
+  ['[1] + [2]','list','Список + список дає [1, 2], тобто list.'],
+  ['""','str','Порожні лапки — це порожній рядок, але все одно str.'],
+  ['2 + 0.5','float','int + float дає float: 2.5'],
+  ['"[1, 2]"','str','Це не список, а текст у лапках: str.']]}];
+const ROOMS=[
+ {topic:'int',story:'Перші двері. На замку світиться код:',code:'print(type(15))',opts:["<class 'int'>","<class 'str'>","<class 'float'>","15"],a:0,hint:'Ціле число без лапок і без крапки.'},
+ {topic:'bool',story:'Замок питає: яке з цих значень має тип bool?',opts:['"True"','True','1','"так"'],a:1,hint:'bool — це True або False без лапок.'},
+ {topic:'str',story:'Що виведе цей код і якого типу результат?',code:'print("5" + "5")',opts:['10 (int)','55 (str)','55 (int)','TypeError'],a:1,hint:'Обидва значення в лапках, тож + їх склеює.'},
+ {topic:'float',story:'Замок із секретом ділення:',code:'print(type(8 / 2))',opts:["<class 'int'>","<class 'float'>","<class 'str'>","4"],a:1,hint:'Ділення / завжди повертає float: 8 / 2 = 4.0'},
+ {topic:'str',story:'Двері сміються. Що виведе код?',code:'print("ха" * 3)',opts:['хахаха','ха3','TypeError','9'],a:0,hint:'Рядок * число повторює рядок кілька разів.'},
+ {topic:'str',story:'Небезпечні двері! Що станеться?',code:'print("5" + 5)',opts:['55','10','TypeError','5 + 5'],a:2,hint:'Текст і число не можна додати: Python не знає, склеювати їх чи рахувати.'},
+ {topic:'list',story:'На дверях висить таке значення. Що це?',code:'["кіт", 3, True]',opts:['Помилка: різні типи','list зі значень різних типів','str','три окремі змінні'],a:1,hint:'У список можна покласти значення будь-яких типів.'},
+ {topic:'int',story:'Зламаний касир хоче отримати 398. Як виправити перший рядок?',code:'price = "199"\ntotal = price * 2\nprint(total)   # виводить 199199',opts:['price = 199','total = price + 2','price = "398"','print("total")'],a:0,hint:'Прибери лапки, і price стане int.'},
+ {topic:'bool',story:'СКРИНЯ! Останній замок: який рядок дасть помилку?',opts:['print(3 * "ab")','print([1] + [2])','print(True + "1")','print(2 + 0.5)'],a:2,hint:'Шукай, де + намагається поєднати не-текст із текстом.'}];
+const CELLS=[[0,0],[0,1],[0,2],[1,2],[1,1],[1,0],[2,0],[2,1],[2,2]]; // змійка
+const ST={name:'',sort:0,done:0,quest:0,miss:{}};
+const show=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo(0,0)};
+const hash=s=>{let h=5381;for(const ch of s)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h};
+const WORDS=['ПІТОН','БАЙТ','ЗМІННА','КОНВЕЄР','СПИСОК','РЯДОК','ПІКСЕЛЬ','ТОННІ','ЛАБІРИНТ','СКРИНЯ'];
+const codeFor=(name,total)=>{const h=hash(name.trim().toLowerCase()+'|'+total);return WORDS[h%WORDS.length]+'-'+total+'-'+(h%900+100)};
+
+/* ---------- старт ---------- */
+$('cheat').innerHTML=TYPES.map(T=>`<div class="tcard" style="background:${T.c}"><b>${T.t}</b><span>${T.ua}</span><code>${T.ex.replace(/</g,'&lt;')}</code></div>`).join('');
+$('startForm').addEventListener('submit',e=>{e.preventDefault();const n=$('name').value.trim();if(n.length<2){$('name').focus();return}
+ ST.name=n;$('who').textContent='👷 '+n;$('who').hidden=false;show('s-sort');startLevel()});
+
+/* ---------- цех ---------- */
+const stage=$('stage'),belt=$('belt'),fb=$('fb'),fbText=$('fbText');
+$('bins').innerHTML=TYPES.map((T,i)=>`<button class="bin" data-t="${T.t}" style="background:${T.c}"><span class="cnt">0</span><kbd>${i+1}</kbd><b>${T.t}</b><small>${T.ua}</small></button>`).join('');
+const bins=[...document.querySelectorAll('.bin')],binOf=t=>bins.find(b=>b.dataset.t===t);
+let lvl=0,idx=0,cur=null,el=null,x=0,last=0,running=false,dragging=false,locked=true,dx=0,dy=0;
+const beltY=()=>56+(96-el.offsetHeight)/2;
+
+function startLevel(){const L=LEVELS[lvl];$('lvlName').textContent=L.name;$('qText').textContent=L.q;
+ $('ovT').textContent=L.name;$('ovP').textContent=L.intro;$('ovB').textContent=lvl?'Далі!':'Поїхали!';$('ov').hidden=false;belt.classList.add('stop');$('ovB').focus()}
+$('ovB').addEventListener('click',()=>{$('ov').hidden=true;if(lvl>=LEVELS.length){show('s-quest');startQuest();return}idx=0;nextItem()});
+
+function nextItem(){
+ bins.forEach(b=>b.classList.remove('hint','ok','bad'));
+ const L=LEVELS[lvl];
+ if(idx>=L.items.length){lvl++;if(lvl>=LEVELS.length){finishSort();return}startLevel();return}
+ const [v,t,why]=L.items[idx++];cur={v,t,why};
+ el=document.createElement('div');el.className='item';el.textContent=v;stage.appendChild(el);
+ x=-el.offsetWidth;el.style.left=x+'px';el.style.top=beltY()+'px';
+ el.addEventListener('pointerdown',onDown);
+ locked=false;running=true;belt.classList.remove('stop');last=performance.now();requestAnimationFrame(tick);
+ setFb('','Куди це покласти? Перетягни або натисни на контейнер.');
+}
+function tick(now){if(!running)return;const dt=now-last;last=now;
+ if(!dragging){const L=LEVELS[lvl];x+=dt*(stage.clientWidth+el.offsetWidth)/L.ms;el.style.left=x+'px';
+  if(x>stage.clientWidth){answer(null);return}}
+ requestAnimationFrame(tick)}
+function setFb(kind,text,btn){fb.className='fb'+(kind?' '+kind:'');fbText.textContent=text;
+ const old=fb.querySelector('button');if(old)old.remove();
+ if(btn){const b=document.createElement('button');b.className='btn';b.textContent='Зрозумів →';b.addEventListener('click',nextItem);fb.appendChild(b);b.focus()}}
+function flyTo(t,e=el){const sr=stage.getBoundingClientRect(),br=binOf(t).getBoundingClientRect();
+ e.classList.remove('drag');e.classList.add('fly');
+ e.style.left=(br.left-sr.left+br.width/2-e.offsetWidth/2)+'px';e.style.top=(br.top-sr.top+br.height/2-e.offsetHeight/2)+'px';
+ e.style.transform='scale(.45)';e.style.opacity='0';setTimeout(()=>e.remove(),500)}
+function answer(t){if(locked)return;locked=true;running=false;dragging=false;belt.classList.add('stop');
+ ST.done++;$('sBar').style.width=(ST.done/24*100)+'%';
+ const good=t===cur.t,right=binOf(cur.t);
+ if(good){ST.sort++;$('sScore').textContent=ST.sort;right.classList.add('ok');
+  const c=right.querySelector('.cnt');c.textContent=+c.textContent+1;flyTo(t);setFb('ok','✔ Правильно! '+cur.v+' має тип '+cur.t+'. '+cur.why);setTimeout(nextItem,1300)}
+ else{ST.miss[cur.t]=(ST.miss[cur.t]||0)+1;
+  if(t){binOf(t).classList.add('bad');el.classList.add('wrong')}
+  const e0=el,t0=cur.t;right.classList.add('hint');setTimeout(()=>flyTo(t0,e0),450);
+  setFb('bad',(t?'✘ Ні, це не '+t+'. ':'⏰ Не встиг! ')+cur.v+' має тип '+cur.t+'. '+cur.why,true)}
+}
+bins.forEach(b=>b.addEventListener('click',()=>answer(b.dataset.t)));
+document.addEventListener('keydown',e=>{if(!$('s-sort').classList.contains('on')||!$('ov').hidden)return;
+ const n=+e.key;if(n>=1&&n<=5)answer(TYPES[n-1].t)});
+function binAt(cx,cy){return bins.find(b=>{const r=b.getBoundingClientRect();return cx>=r.left&&cx<=r.right&&cy>=r.top-20&&cy<=r.bottom})}
+function onDown(e){if(locked)return;dragging=true;el.setPointerCapture(e.pointerId);el.classList.add('drag');
+ const r=el.getBoundingClientRect();dx=e.clientX-r.left;dy=e.clientY-r.top;
+ el.addEventListener('pointermove',onMove);el.addEventListener('pointerup',onUp)}
+function onMove(e){const sr=stage.getBoundingClientRect();el.style.left=(e.clientX-sr.left-dx)+'px';el.style.top=(e.clientY-sr.top-dy)+'px';
+ const b=binAt(e.clientX,e.clientY);bins.forEach(x=>x.classList.toggle('over',x===b))}
+function onUp(e){el.removeEventListener('pointermove',onMove);el.removeEventListener('pointerup',onUp);bins.forEach(x=>x.classList.remove('over'));
+ const b=binAt(e.clientX,e.clientY);
+ if(b){answer(b.dataset.t)}else{dragging=false;el.classList.remove('drag');x=parseFloat(el.style.left);el.style.top=beltY()+'px';last=performance.now()}}
+function finishSort(){$('ovT').textContent='Зміну завершено! 🏭';$('ovP').textContent='Ти правильно розсортував '+ST.sort+' з 24 значень. Тепер на тебе чекає лабіринт: 9 кімнат, у кожній замок із питанням про типи.';
+ $('ovB').textContent='До лабіринту →';$('ov').hidden=false;$('ovB').focus()}
+
+/* ---------- квест ---------- */
+let room=0,tries=0;const qp=$('qpanel'),map=$('map');
+const pos=i=>({x:CELLS[i][1]*110+55,y:CELLS[i][0]*110+55});
+function startQuest(){
+ const pts=CELLS.map((_,i)=>pos(i)).map(p=>p.x+','+p.y).join(' ');
+ map.innerHTML=`<svg viewBox="0 0 330 330"><polyline points="${pts}" fill="none" stroke="#4b4f56" stroke-width="22" stroke-linejoin="round"/><polyline points="${pts}" fill="none" stroke="#2a2c30" stroke-width="8" stroke-dasharray="2 10" stroke-linecap="round"/></svg>`+
+  CELLS.map((_,i)=>{const p=pos(i);return `<div class="room${i===8?' last':''}" id="r${i}" style="left:${p.x-42}px;top:${p.y-42}px">${i===8?'💰':'🔒'}</div>`}).join('')+'<div class="hero" id="hero">🧑‍💻</div>';
+ moveHero(0);renderRoom()}
+function moveHero(i){const h=$('hero'),p=pos(i);h.style.left=p.x+'px';h.style.top=p.y+'px';h.classList.remove('walk');void h.offsetWidth;h.classList.add('walk');
+ document.querySelectorAll('.room').forEach((r,k)=>r.classList.toggle('cur',k===i))}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function renderRoom(){const R=ROOMS[room];tries=0;
+ qp.innerHTML=`<div class="lock"><span>${room===8?'💰':'🔒'}</span><div><b>Кімната ${room+1} з 9</b><div class="sub" style="margin:0">${room===8?'Фінальний замок':'Відчини двері, щоб пройти далі'}</div></div></div>
+ <p style="font-size:18px;margin:6px 0">${esc(R.story)}</p>${R.code?`<pre class="code">${esc(R.code)}</pre>`:''}
+ <div class="opts">${R.opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>
+ <div class="hintbox" id="hint" hidden></div>`;
+ qp.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>pick(b)));}
+function pick(b){const R=ROOMS[room],i=+b.dataset.i;
+ if(i===R.a){const got=Math.max(0,2-tries);ST.quest+=got;$('qScore').textContent=ST.quest;b.classList.add('yes');
+  qp.querySelectorAll('.opt').forEach(o=>o.disabled=true);
+  const r=$('r'+room);r.classList.add('done');r.textContent=room===8?'🏆':'✔';
+  const h=$('hint');h.hidden=false;h.textContent='Відчинено! +'+got+(got===1?' бал':' бали')+'. '+R.hint;
+  setTimeout(()=>{room++;if(room<9){moveHero(room);setTimeout(renderRoom,650)}else treasure()},1500)}
+ else{tries++;b.classList.add('no');b.disabled=true;ST.miss[R.topic]=(ST.miss[R.topic]||0)+1;
+  const h=$('hint');h.hidden=false;h.textContent='Замок не піддається. Підказка: '+R.hint}}
+function treasure(){confetti();
+ qp.innerHTML=`<div style="text-align:center"><div style="font-size:90px;line-height:1">🏆</div><h2>Скриню відчинено!</h2><p>Ти пройшов увесь лабіринт типів. Час дізнатися свій рейтинг.</p><button class="btn" id="toFinal">Мій рейтинг →</button></div>`;
+ $('toFinal').addEventListener('click',finalScreen);$('toFinal').focus()}
+function confetti(){const cols=['#2f6fed','#0097a7','#d63c78','#7c4dea','#e09300','#ff6a13'];
+ for(let i=0;i<90;i++){const c=document.createElement('i');c.className='confetti';c.style.left=Math.random()*100+'vw';c.style.background=cols[i%6];
+  c.style.animationDuration=(1.8+Math.random()*1.8)+'s';c.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),4500)}}
+
+/* ---------- рейтинг ---------- */
+function finalScreen(){show('s-final');
+ const total=ST.sort+ST.quest,grade=Math.max(1,Math.round(total/42*12));
+ const ranks=[[11,'🏆 Майстер типів','Ти бачиш типи наскрізь. Python тебе боїться.'],[9,'🥇 Знавець типів','Майже без помилок. Ще трохи, і будеш майстром!'],[7,'🥈 Дослідник','Основи є, але кілька пасток тебе зловили.'],[4,'🥉 Новачок цеху','Ти на правильному шляху. Повтори пам\'ятку і спробуй ще раз.'],[0,'🌱 Учень-стажер','Не страшно! Подивись на пам\'ятку й пройди гру ще раз.']];
+ const [_,title,msg]=ranks.find(r=>grade>=r[0]);const stars=Math.max(1,Math.round(grade/12*5));
+ const weak=Object.entries(ST.miss).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t,n])=>`<code>${t}</code> (${n})`).join(', ');
+ const row=(l,v,m,c)=>`<div class="row"><span>${l}</span><b>${v} / ${m}</b></div><div class="mbar"><i style="background:${c}" data-w="${v/m*100}"></i></div>`;
+ $('final').innerHTML=`<p class="sub" style="margin:0">Рейтинг працівника цеху</p><h2 style="margin-top:4px"></h2>
+  <div class="grade">${grade}<span style="font-size:.35em;color:var(--soft)"> / 12</span></div>
+  <div class="stars">${'★'.repeat(stars)}<span style="opacity:.25">${'★'.repeat(5-stars)}</span></div>
+  <h2>${title}</h2><p>${msg}</p>
+  <div class="rows">${row('🏭 Сортувальний цех',ST.sort,24,'var(--int)')}${row('🗝️ Лабіринт типів',ST.quest,18,'var(--bool)')}${row('Разом',total,42,'var(--accent)')}
+  <p style="margin-top:14px">${weak?'Варто повторити: '+weak:'Жодної помилки! Неймовірно 🔥'}</p></div>
+  <p class="sub">Покажи цей екран учителю. Твоє кодове слово:</p><div class="codeword">${codeFor(ST.name,total)}</div>
+  <p><button class="btn ghost" id="again">Пройти ще раз</button></p>`;
+ $('final').querySelector('h2').textContent=ST.name;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>$('final').querySelectorAll('.mbar i').forEach(i=>i.style.width=i.dataset.w+'%')));
+ $('again').addEventListener('click',()=>location.reload());
+ if(grade>=9)confetti()}
+
+/* ---------- вчитель ---------- */
+if(location.hash==='#teacher')show('s-teacher');
+if(location.hash==='#quest'){ST.name='Перевірка вчителя';$('who').textContent='👷 '+ST.name;$('who').hidden=false;show('s-quest');startQuest()}
+$('tForm').addEventListener('submit',e=>{e.preventDefault();const o=$('tOut');o.hidden=false;o.textContent=codeFor($('tName').value,parseInt($('tPts').value,10)||0)});
+}
+</script>
+</body>
+</html>

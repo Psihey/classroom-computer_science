@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CapCut: звук без обривів і текст у кадрі під контролем</title>
+<style>
+/* Design tokens shared by the form UI and every generated lesson (inlined there). */
+:root {
+  color-scheme: light dark;
+  --color-bg: #fbfaf7;
+  --color-fg: #1d1d1f;
+  --color-muted: #5c5c66;
+  --color-accent: #1f5fbf;
+  --color-error-bg: #fdecea;
+  --color-error-fg: #8a1c12;
+  --color-surface: #ffffff;
+  --color-on-accent: #ffffff;
+  --shadow: 0 2px 10px rgb(0 0 0 / 8%);
+  --color-link-bg: #eff6ff;
+  --color-link-fg: #1d4ed8;
+  --color-note-bg: #f8fafc;
+  --color-note-border: #e2e8f0;
+  --color-print-ink: #000000; /* handout: black and white in every theme */
+  --color-print-paper: #ffffff;
+
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  --text-base: 1.25rem; /* projector-friendly */
+  --text-lg: 1.6rem;
+  --text-xl: 2.4rem;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 2rem;
+  --radius: 8px;
+}
+
+/* Dark theme: the system setting, unless a page's theme toggle chose light (data-theme). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #16171a;
+    --color-fg: #ececf0;
+    --color-muted: #a0a0ab;
+    --color-accent: #7aa8ff;
+    --color-error-bg: #3a1714;
+    --color-error-fg: #ffb4a8;
+    --color-surface: #202227;
+    --color-on-accent: #0b1220;
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --color-link-bg: #1a2740;
+    --color-link-fg: #9cc2ff;
+    --color-note-bg: #1b1d22;
+    --color-note-border: #33363e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #16171a;
+  --color-fg: #ececf0;
+  --color-muted: #a0a0ab;
+  --color-accent: #7aa8ff;
+  --color-error-bg: #3a1714;
+  --color-error-fg: #ffb4a8;
+  --color-surface: #202227;
+  --color-on-accent: #0b1220;
+  --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+  --color-link-bg: #1a2740;
+  --color-link-fg: #9cc2ff;
+  --color-note-bg: #1b1d22;
+  --color-note-border: #33363e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: var(--text-base) / 1.5 var(--font-body);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+h1 {
+  font-size: var(--text-xl);
+  line-height: 1.2;
+}
+
+.error {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-error-bg);
+  color: var(--color-error-fg);
+}
+
+/* Generated lesson pages (student.html, teacher.html). Uses tokens from tokens.css only. */
+
+body.lesson-page {
+  line-height: 1.55;
+}
+
+.lesson-header {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.lesson-header h1 {
+  margin: var(--space-1) 0;
+}
+
+.lesson-label {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+.lesson-subtitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  opacity: 0.9;
+}
+
+/* Students could not find the practical: a jump button up top, a framed block below. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.jump-practice {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+
+.jump-practice:hover,
+.jump-practice:focus-visible {
+  outline: 3px solid var(--color-on-accent);
+  outline-offset: 2px;
+}
+
+.block-practice {
+  scroll-margin-top: var(--space-2);
+  border: 4px solid var(--color-accent);
+}
+
+.block-practice > h2 {
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3)) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-xl);
+}
+
+@media print {
+  .jump-practice {
+    display: none;
+  }
+}
+
+.muted,
+.task-kind,
+.duration {
+  color: var(--color-muted);
+}
+
+.block {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow);
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: 0;
+  font-size: var(--text-lg);
+  color: var(--color-accent);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+a {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.block-goals li,
+.key-ideas li {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.task,
+.answer {
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--color-muted);
+}
+
+.task:last-child,
+.answer:last-child {
+  border-bottom: 0;
+}
+
+.task-kind {
+  margin: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8em;
+  letter-spacing: 0.05em;
+}
+
+/* A bonus for those who finished the practical early (extra-task): no levels, one card. */
+.extra-task {
+  padding: var(--space-2);
+  border: 2px dashed var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+.extra-task h3 {
+  margin-top: 0.25rem;
+}
+
+.deliverable,
+.real-life {
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+}
+
+pre {
+  overflow-x: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-muted);
+  background: var(--color-bg);
+}
+
+code {
+  font-family: var(--font-mono);
+  /* No ligatures: students must see `>=`, not a `≥` they cannot type. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.theory table,
+.block table {
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.block th,
+.block td {
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  text-align: left;
+}
+
+/* Resources as link plaques, after the teacher's own site (psihey.github.io). */
+.resources {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.resource-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--color-link-bg);
+  color: var(--color-link-fg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.resource-link:hover,
+.resource-link:focus-visible {
+  outline: 2px solid var(--color-link-fg);
+  outline-offset: 2px;
+}
+
+.resource-emoji {
+  font-size: 1.2em;
+}
+
+.resource-hint {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.85em;
+  font-weight: 400;
+}
+
+.resource-note {
+  margin-top: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+  background: var(--color-note-bg);
+}
+
+/* own-pictures: the teacher's own picture, embedded in the page. */
+.lesson-picture {
+  margin: 0;
+}
+
+.lesson-picture img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-note-border);
+  border-radius: var(--radius);
+}
+
+.lesson-picture figcaption {
+  margin-top: 0.25rem;
+  font-weight: 700;
+}
+
+/* QR codes stay dark on white in both themes so phones can read them from the projector. */
+.resource-qr {
+  width: 14rem;
+  max-width: 100%;
+  margin-top: var(--space-1);
+  background: #fff;
+}
+
+.resource-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.self-check {
+  list-style: none;
+  padding-left: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.timeline {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.timeline th,
+.timeline td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+.minutes {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-flag {
+  display: block;
+  color: var(--color-error-fg);
+  font-weight: 600;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: var(--space-1);
+  right: var(--space-1);
+  padding: 0.25rem var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.checklist li {
+  margin-bottom: var(--space-1);
+}
+
+@media print {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+/* Diagrams built from plain text (lesson-feedback-1 AC-05). */
+.scheme {
+  margin: var(--space-2) 0;
+}
+
+.scheme-title {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.scheme-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scheme-step {
+  padding: var(--space-1) var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.scheme-arrow {
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.scheme-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-2);
+}
+
+.scheme-column {
+  padding: var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.scheme-column h4 {
+  margin: 0 0 var(--space-1);
+}
+
+/* On a phone a flow reads top to bottom. */
+@media (max-width: 30rem) {
+  .scheme-flow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+/* Student answers on a phone (lesson-feedback-1 AC-07, AC-08). */
+.answer-box {
+  margin-top: var(--space-2);
+}
+
+.answer-box label,
+.student-name label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.answer-box textarea,
+.student-name input,
+.copy-fallback {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-1);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
+}
+
+.student-name {
+  margin-bottom: var(--space-2);
+}
+
+.send-button {
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  font-weight: 600;
+}
+
+@media print {
+  .block-send,
+  .answer-box {
+    display: none;
+  }
+}
+
+.resources-inline {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+/* Printable handout: a white A4 sheet, black and white (handout-and-theory AC-02). */
+.handout {
+  max-width: 48rem;
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.handout *,
+.handout a {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.handout-title {
+  margin-top: 0;
+}
+
+.handout table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.handout th,
+.handout td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Printable test and its key (printable-quiz AC-06): white sheets, black and white. */
+.quiz-sheet,
+.quiz-key {
+  max-width: 48rem;
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.quiz-sheet *,
+.quiz-key * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.quiz-title {
+  margin-top: 0;
+}
+
+.quiz-instruction {
+  margin: var(--space-2) 0 var(--space-1);
+  font-style: italic;
+}
+
+.quiz-question {
+  margin-bottom: var(--space-2);
+  break-inside: avoid;
+}
+
+.quiz-text {
+  margin: 0 0 0.25rem;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem var(--space-2);
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: none;
+}
+
+.quiz-match,
+.quiz-key table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.quiz-match td,
+.quiz-key th,
+.quiz-key td {
+  border: 1px solid var(--color-print-ink);
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.quiz-answer {
+  margin: 0.25rem 0 0;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Worked examples under the theory (rich-theory). */
+.examples {
+  margin-top: var(--space-3);
+}
+
+.example {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px solid var(--color-note-border);
+  background: var(--color-note-bg);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.example h4 {
+  margin-top: 0;
+}
+
+.example-number {
+  color: var(--color-accent);
+}
+
+.example-explanation {
+  margin-top: var(--space-1);
+}
+
+/* The single practical as numbered steps (step-by-step-practice). */
+.task-steps {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+}
+
+.task-steps > li {
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.task-steps > li::marker {
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.step-title {
+  margin: 0 0 0.25rem;
+}
+
+.step-result {
+  margin: 0.25rem 0 0;
+  padding-left: var(--space-1);
+  border-left: 3px solid var(--color-accent);
+}
+
+/* graded-practice: points badge, success condition and rubric. */
+.task-points {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.task-success {
+  margin: var(--space-2) 0;
+  padding: var(--space-1) var(--space-2);
+  border-left: 4px solid var(--color-accent);
+  background: var(--color-note-bg);
+}
+
+.task-success h4 {
+  margin: 0.25rem 0;
+}
+
+.rubric-points {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* showcase: the teacher's board plan, in order. */
+.showcase-plan > li {
+  margin-bottom: var(--space-3);
+}
+
+.showcase-head {
+  margin: 0 0 var(--space-1);
+}
+
+/* A ready template the student copies (printable-quiz AC-02). */
+.starter {
+  margin: var(--space-2) 0;
+  padding: var(--space-2);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius);
+}
+
+.starter h4 {
+  margin-top: 0;
+}
+
+.starter table {
+  border-collapse: collapse;
+}
+
+.starter th,
+.starter td {
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Practical forms to fill in by hand: landscape A4, black and white, roomy cells. */
+.form-sheet {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-print-ink);
+  background: var(--color-print-paper);
+  color: var(--color-print-ink);
+  line-height: 1.4;
+}
+
+.form-sheet * {
+  color: var(--color-print-ink);
+  background: transparent;
+  border-color: var(--color-print-ink);
+}
+
+.form-lesson {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.form-title {
+  margin: 0.25rem 0;
+}
+
+.form-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-1) 0;
+}
+
+.form-sheet th,
+.form-sheet td {
+  height: 2.6rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-print-ink);
+  text-align: left;
+  vertical-align: top;
+}
+
+.form-sheet th {
+  height: auto;
+}
+
+.print-button {
+  font: inherit;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  cursor: pointer;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@page form {
+  size: A4 landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-button {
+    display: none;
+  }
+
+  body.print-handout {
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .page > *:not(.block-handout),
+  body.print-handout .block-handout > :not(.handout) {
+    display: none;
+  }
+
+  body.print-handout .block-handout {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-handout .handout {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+    break-inside: avoid;
+  }
+
+  body.print-quiz,
+  body.print-key {
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .page > *:not(.block-quiz),
+  body.print-key .page > *:not(.block-quiz),
+  body.print-quiz .block-quiz > :not(.quiz-sheet),
+  body.print-key .block-quiz > :not(.quiz-key) {
+    display: none;
+  }
+
+  body.print-quiz .block-quiz,
+  body.print-key .block-quiz {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-quiz .quiz-sheet,
+  body.print-key .quiz-key {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-quiz .quiz-sheet + .quiz-sheet {
+    break-before: page; /* every variant on its own sheet */
+  }
+
+  body.print-forms {
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .page > *:not(.block-forms),
+  body.print-forms .block-forms > :not(.form-sheet) {
+    display: none;
+  }
+
+  body.print-forms .block-forms {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: var(--color-print-paper);
+  }
+
+  body.print-forms .form-sheet {
+    page: form; /* landscape: wide tables get their columns */
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 11pt;
+  }
+
+  body.print-forms .form-sheet + .form-sheet {
+    break-before: page; /* every form on its own sheet */
+  }
+
+  body.print-forms .form-sheet td {
+    height: 11mm;
+  }
+
+  body.print-forms .form-sheet tr {
+    break-inside: avoid;
+  }
+
+  .starter-copy {
+    display: none;
+  }
+}
+
+</style>
+</head>
+<body class="lesson-page">
+<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Змінити тему">Світла / темна тема</button>
+<main class="page">
+<header class="lesson-header">
+  <p class="lesson-label">УРОК 3 З 7 • 10 КЛАС • ЧАСТИНА БАГАТОУРОЧНОЇ ТЕМИ</p>
+  <h1>CapCut: звук без обривів і текст у кадрі під контролем</h1>
+<p class="lesson-subtitle">Робимо плавний початок і кінець музики, а потім розмиваємо або замінюємо напис, який «зашитий» у саме відео: вивіску, номер авто, чужий логотип.</p>  <a class="jump-practice" href="#practice"><span aria-hidden="true">🛠️</span> Перейти до практичної роботи <span aria-hidden="true">↓</span></a>
+</header>
+
+<section class="block block-goals">
+  <h2><span class="icon" aria-hidden="true">🎯</span>Що ти засвоїш сьогодні</h2>
+  <ul>
+  <li>Зробити музиці плавний вхід і вихід (Fade in / Fade out) і налаштувати гучність (Volume), щоб музика не обривалась і не «кричала».</li>
+  <li>Розмити (Blur) або запікселізувати (Mosaic) частину кадру з текстом за допомогою копії кліпу й маски (Mask).</li>
+  <li>«Замінити» текст у кадрі: закрити старий напис плашкою і написати поверх свій.</li>
+  <li>Експортувати нову версію <code>Прізвище_тема_v3.mp4</code>.</li>
+</ul>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">💡</span>Що потрібно зрозуміти</h2>
+  <ul class="key-ideas">
+  <li>Глядач пробачить просту картинку, але не поганий звук. Музика, що обривається на півслові, одразу видає «аматорський» монтаж.</li>
+  <li>Текст, який був у кадрі під час зйомки (вивіска, номер авто, екран телефона), — це <strong>частина картинки</strong>, а не окремий напис. Його не можна «відредагувати» як текст у CapCut, його можна тільки <strong>сховати</strong> або <strong>закрити</strong>.</li>
+  <li><strong>Маска (Mask)</strong> — це «віконце»: ефект видно лише всередині віконця, а решта кадру лишається як була.</li>
+  <li>Ховати текст у кадрі потрібно часто: номери авто й обличчя (приватність), чужі логотипи (реклама), напис іншою мовою (замінюємо своїм).</li>
+</ul>
+  <div class="theory"><h3>Частина 1. Звук: плавно, а не обривом</h3>
+<p><strong>Fade in</strong> — музика починається з тиші й плавно стає голоснішою. <strong>Fade out</strong> — наприкінці плавно затихає. Для шортса достатньо Fade in 0,3–0,5 с і Fade out 1–2 с.</p>
+<p><strong>Гучність (Volume)</strong> у CapCut вимірюється в децибелах (dB): <strong>0 dB</strong> — як є, <strong>мінус</strong> — тихіше, <strong>плюс</strong> — голосніше. Якщо у твоїх кліпах є «живий» звук зйомки (вітер, шум вулиці), його краще вимкнути, щоб він не заважав музиці.</p>
+<ol>
+  <li>Клацни музичну доріжку на таймлайні (зелена смуга).</li>
+  <li>Праворуч у панелі властивостей (вкладка <strong>Basic</strong>) знайди <strong>Fade in</strong> і <strong>Fade out</strong> і посунь повзунки.</li>
+  <li>Там само повзунок <strong>Volume</strong>: якщо музика надто гучна, постав −3…−6 dB.</li>
+  <li>Щоб вимкнути звук кліпу: клацни кліп → <strong>Audio</strong> → Volume на мінімум, або натисни значок динаміка на початку доріжки відео (вимикає звук усіх кліпів доріжки).</li>
+</ol>
+
+<h3>Частина 2. Як сховати або замінити текст у кадрі</h3>
+<p>У професійному монтажі це називають <strong>цензуруванням</strong> (розмиття, пікселізація), <strong>масками</strong> (masking), <strong>відстеженням руху</strong> (motion tracking) і <strong>видаленням об'єктів</strong> (object removal). Ми навчимось двох найпростіших способів, які працюють безкоштовно.</p>
+<table>
+<thead><tr><th>Спосіб</th><th>Як виглядає</th><th>Коли обирати</th></tr></thead>
+<tbody>
+<tr><td><strong>А. Розмиття або мозаїка</strong> (Blur / Mosaic + Mask)</td><td>Напис розмитий або «в квадратиках», решта кадру чітка</td><td>Номер авто, обличчя, чужий логотип, адреса. Треба, щоб текст <strong>не читався</strong>.</td></tr>
+<tr><td><strong>Б. Плашка + свій текст</strong> (Text з фоном)</td><td>Старий напис закритий кольоровою плашкою, на ній твій напис</td><td>Вивіска іншою мовою, невдалий напис, хочеш <strong>свій</strong> текст на тому самому місці.</td></tr>
+<tr><td>В. Видалення об'єкта (AI Remove)</td><td>Напис зникає, фон «домальовується»</td><td>Лише як експеримент: функція може бути платною (Pro) і погано працює на складному фоні.</td></tr>
+</tbody>
+</table>
+
+<h3>Спосіб А: розмиваємо напис маскою</h3>
+<p>Ідея: кладемо <strong>копію</strong> кліпу над оригіналом, копію розмиваємо, а маскою лишаємо розмитим тільки віконце над текстом.</p>
+<ol>
+  <li>Клацни кліп з написом, натисни <strong>Ctrl+C</strong>.</li>
+  <li>Постав повзунок точно на <strong>початок</strong> цього кліпу й натисни <strong>Ctrl+V</strong>. Копія з'явиться на доріжці <strong>вище</strong>. Якщо вона стала не туди, перетягни її, щоб вона лежала точно над оригіналом.</li>
+  <li>Відкрий <strong>Effects → Video effects</strong>, у пошуку введи <strong>Blur</strong> (або <strong>Mosaic</strong> для квадратиків). Обери ефект без корони й перетягни його <strong>прямо на копію</strong> (верхній кліп). Тепер весь верхній кліп розмитий.</li>
+  <li>Клацни верхній кліп → праворуч <strong>Video → Mask</strong> → обери <strong>Rectangle</strong> (прямокутник).</li>
+  <li>У плеєрі пересунь і розтягни прямокутник так, щоб він накрив <strong>лише напис</strong>. Повзунок <strong>Feather</strong> трохи збільш, щоб краї були м'якими.</li>
+  <li>Натисни <strong>Пробіл</strong>: напис розмитий, усе інше чітке.</li>
+</ol>
+<p><strong>Якщо напис рухається</strong> (камера їде): у налаштуваннях маски шукай кнопку <strong>Track</strong> (CapCut сам поведе маску за об'єктом). Якщо її немає або вона платна, використай <strong>ключові кадри</strong> (ромбик ◇ біля Position маски): постав ромбик на початку, переведи повзунок далі, пересунь маску — CapCut сам зробить рух між точками.</p>
+
+<h3>Спосіб Б: закриваємо плашкою і пишемо своє</h3>
+<ol>
+  <li>Постав повзунок на кліп з написом. Відкрий <strong>Text → Default text</strong> і перетягни текст на таймлайн над кліпом.</li>
+  <li>Розтягни текст на всю довжину кліпу з написом.</li>
+  <li>Введи свій напис (до 3–5 слів).</li>
+  <li>Праворуч у налаштуваннях тексту знайди <strong>Background</strong> (фон), увімкни його, обери колір і постав <strong>Opacity 100%</strong>. Тепер текст стоїть на суцільній плашці.</li>
+  <li>У плеєрі пересунь і збільш текст так, щоб плашка <strong>повністю</strong> закрила старий напис.</li>
+  <li>Підбери колір плашки під кадр: під колір вивіски (виглядає «рідно») або яскравий контрастний (виглядає як стильний стікер).</li>
+</ol>
+<p>Якщо плашки замало, спершу розмий напис способом А, а вже поверх постав свій текст.</p>
+
+<h3>Навіщо це в житті</h3>
+<p>Блогери, журналісти й SMM-спеціалісти щодня розмивають номери авто, обличчя випадкових людей, адреси й чужі бренди: це вимога приватності та правил платформ. А заміна напису — звичайна робота при перекладі й локалізації відео (наприклад, англійська вивіска → український напис).</p>
+
+<h3>Типові пастки і як їх уникнути</h3>
+<ul>
+<li><strong>Музика обривається.</strong> Забули Fade out. Клацни музику → Fade out 1–2 с.</li>
+<li><strong>Розмився весь кадр.</strong> Ефект упав на доріжку ефектів, а не на копію кліпу, або не додано маску. Перетягни ефект прямо на верхній кліп і додай Mask.</li>
+<li><strong>Розмиття «з'їжджає» з напису.</strong> Копія стоїть не точно над оригіналом або напис рухається. Вирівняй копію, а для руху використай Track або ключові кадри.</li>
+<li><strong>Напис усе ще читається.</strong> Збільш силу розмиття (Intensity / Blur) або візьми Mosaic.</li>
+<li><strong>Старий текст визирає з-під плашки.</strong> Збільш розмір тексту або додай пробіли з боків, щоб плашка стала ширшою.</li>
+<li><strong>Ефект з короною (Pro).</strong> Експорт попросить оплату. Шукай інший Blur без корони.</li>
+</ul>
+</div>
+  <figure class="scheme">
+  <figcaption class="scheme-title">Спосіб А: розмити напис</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Ctrl+C / Ctrl+V: копія над кліпом</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Effects: Blur на копію</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Video → Mask → Rectangle</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Віконце на напис, Feather</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Пробіл: перевірити</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Спосіб Б: замінити напис</figcaption>
+  <ol class="scheme-flow">
+    <li class="scheme-step">Text → Default text над кліпом</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Свій напис</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Background, Opacity 100%</li>
+    <li class="scheme-arrow" aria-hidden="true">→</li>
+    <li class="scheme-step">Плашка закриває старий текст</li>
+  </ol>
+</figure>
+<figure class="scheme">
+  <figcaption class="scheme-title">Розмити чи замінити?</figcaption>
+  <div class="scheme-compare">
+    <div class="scheme-column"><h4>Розмити (Blur / Mosaic)</h4><ul><li>Текст не має читатися</li><li>Номер авто, обличчя, адреса, логотип</li><li>Кадр лишається «справжнім»</li></ul></div>
+    <div class="scheme-column"><h4>Замінити (плашка + текст)</h4><ul><li>Потрібен твій напис на цьому місці</li><li>Вивіска іншою мовою, невдалий напис</li><li>Виглядає як стікер або «рідна» вивіска</li></ul></div>
+  </div>
+</figure>
+  <div class="examples">
+  <h3>Розібрані приклади</h3>
+  <article class="example">
+    <h4><span class="example-number">Приклад 1.</span> Номер авто в кадрі</h4>
+    <p>У шортсі «Ранок у місті» є кліп, де проїжджає таксі, і видно номерний знак. Публікувати чужі номери не варто.</p>
+    <div class="example-explanation"><ol>
+  <li>Ctrl+C на кліпі з таксі, повзунок на початок кліпу, Ctrl+V: копія на доріжці вище.</li>
+  <li><strong>Effects → Video effects</strong>, пошук <strong>Mosaic</strong>, перетягнути на копію.</li>
+  <li>Копія → <strong>Video → Mask → Rectangle</strong>, віконце на номер.</li>
+  <li>Авто їде, тому біля Position маски ставимо ромбик ◇ на початку, а потім ще 2–3 ромбики, пересуваючи маску за номером (або кнопка Track, якщо вона є).</li>
+</ol>
+<p>Результат: номер у «квадратиках» на всьому шляху авто, решта вулиці чітка.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 2.</span> Вивіска англійською → свій напис</h4>
+    <p>Шортс «Моя кав'ярня». На стоковому кліпі над дверима вивіска «COFFEE HOUSE», а хочеться назву своєї вигаданої кав'ярні.</p>
+    <div class="example-explanation"><ol>
+  <li><strong>Text → Default text</strong> над кліпом, розтягнути на весь кліп.</li>
+  <li>Написати «Кава у Марти».</li>
+  <li>Увімкнути <strong>Background</strong>, колір як у вивіски (наприклад, темно-коричневий), <strong>Opacity 100%</strong>. Колір тексту — кремовий.</li>
+  <li>Пересунути й збільшити текст, щоб плашка точно лягла на стару вивіску.</li>
+</ol>
+<p>Результат: здається, що на вивісці завжди було написано «Кава у Марти». Камера рухається? Тоді ключові кадри для Position тексту.</p>
+</div>
+  </article>
+  <article class="example">
+    <h4><span class="example-number">Приклад 3.</span> Музика обривається на кінці</h4>
+    <p>Ролик 26 с, музику підрізали точно по кінцю відео, і вона обривається на півноті.</p>
+    <div class="example-explanation"><ol>
+  <li>Клацни музичну доріжку.</li>
+  <li>Праворуч <strong>Basic → Fade out</strong>: 1,5 с.</li>
+  <li>Заодно <strong>Fade in</strong>: 0,3 с, щоб старт не «вдаряв» по вухах.</li>
+  <li>Пробіл: послухати кінець ролика.</li>
+</ol>
+<p>Результат: музика м'яко затихає разом з останнім кадром. Це найшвидше покращення будь-якого відео.</p>
+</div>
+  </article>
+</div>
+  <div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=CapCut%20pc%20%D1%8F%D0%BA%20%D0%B7%D0%B0%D0%B1%D0%BB%D1%8E%D1%80%D0%B8%D1%82%D0%B8%20%D1%87%D0%B0%D1%81%D1%82%D0%B8%D0%BD%D1%83%20%D0%B2%D1%96%D0%B4%D0%B5%D0%BE%20%D0%BC%D0%B0%D1%81%D0%BA%D0%B0" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎬</span><span class="resource-text">CapCut ПК: як заблюрити частину відео<span class="resource-hint">пошук на YouTube: «CapCut pc як заблюрити частину відео маска»</span></span></a>
+<div class="resource-note">Короткі відеоуроки про розмиття маскою. Подивись, якщо пропустив показ на дошці.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.youtube.com/results?search_query=CapCut%20pc%20fade%20in%20fade%20out%20music" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎵</span><span class="resource-text">CapCut ПК: Fade in / Fade out музики<span class="resource-hint">пошук на YouTube: «CapCut pc fade in fade out music»</span></span></a>
+<div class="resource-note">Як зробити плавний вхід і вихід музики за пів хвилини.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.google.com/search?tbm=isch&q=CapCut%20desktop%20mask%20blur%20part%20of%20video" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🖼️</span><span class="resource-text">Як виглядає маска з розмиттям<span class="resource-hint">пошук у Google Картинках: «CapCut desktop mask blur part of video»</span></span></a>
+<div class="resource-note">Скріншоти панелі Mask: де прямокутник, Feather і кнопка Track.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.capcut.com/resource/how-to-blur-videos-in-capcut" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">📖</span><span class="resource-text">CapCut: як розмити відео, довідка</span></a>
+<div class="resource-note">Стаття CapCut (англійською): розмиття всього кадру, частини кадру й рухомих об'єктів.</div>  </div>
+</div>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">🌍</span>Аналогії та приклади з життя</h2>
+<ul>
+  <li>Маска — як трафарет для фарби: фарба лягає тільки там, де в трафареті дірка.</li>
+  <li>Розмиття напису — як закрити долонею частину фото, перш ніж показати його другові: усе видно, крім того, що не для чужих очей.</li>
+  <li>Плашка з текстом — як наліпка поверх старої ціни в магазині: стару не стерли, а закрили новою.</li>
+  <li>Fade out — як диктор у кінці передачі, що плавно стишує голос, а не вимикає мікрофон посеред слова.</li>
+  <li>У новинах на ТБ розмиті обличчя й номери авто — це саме той прийом, який ти сьогодні зробиш.</li>
+</ul>
+</section>
+
+<section class="block">
+  <h2><span class="icon" aria-hidden="true">📚</span>Ресурси</h2>
+<div class="resources resources-inline">
+  <div class="resource">
+    <a class="resource-link" href="https://www.pexels.com/search/videos/neon%20sign/?orientation=portrait" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🎞️</span><span class="resource-text">Pexels: вертикальні кліпи з написами<span class="resource-hint">запити: neon sign, shop sign, street sign, car traffic, phone screen</span></span></a>
+<div class="resource-note">Якщо у твоєму ролику немає жодного напису в кадрі, візьми тут 1 кліп під свою тему.</div>  </div>
+  <div class="resource">
+    <a class="resource-link" href="https://www.capcut.com/" target="_blank" rel="noopener"><span class="resource-emoji" aria-hidden="true">🌐</span><span class="resource-text">CapCut — офіційний сайт</span></a>
+<div class="resource-note">Звідси завантажують CapCut Desktop для Windows. Знадобиться, якщо хочеш продовжити проєкт удома.</div>  </div>
+</div>
+</section>
+
+<section class="block block-practice" id="practice">
+  <h2><span class="icon" aria-hidden="true">🛠️</span>Практична робота</h2>
+  <div class="student-name">
+    <label for="student-name">Твоє ім'я та клас</label>
+    <input id="student-name" type="text" autocomplete="name" placeholder="наприклад, Олена, 10-Б">
+  </div>
+  <article class="task">
+    <p class="task-kind">Практичне завдання</p>
+    <h3>Мій шортс v3: чистий звук і текст у кадрі під контролем</h3>
+    <p><strong>Мета:</strong> зробити музиці плавний вхід і вихід, <strong>розмити</strong> один напис у кадрі та <strong>замінити</strong> інший (або той самий) своїм текстом.</p>
+<p><strong>Результат:</strong> файл <code>Прізвище_тема_v3.mp4</code> (9:16, 20–30 с) та проєкт CapCut з тією ж назвою. Хто на минулому уроці вже зробив v3 (додаткове завдання), називає файл <code>v4</code>. Нічого не видаляй: це чернетка для наступних уроків.</p>
+<p>Працюй самостійно, а в кінці покажи результат сусідові.</p>
+    <ol class="task-steps">
+      <li>
+        <p class="step-title"><strong>Відкрий проєкт і збережи копію v3</strong></p>
+        <ol>
+  <li>Відкрий у CapCut проєкт <code>Прізвище_тема_v2</code>.</li>
+  <li>Угорі клацни назву проєкту й перейменуй на <code>Прізвище_тема_v3</code>.</li>
+  <li>Натисни <strong>Пробіл</strong> і перегляди ролик.</li>
+</ol>
+<p>Якщо проєкт не відкривається, поклич вчителя. Не створюй новий.</p>
+<p class="step-result"><strong>Має вийти:</strong> Відкритий проєкт <code>Прізвище_тема_v3</code>, ролик програється.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Зроби плавну музику</strong></p>
+        <ol>
+  <li>Клацни музичну доріжку.</li>
+  <li>Праворуч <strong>Basic</strong>: <strong>Fade in 0,3–0,5 с</strong>, <strong>Fade out 1–2 с</strong>.</li>
+  <li>Якщо музика заглушує все, зменш <strong>Volume</strong> до −3…−6 dB.</li>
+  <li>Якщо в кліпах чути вітер чи шум, вимкни звук відеодоріжки (значок динаміка на початку доріжки).</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> Музика м'яко починається й м'яко затихає в кінці, без обриву.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Знайди напис у кадрі</strong></p>
+        <ol>
+  <li>Переглянь ролик і знайди кліп, де в кадрі є текст: вивіска, номер авто, логотип, екран телефона.</li>
+  <li>Якщо такого немає, завантаж з <strong>Pexels</strong> 1 вертикальний кліп з написом під свою тему (посилання вище), імпортуй і постав у ролик замість одного з кліпів. Обріж до 2–4 с.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> У ролику є щонайменше один кліп з написом у кадрі.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Зроби копію кліпу над ним</strong></p>
+        <ol>
+  <li>Клацни кліп з написом і натисни <strong>Ctrl+C</strong>.</li>
+  <li>Постав повзунок точно на <strong>початок</strong> цього кліпу, натисни <strong>Ctrl+V</strong>.</li>
+  <li>Переконайся, що копія лежить на доріжці <strong>вище</strong> і точно над оригіналом (початок і кінець збігаються). Якщо ні, перетягни її.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> Два однакові кліпи один над одним.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Розмий копію</strong></p>
+        <ol>
+  <li><strong>Effects → Video effects</strong>, у пошуку введи <strong>Blur</strong> або <strong>Mosaic</strong>.</li>
+  <li>Обери ефект <strong>без корони</strong> і перетягни його <strong>прямо на верхній кліп</strong> (копію).</li>
+  <li>Пробіл: тепер у плеєрі розмитий увесь кадр. Так і має бути, далі виправимо маскою.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> На цьому кліпі весь кадр розмитий.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Додай маску на напис</strong></p>
+        <ol>
+  <li>Клацни верхній кліп → праворуч <strong>Video → Mask</strong> → <strong>Rectangle</strong>.</li>
+  <li>У плеєрі пересунь і розтягни прямокутник, щоб він накрив <strong>лише напис</strong>.</li>
+  <li>Трохи збільш <strong>Feather</strong>, щоб краї розмиття були м'якими.</li>
+  <li>Пробіл: напис розмитий, усе інше чітке. Якщо напис рухається, спробуй кнопку <strong>Track</strong> або ключові кадри ◇.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> Напис не читається протягом усього кліпу, решта кадру чітка.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Заміни напис своїм</strong></p>
+        <ol>
+  <li>Обери напис у кадрі, який хочеш замінити (можна той самий, що розмив, або інший).</li>
+  <li><strong>Text → Default text</strong>, перетягни над кліпом і розтягни на всю його довжину.</li>
+  <li>Напиши свій текст (3–5 слів).</li>
+  <li>Увімкни <strong>Background</strong>, обери колір, <strong>Opacity 100%</strong>.</li>
+  <li>Пересунь і збільш текст, щоб плашка повністю закрила старий напис.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> На місці старого напису твій текст на плашці, старого тексту не видно.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Переглянь і покажи сусідові</strong></p>
+        <ol>
+  <li>Подивись ролик повністю з початку.</li>
+  <li>Покажи сусідові. Він перевіряє: <strong>чи можна прочитати розмитий напис?</strong> і <strong>чи визирає старий текст з-під плашки?</strong></li>
+  <li>Виправ, якщо треба.</li>
+</ol>
+<p class="step-result"><strong>Має вийти:</strong> Сусід не може прочитати розмитий напис і не бачить старого тексту.</p>      </li>
+      <li>
+        <p class="step-title"><strong>Експортуй v3</strong></p>
+        <ol>
+  <li>Натисни <strong>Export</strong> угорі праворуч.</li>
+  <li>Назва: <code>Прізвище_тема_v3</code>, папка <code>CapCut_Урок1</code>.</li>
+  <li>Resolution <strong>1080p</strong>, Format <strong>MP4</strong>, Frame rate <strong>30fps</strong>.</li>
+  <li>Дочекайся 100%, відкрий файл і перевір, що він програється.</li>
+</ol>
+<p>Якщо CapCut просить оплату, найімовірніше, ти взяв ефект з короною. Заміни його на безкоштовний.</p>
+<p class="step-result"><strong>Має вийти:</strong> У папці є файл <code>Прізвище_тема_v3.mp4</code> з плавною музикою, розмитим і заміненим написами.</p>      </li>
+    </ol>
+
+    <p class="deliverable"><strong>Що здати:</strong> Файл Прізвище_тема_v3.mp4 у папці CapCut_Урок1 і збережений проєкт CapCut. У відповіді нижче напиши: який напис ти розмив, який замінив, і чому обрав саме такий спосіб.</p>
+    <div class="answer-box">
+  <label for="answer-task-1">Твоя відповідь</label>
+  <textarea id="answer-task-1" data-answer="Завдання 1: Мій шортс v3: чистий звук і текст у кадрі під контролем" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+
+  </article>
+  <article class="extra-task">
+    <p class="task-kind">Зробив усе? Спробуй ще</p>
+    <h3><span aria-hidden="true">⭐</span> Додаткове завдання: склейки в такт і звуковий ефект</h3>
+    <p>Відео здається «професійним», коли кліпи змінюються <strong>в такт музиці</strong>.</p>
+<ol>
+<li><strong>Познач біти.</strong> Увімкни відтворення і на сильних ударах музики став маркери (кнопка маркера над таймлайном). Достатньо 4–6 маркерів. Якщо є безкоштовна автоматична розмітка бітів (Beat), можна нею.</li>
+<li><strong>Підтягни склейки.</strong> Підріж або посунь кліпи так, щоб 3–4 стики потрапили точно на маркери. Збільш масштаб таймлайну, щоб влучити точніше.</li>
+<li><strong>Додай звуковий ефект.</strong> <strong>Audio → Sound effects</strong>, обери безкоштовний «whoosh», клік чи «дзинь» і постав його там, де стоїть перехід з уроку 2. Гучність ефекту можна підняти, а музику на цьому місці трохи стишити.</li>
+</ol>
+<p><strong>Правило:</strong> 1–2 звукові ефекти на ролик, не більше. Експортуй ще раз з назвою <code>Прізвище_тема_v3_beat</code>.</p>
+
+    <div class="answer-box">
+  <label for="answer-extra">Твоя відповідь</label>
+  <textarea id="answer-extra" data-answer="Додаткове завдання: склейки в такт і звуковий ефект" rows="3" placeholder="Пиши тут — відповідь збережеться на цьому пристрої"></textarea>
+</div>
+  </article>
+</section>
+
+</main>
+<script>
+document.getElementById("theme-toggle").addEventListener("click", function () {
+  var root = document.documentElement;
+  var dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+(function () {
+  // Student answers stay on this device (lesson-feedback-1 AC-08); nothing is sent anywhere.
+  var key = "lesson-answers:" + location.pathname;
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch (e) { saved = {}; }
+  var fields = Array.prototype.slice.call(document.querySelectorAll("[data-answer], #student-name"));
+  function save() {
+    fields.forEach(function (f) { saved[f.id] = f.value; });
+    try { localStorage.setItem(key, JSON.stringify(saved)); } catch (e) { /* storage is off */ }
+  }
+  fields.forEach(function (f) {
+    if (saved[f.id]) { f.value = saved[f.id]; }
+    f.addEventListener("input", save);
+  });
+})();
+</script>
+</body>
+</html>
