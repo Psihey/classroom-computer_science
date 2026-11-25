@@ -18,6 +18,7 @@
 --int:#2f6fed;--float:#0097a7;--str:#d63c78;--bool:#7c4dea;--list:#e09300;--ok:#1f9d55;--bad:#e03b3b}
 :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Rubik,system-ui,sans-serif;overflow-x:clip}
 code,pre,.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
 .wrap{max-width:1040px;margin:0 auto;padding:24px max(4vw,16px) 60px}
@@ -105,6 +106,11 @@ pre.code{background:#1e2024;color:#e9e6df;border-radius:12px;padding:14px 16px;f
 .row b{white-space:nowrap}
 .mbar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:6px}.mbar i{display:block;height:100%;width:0;transition:width 1.2s .3s}
 .codeword{display:inline-block;font:700 26px "JetBrains Mono",monospace;background:var(--rubber);color:#ffd27a;padding:12px 22px;border-radius:12px;margin:8px 0;letter-spacing:1px}
+.vars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:620px}
+.vbtn{font:700 17px Rubik,sans-serif;min-height:56px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.vbtn:hover{border-color:var(--accent)}.vbtn.sel{background:var(--rubber);color:#ffd27a;border-color:var(--rubber)}
+.vbtn.need{animation:shake .4s;border-color:var(--bad)}
+@media(max-width:600px){.vars{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:820px){.quest{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:600px){.stage{height:430px}.bin{height:120px}.bin small{display:none}.item{font-size:17px;height:54px}.opts{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
@@ -124,6 +130,8 @@ pre.code{background:#1e2024;color:#e9e6df;border-radius:12px;padding:14px 16px;f
     <p>Ти новий працівник цеху. Конвеєром їдуть значення, і кожне треба покласти в контейнер свого типу. Коли відпрацюєш зміну, тебе чекає лабіринт із 9 замками. Відчиниш усі, отримаєш скарб і свій рейтинг.</p>
     <div class="types" id="cheat"></div>
     <p><b>Як сортувати:</b> перетягни значення мишкою в контейнер <i>або</i> натисни на контейнер <i>або</i> клавішу <kbd>1</kbd>–<kbd>5</kbd>.</p>
+    <p style="margin:18px 0 8px"><b>Обери свій варіант</b> (його називає вчитель):</p>
+    <div class="vars" id="vars"><button type="button" class="vbtn" data-v="0">Варіант 1</button><button type="button" class="vbtn" data-v="1">Варіант 2</button><button type="button" class="vbtn" data-v="2">Варіант 3</button><button type="button" class="vbtn" data-v="3">Варіант 4</button></div>
     <form id="startForm" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:14px">
       <input type="text" id="name" placeholder="Прізвище та ім'я" autocomplete="off" required maxlength="40">
       <button class="btn" type="submit">Почати зміну →</button>
@@ -170,10 +178,11 @@ pre.code{background:#1e2024;color:#e9e6df;border-radius:12px;padding:14px 16px;f
 <section class="screen" id="s-teacher">
   <div class="card">
     <h2>Перевірка кодового слова</h2>
-    <p class="sub">Введи ім'я учня так, як він його написав, і загальну кількість балів (з 42).</p>
+    <p class="sub">Введи ім'я учня так, як він його написав, загальну кількість балів (з 42) і варіант.</p>
     <form id="tForm" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
       <input type="text" id="tName" placeholder="Прізвище та ім'я">
       <input type="text" id="tPts" placeholder="Бали" style="width:110px" inputmode="numeric">
+      <select id="tVar" style="font:16px Rubik;min-height:48px;border-radius:10px;padding:0 10px;border:2px solid var(--line);background:var(--bg);color:var(--ink)"><option value="0">Варіант 1</option><option value="1">Варіант 2</option><option value="2">Варіант 3</option><option value="3">Варіант 4</option></select>
       <button class="btn" type="submit">Показати код</button>
     </form>
     <p class="codeword" id="tOut" hidden></p>
@@ -191,7 +200,12 @@ const TYPES=[
  {t:'bool',ua:'так / ні',ex:'True   False',c:'var(--bool)'},
  {t:'list',ua:'список',ex:'[1, 2, 3]',c:'var(--list)'}];
 const LEVELS=[
- {name:'Рівень 1 · Розминка',intro:'Стрічка їде повільно. Значення прості: дивись на крапку, лапки й дужки.',ms:9000,q:'Який тип цього значення?',items:[
+ {name:'Рівень 1 · Розминка',intro:'Стрічка їде повільно. Значення прості: дивись на крапку, лапки й дужки.',ms:9000,q:'Який тип цього значення?'},
+ {name:'Рівень 2 · Пастки',intro:'Стрічка прискорюється. Тепер значення хитрі: цифри в лапках, порожні дужки, .0 у кінці…',ms:7000,q:'Обережно, пастки! Який тип?'},
+ {name:'Рівень 3 · Тип результату',intro:'Найшвидша стрічка! Тепер на ній вирази. Визнач, якого типу буде результат.',ms:6000,q:'Якого типу буде РЕЗУЛЬТАТ?'}];
+const VARIANTS=[
+/* ===== ВАРІАНТ 1 ===== */
+{lv:[[
   ['42','int','Ціле число без крапки й лапок, тому int.'],
   ['3.14','float','Є крапка, отже це дробове число: float.'],
   ['"кіт"','str','У лапках будь-що стає текстом: str.'],
@@ -199,8 +213,7 @@ const LEVELS=[
   ['[1, 2, 3]','list','Квадратні дужки означають список: list.'],
   ['-7','int','Мінус нічого не змінює: це ціле число, int.'],
   ["'Привіт'",'str','Одинарні лапки теж роблять рядок: str.'],
-  ['False','bool','False без лапок має тип bool.']]},
- {name:'Рівень 2 · Пастки',intro:'Стрічка прискорюється. Тепер значення хитрі: цифри в лапках, порожні дужки, .0 у кінці…',ms:7000,q:'Обережно, пастки! Який тип?',items:[
+  ['False','bool','False без лапок має тип bool.']],[
   ['"42"','str','Цифри в лапках уже текст, а не число! Тому str.'],
   ['5.0','float','Навіть .0 робить число дробовим: float.'],
   ['"True"','str','У лапках це просто слово, а не логічне значення. Тому str.'],
@@ -208,8 +221,7 @@ const LEVELS=[
   ['0','int','Нуль теж ціле число: int.'],
   ['"3.14"','str','Лапки важливіші за крапку, тому це str.'],
   ['["a", "b"]','list','Список із рядків однаково має тип list.'],
-  ['-0.5','float','Дробове від\'ємне число: float.']]},
- {name:'Рівень 3 · Тип результату',intro:'Найшвидша стрічка! Тепер на ній вирази. Визнач, якого типу буде результат.',ms:6000,q:'Якого типу буде РЕЗУЛЬТАТ?',items:[
+  ['-0.5','float','Дробове від\'ємне число: float.']],[
   ['10 / 2','float','Ділення / завжди дає float: 10 / 2 = 5.0'],
   ['"ab" + "c"','str','Рядок + рядок склеюються в "abc", тобто str.'],
   ['3 * 4','int','int * int дає int: 12'],
@@ -217,8 +229,8 @@ const LEVELS=[
   ['[1] + [2]','list','Список + список дає [1, 2], тобто list.'],
   ['""','str','Порожні лапки — це порожній рядок, але все одно str.'],
   ['2 + 0.5','float','int + float дає float: 2.5'],
-  ['"[1, 2]"','str','Це не список, а текст у лапках: str.']]}];
-const ROOMS=[
+  ['"[1, 2]"','str','Це не список, а текст у лапках: str.']]],
+ rooms:[
  {topic:'int',story:'Перші двері. На замку світиться код:',code:'print(type(15))',opts:["<class 'int'>","<class 'str'>","<class 'float'>","15"],a:0,hint:'Ціле число без лапок і без крапки.'},
  {topic:'bool',story:'Замок питає: яке з цих значень має тип bool?',opts:['"True"','True','1','"так"'],a:1,hint:'bool — це True або False без лапок.'},
  {topic:'str',story:'Що виведе цей код і якого типу результат?',code:'print("5" + "5")',opts:['10 (int)','55 (str)','55 (int)','TypeError'],a:1,hint:'Обидва значення в лапках, тож + їх склеює.'},
@@ -227,18 +239,133 @@ const ROOMS=[
  {topic:'str',story:'Небезпечні двері! Що станеться?',code:'print("5" + 5)',opts:['55','10','TypeError','5 + 5'],a:2,hint:'Текст і число не можна додати: Python не знає, склеювати їх чи рахувати.'},
  {topic:'list',story:'На дверях висить таке значення. Що це?',code:'["кіт", 3, True]',opts:['Помилка: різні типи','list зі значень різних типів','str','три окремі змінні'],a:1,hint:'У список можна покласти значення будь-яких типів.'},
  {topic:'int',story:'Зламаний касир хоче отримати 398. Як виправити перший рядок?',code:'price = "199"\ntotal = price * 2\nprint(total)   # виводить 199199',opts:['price = 199','total = price + 2','price = "398"','print("total")'],a:0,hint:'Прибери лапки, і price стане int.'},
- {topic:'bool',story:'СКРИНЯ! Останній замок: який рядок дасть помилку?',opts:['print(3 * "ab")','print([1] + [2])','print(True + "1")','print(2 + 0.5)'],a:2,hint:'Шукай, де + намагається поєднати не-текст із текстом.'}];
+ {topic:'bool',story:'СКРИНЯ! Останній замок: який рядок дасть помилку?',opts:['print(3 * "ab")','print([1] + [2])','print(True + "1")','print(2 + 0.5)'],a:2,hint:'Шукай, де + намагається поєднати не-текст із текстом.'}]},
+/* ===== ВАРІАНТ 2 ===== */
+{lv:[[
+  ['17','int','Ціле число без крапки й лапок: int.'],
+  ['2.5','float','Є крапка, отже дробове число: float.'],
+  ['"собака"','str','Текст у лапках: str.'],
+  ['False','bool','False без лапок має тип bool.'],
+  ['[4, 5]','list','Квадратні дужки означають список: list.'],
+  ['-100','int','Від\'ємне ціле число: int.'],
+  ["'Київ'",'str','Одинарні лапки теж роблять рядок: str.'],
+  ['True','bool','True без лапок має тип bool.']],[
+  ['"0"','str','Нуль у лапках уже текст: str.'],
+  ['7.0','float','.0 у кінці робить число дробовим: float.'],
+  ['"False"','str','У лапках це слово, а не логічне значення: str.'],
+  ['[0]','list','Список з одним елементом 0 однаково list.'],
+  ['-1','int','Від\'ємне ціле число: int.'],
+  ['"2.5"','str','Лапки важливіші за крапку: str.'],
+  ['[True]','list','Список, у якому лежить True, однаково list.'],
+  ['0.0','float','Нуль із крапкою має тип float.']],[
+  ['9 / 3','float','Ділення / завжди дає float: 9 / 3 = 3.0'],
+  ['"1" + "2"','str','Рядки склеюються: "12", тобто str.'],
+  ['6 - 10','int','int - int дає int: -4'],
+  ['2 < 1','bool','Порівняння дає False, тобто bool.'],
+  ['[0] * 3','list','Список * число дає [0, 0, 0], тобто list.'],
+  ['"ок" * 2','str','Рядок * число дає "окок", тобто str.'],
+  ['1.5 * 2','float','float * int дає float: 3.0'],
+  ['4 == 4','bool','Перевірка на рівність дає True, тобто bool.']]],
+ rooms:[
+ {topic:'float',story:'Перші двері. На замку світиться код:',code:'print(type(2.5))',opts:["<class 'int'>","<class 'float'>","<class 'str'>","2.5"],a:1,hint:'Є крапка, тож це дробове число.'},
+ {topic:'str',story:'Замок питає: яке з цих значень має тип str?',opts:['25','2.5','"25"','True'],a:2,hint:'str завжди в лапках.'},
+ {topic:'str',story:'Що виведе цей код і якого типу результат?',code:'print("1" + "0")',opts:['1 (int)','10 (int)','10 (str)','TypeError'],a:2,hint:'Обидва значення в лапках, тож + склеює їх у "10".'},
+ {topic:'float',story:'Замок із секретом ділення:',code:'print(type(9 / 3))',opts:["<class 'int'>","3","<class 'float'>","<class 'bool'>"],a:2,hint:'Ділення / завжди повертає float: 9 / 3 = 3.0'},
+ {topic:'str',story:'Двері малюють лінію. Що виведе код?',code:'print("-" * 5)',opts:['-----','-5','TypeError','"-" * 5'],a:0,hint:'Рядок * число повторює рядок.'},
+ {topic:'str',story:'Небезпечні двері! Що станеться?',code:'print(10 + "5")',opts:['105','15','"105"','TypeError'],a:3,hint:'Число й текст через + не поєднуються.'},
+ {topic:'list',story:'Замок питає: яке з цих значень має тип list?',opts:['"[1, 2]"','[1, 2]','"1, 2"','12'],a:1,hint:'list у квадратних дужках і БЕЗ лапок.'},
+ {topic:'int',story:'Програма має вивести 16, але падає з помилкою. Як виправити перший рядок?',code:'age = "15"\nnext_year = age + 1\nprint(next_year)   # TypeError!',opts:['age = 15','age = "15.0"','age = [15]','age = "16"'],a:0,hint:'Щоб додавати числа, age має бути int, тобто без лапок.'},
+ {topic:'list',story:'СКРИНЯ! Останній замок: який рядок дасть помилку?',opts:['print("a" * 3)','print([1] + "2")','print(5 / 2)','print("x" + "y")'],a:1,hint:'Список можна додати тільки до списку.'}]},
+/* ===== ВАРІАНТ 3 ===== */
+{lv:[[
+  ['2026','int','Ціле число: int.'],
+  ['0.75','float','Є крапка: float.'],
+  ['"Python"','str','Текст у лапках: str.'],
+  ['True','bool','True без лапок має тип bool.'],
+  ['["a", "b", "c"]','list','Квадратні дужки означають список: list.'],
+  ['-3','int','Від\'ємне ціле число: int.'],
+  ["'так'",'str','Слово в лапках — це текст, а не bool: str.'],
+  ['False','bool','False без лапок має тип bool.']],[
+  ['"2026"','str','Цифри в лапках — це текст: str.'],
+  ['10.0','float','.0 у кінці робить число дробовим: float.'],
+  ['"false"','str','У лапках, та ще й з малої літери, тому str.'],
+  ['["True"]','list','Зовні квадратні дужки, тому list.'],
+  ['1','int','Одиниця — ціле число, хоч і схожа на True: int.'],
+  ['"-3"','str','Мінус у лапках теж текст: str.'],
+  ['" "','str','Пробіл у лапках теж рядок: str.'],
+  ['-2.0','float','Є крапка: float.']],[
+  ['7 / 7','float','Ділення / завжди дає float: 1.0'],
+  ['"Py" + "thon"','str','Рядки склеюються: "Python", тобто str.'],
+  ['5 * 5','int','int * int дає int: 25'],
+  ['10 > 100','bool','Порівняння дає False, тобто bool.'],
+  ['["a"] + ["b"]','list','Список + список дає ["a", "b"], тобто list.'],
+  ['"3" * 3','str','Рядок * число дає "333", тобто str.'],
+  ['0.5 + 0.5','float','float + float дає float: 1.0'],
+  ['"a" == "a"','bool','Порівняння рядків дає True, тобто bool.']]],
+ rooms:[
+ {topic:'str',story:'Перші двері. На замку світиться код:',code:'print(type("15"))',opts:["<class 'int'>","<class 'float'>","<class 'str'>","15"],a:2,hint:'Подивись на лапки!'},
+ {topic:'float',story:'Замок питає: яке з цих значень має тип float?',opts:['"3.5"','35','3.5','True'],a:2,hint:'float має крапку і НЕ має лапок.'},
+ {topic:'int',story:'Що виведе цей код і якого типу результат?',code:'print(2 + 3)',opts:['23 (str)','5 (int)','5.0 (float)','TypeError'],a:1,hint:'Лапок немає, тож це звичайне додавання цілих чисел.'},
+ {topic:'bool',story:'Замок-порівняння:',code:'print(type(5 > 2))',opts:["<class 'int'>","<class 'bool'>","True","<class 'str'>"],a:1,hint:'Порівняння дає True або False, тобто bool.'},
+ {topic:'str',story:'Двері лунають луною. Що виведе код?',code:'print("ab" + "ab" + "ab")',opts:['ababab','"ab" * 3','ab3','TypeError'],a:0,hint:'+ склеює рядки один за одним.'},
+ {topic:'str',story:'Небезпечні двері! Що станеться?',code:'print("Мені " + 15 + " років")',opts:['Мені 15 років','TypeError','Мені років','15'],a:1,hint:'15 — це int, тому склеїти його з текстом через + не вийде.'},
+ {topic:'list',story:'Замок із дужками:',code:'print(type([5]))',opts:["<class 'int'>","<class 'list'>","<class 'str'>","5"],a:1,hint:'Квадратні дужки навколо значення означають list.'},
+ {topic:'int',story:'Калькулятор зламався. Що змінити, щоб вивело 30?',code:'a = "10"\nb = "20"\nprint(a + b)   # виводить 1020',opts:['a = 10 і b = 20 (без лапок)','print(a - b)','print("a + b")','b = "30"'],a:0,hint:'Числа в лапках склеюються, а без лапок додаються.'},
+ {topic:'str',story:'СКРИНЯ! Останній замок: який рядок дасть помилку?',opts:['print("5" * 2)','print(5 * 2)','print("5" + 2)','print("5" + "2")'],a:2,hint:'Шукай, де + поєднує текст із числом.'}]},
+/* ===== ВАРІАНТ 4 ===== */
+{lv:[[
+  ['8','int','Ціле число: int.'],
+  ['9.99','float','Є крапка: float.'],
+  ['"м\'яч"','str','Текст у лапках: str.'],
+  ['False','bool','False без лапок має тип bool.'],
+  ['[10, 20, 30]','list','Квадратні дужки означають список: list.'],
+  ['-42','int','Від\'ємне ціле число: int.'],
+  ["'Hello'",'str','Одинарні лапки теж роблять рядок: str.'],
+  ['True','bool','True без лапок має тип bool.']],[
+  ['"8"','str','Цифра в лапках — це текст: str.'],
+  ['1.0','float','.0 у кінці робить число дробовим: float.'],
+  ['"[]"','str','Дужки в лапках — це просто текст: str.'],
+  ['[""]','list','Список, у якому лежить порожній рядок, однаково list.'],
+  ['100','int','Ціле число: int.'],
+  ['"9.99"','str','Лапки важливіші за крапку: str.'],
+  ['[3.14]','list','Список з одним float однаково list.'],
+  ['-1.5','float','Дробове від\'ємне число: float.']],[
+  ['1 / 4','float','Ділення / завжди дає float: 0.25'],
+  ['"100" + "1"','str','Рядки склеюються: "1001", тобто str.'],
+  ['2 * 50','int','int * int дає int: 100'],
+  ['1 > 2','bool','Порівняння дає False, тобто bool.'],
+  ['[1, 2] + [3]','list','Список + список дає [1, 2, 3], тобто list.'],
+  ['"!" * 3','str','Рядок * число дає "!!!", тобто str.'],
+  ['4.5 - 0.5','float','float - float дає float: 4.0'],
+  ['100 < 200','bool','Порівняння дає True, тобто bool.']]],
+ rooms:[
+ {topic:'bool',story:'Перші двері. На замку світиться код:',code:'print(type(True))',opts:["<class 'str'>","<class 'int'>","<class 'bool'>","True"],a:2,hint:'True без лапок — логічне значення.'},
+ {topic:'int',story:'Замок питає: яке з цих значень має тип int?',opts:['"7"','7.0','7','[7]'],a:2,hint:'int — ціле число без крапки, лапок і дужок.'},
+ {topic:'str',story:'Що виведе цей код і якого типу результат?',code:'print("3" + "3" + "3")',opts:['9 (int)','333 (str)','333 (int)','TypeError'],a:1,hint:'Усі значення в лапках, тож + їх склеює.'},
+ {topic:'float',story:'Замок із секретом ділення:',code:'print(type(6 / 3))',opts:["<class 'float'>","<class 'int'>","2","<class 'str'>"],a:0,hint:'Ділення / завжди повертає float: 6 / 3 = 2.0'},
+ {topic:'list',story:'Двері складають списки. Що виведе код?',code:'print([1, 2] + [3])',opts:['[1, 2, 3]','[1, 2][3]','6','TypeError'],a:0,hint:'Список + список дає один довший список.'},
+ {topic:'str',story:'Небезпечні двері! Що станеться?',code:'print("Бал: " + 12)',opts:['Бал: 12','TypeError','Бал: "12"','12'],a:1,hint:'12 — це int, тому склеїти його з текстом через + не вийде.'},
+ {topic:'str',story:'На дверях написано "[1, 2, 3]" — у лапках! Що це?',opts:['list','str, бо це текст у лапках','int','помилка'],a:1,hint:'Лапки перетворюють будь-що на текст.'},
+ {topic:'int',story:'Магазин хоче отримати 150. Як виправити другий рядок?',code:'price = 50\ncount = "3"\nprint(price * count)   # виводить 333333…3 (50 трійок)',opts:['count = 3','count = "150"','count = [3]','count = 3.0'],a:0,hint:'"3" — текст, тому * повторює його. Потрібне ціле число.'},
+ {topic:'str',story:'СКРИНЯ! Останній замок: який рядок дасть помилку?',opts:['print([1] * 2)','print("1" + 1)','print(1 + 1.0)','print("1" * 1)'],a:1,hint:'Шукай, де + поєднує текст із числом.'}]}];
+let ROOMS=VARIANTS[0].rooms,VAR=0;
+const pickVariant=v=>{VAR=v;LEVELS.forEach((L,i)=>L.items=VARIANTS[v].lv[i]);ROOMS=VARIANTS[v].rooms};
 const CELLS=[[0,0],[0,1],[0,2],[1,2],[1,1],[1,0],[2,0],[2,1],[2,2]]; // змійка
 const ST={name:'',sort:0,done:0,quest:0,miss:{}};
 const show=id=>{document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo(0,0)};
 const hash=s=>{let h=5381;for(const ch of s)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h};
 const WORDS=['ПІТОН','БАЙТ','ЗМІННА','КОНВЕЄР','СПИСОК','РЯДОК','ПІКСЕЛЬ','ТОННІ','ЛАБІРИНТ','СКРИНЯ'];
-const codeFor=(name,total)=>{const h=hash(name.trim().toLowerCase()+'|'+total);return WORDS[h%WORDS.length]+'-'+total+'-'+(h%900+100)};
+const codeFor=(name,total,v)=>{const h=hash(name.trim().toLowerCase()+'|'+total+'|'+v);return 'В'+(v+1)+'-'+WORDS[h%WORDS.length]+'-'+total+'-'+(h%900+100)};
 
 /* ---------- старт ---------- */
 $('cheat').innerHTML=TYPES.map(T=>`<div class="tcard" style="background:${T.c}"><b>${T.t}</b><span>${T.ua}</span><code>${T.ex.replace(/</g,'&lt;')}</code></div>`).join('');
-$('startForm').addEventListener('submit',e=>{e.preventDefault();const n=$('name').value.trim();if(n.length<2){$('name').focus();return}
- ST.name=n;$('who').textContent='👷 '+n;$('who').hidden=false;show('s-sort');startLevel()});
+let chosen=-1;
+document.querySelectorAll('.vbtn').forEach(b=>b.addEventListener('click',()=>{chosen=+b.dataset.v;document.querySelectorAll('.vbtn').forEach(x=>x.classList.toggle('sel',x===b))}));
+const setWho=()=>{$('who').textContent='👷 '+ST.name+' · Варіант '+(VAR+1);$('who').hidden=false};
+$('startForm').addEventListener('submit',e=>{e.preventDefault();
+ if(chosen<0){const v=$('vars');v.querySelectorAll('.vbtn').forEach(x=>{x.classList.remove('need');void x.offsetWidth;x.classList.add('need')});return}
+ const n=$('name').value.trim();if(n.length<2){$('name').focus();return}
+ pickVariant(chosen);ST.name=n;setWho();show('s-sort');startLevel()});
 
 /* ---------- цех ---------- */
 const stage=$('stage'),belt=$('belt'),fb=$('fb'),fbText=$('fbText');
@@ -337,13 +464,13 @@ function finalScreen(){show('s-final');
  const [_,title,msg]=ranks.find(r=>grade>=r[0]);const stars=Math.max(1,Math.round(grade/12*5));
  const weak=Object.entries(ST.miss).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t,n])=>`<code>${t}</code> (${n})`).join(', ');
  const row=(l,v,m,c)=>`<div class="row"><span>${l}</span><b>${v} / ${m}</b></div><div class="mbar"><i style="background:${c}" data-w="${v/m*100}"></i></div>`;
- $('final').innerHTML=`<p class="sub" style="margin:0">Рейтинг працівника цеху</p><h2 style="margin-top:4px"></h2>
+ $('final').innerHTML=`<p class="sub" style="margin:0">Рейтинг працівника цеху · Варіант ${VAR+1}</p><h2 style="margin-top:4px"></h2>
   <div class="grade">${grade}<span style="font-size:.35em;color:var(--soft)"> / 12</span></div>
   <div class="stars">${'★'.repeat(stars)}<span style="opacity:.25">${'★'.repeat(5-stars)}</span></div>
   <h2>${title}</h2><p>${msg}</p>
   <div class="rows">${row('🏭 Сортувальний цех',ST.sort,24,'var(--int)')}${row('🗝️ Лабіринт типів',ST.quest,18,'var(--bool)')}${row('Разом',total,42,'var(--accent)')}
   <p style="margin-top:14px">${weak?'Варто повторити: '+weak:'Жодної помилки! Неймовірно 🔥'}</p></div>
-  <p class="sub">Покажи цей екран учителю. Твоє кодове слово:</p><div class="codeword">${codeFor(ST.name,total)}</div>
+  <p class="sub">Покажи цей екран учителю. Твоє кодове слово:</p><div class="codeword">${codeFor(ST.name,total,VAR)}</div>
   <p><button class="btn ghost" id="again">Пройти ще раз</button></p>`;
  $('final').querySelector('h2').textContent=ST.name;
  requestAnimationFrame(()=>requestAnimationFrame(()=>$('final').querySelectorAll('.mbar i').forEach(i=>i.style.width=i.dataset.w+'%')));
@@ -352,8 +479,8 @@ function finalScreen(){show('s-final');
 
 /* ---------- вчитель ---------- */
 if(location.hash==='#teacher')show('s-teacher');
-if(location.hash==='#quest'){ST.name='Перевірка вчителя';$('who').textContent='👷 '+ST.name;$('who').hidden=false;show('s-quest');startQuest()}
-$('tForm').addEventListener('submit',e=>{e.preventDefault();const o=$('tOut');o.hidden=false;o.textContent=codeFor($('tName').value,parseInt($('tPts').value,10)||0)});
+{const m=location.hash.match(/^#quest([1-4])?$/);if(m){pickVariant(m[1]?m[1]-1:0);ST.name='Перевірка вчителя';setWho();show('s-quest');startQuest()}}
+$('tForm').addEventListener('submit',e=>{e.preventDefault();const o=$('tOut');o.hidden=false;o.textContent=codeFor($('tName').value,parseInt($('tPts').value,10)||0,+$('tVar').value)});
 }
 </script>
 </body>
