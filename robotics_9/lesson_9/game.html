@@ -116,6 +116,38 @@ th{background:var(--th)}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
 .flow div{background:var(--tile);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;font-weight:700}
+/* ---- програмування ---- */
+.pgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:start}
+@media(max-width:900px){.pgrid{grid-template-columns:minmax(0,1fr)}}
+.pal{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.pal button{border:0;border-radius:8px;padding:8px 12px;font:600 14px Segoe UI,Arial,sans-serif;color:#fff;cursor:pointer;text-shadow:0 1px 1px rgba(0,0,0,.25);text-align:left;line-height:1.2}
+.pal button small{display:block;font-weight:400;font-size:12px;opacity:.9}
+.pal button:hover{filter:brightness(1.08)}
+.k-drive{background:#4c97ff}.k-ctrl{background:#ffab19}.k-my{background:#ff6680}
+.ws{background:var(--th);border:1px solid var(--border);border-radius:12px;padding:12px;min-height:200px;font:600 15px Segoe UI,Arial,sans-serif;color:#fff}
+.hat{display:inline-block;background:#ffbf00;border-radius:20px 20px 6px 6px;padding:10px 14px 6px;margin-bottom:2px;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.slot{min-height:34px;padding:3px 0 3px 0;border-radius:6px;cursor:pointer}
+.slot.tgt{outline:3px dashed var(--blue);outline-offset:2px;background:rgba(25,118,210,.07)}
+.slot .empty{color:var(--muted);font-weight:600;font-size:13px;padding:7px 10px}
+.pb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 8px 6px 12px;border-radius:6px;margin:3px 0;min-height:36px;text-shadow:0 1px 1px rgba(0,0,0,.25);width:max-content;max-width:100%}
+.pc{margin:3px 0;width:max-content;max-width:100%}
+.pc>.ph{background:#ffab19;display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 8px 6px 12px;border-radius:8px 8px 0 0;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.pc>.ph.mid{border-radius:0}
+.pc>.pbody{border-left:16px solid #ffab19;padding:2px 6px 2px 6px;min-width:190px}
+.pc>.pf{background:#ffab19;height:14px;border-radius:0 0 8px 8px;width:120px}
+.ctl{display:inline-flex;gap:2px;margin-left:6px}
+.ctl button{border:0;background:rgba(0,0,0,.22);color:#fff;border-radius:5px;width:24px;height:24px;cursor:pointer;font-size:13px;padding:0}
+.ctl button:hover{background:rgba(0,0,0,.4)}
+.pnum{width:52px;font:700 14px Segoe UI,Arial,sans-serif;border-radius:999px;border:0;padding:3px 8px;text-align:center}
+.pcond{font:600 14px Segoe UI,Arial,sans-serif;border-radius:999px;border:0;padding:4px 8px;background:#5cb1d6;color:#fff;max-width:260px}
+.pcond option{color:#172033;background:#fff}
+.sens{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.sens span{border-radius:10px;padding:6px 10px;font-size:14px;border:1px solid var(--border);background:var(--tile)}
+.sens span.on{border-color:var(--green)}.sens span.off{opacity:.75;border-style:dashed}
+.status{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--tile);font-weight:600}
+.status.ok{border-left:6px solid var(--green)}.status.bad{border-left:6px solid var(--red)}.status.info{border-left:6px solid var(--blue)}
+.mrow{display:flex;gap:14px;font-size:15px;margin-top:4px;flex-wrap:wrap}
+.tag2{display:inline-block;background:var(--purple);color:#fff;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle}
 @media(max-width:650px){.card{padding:16px}.hrow{padding-right:50px}}
 </style>
 </head>
@@ -357,31 +389,127 @@ function evaluate(m,b){
 }
 function fmt(x){return (Math.round(x*10)/10).toString().replace('.',',');}
 
+/* ---- етап програмування ---- */
+/* умови: який датчик потрібен, щоб блок умови був доступний */
+var CONDS={
+ red:{en:'DownEye detects red',uk:'знизу червона клітинка',needs:['ir','camera'],why:'ІЧ-датчик вниз або камера'},
+ wall:{en:'FrontDistance < 1 cell',uk:'попереду стіна',needs:['ultrasonic','lidar'],why:'ультразвуковий далекомір або лідар'},
+ metal:{en:'metal detected',uk:'металодетектор пищить',needs:['metal'],why:'металодетектор'}
+};
+var BLOCKS={
+ fwd:{cls:'k-drive',en:'drive forward 1 cell',uk:'вперед на 1 клітинку'},
+ right:{cls:'k-drive',en:'turn right 90°',uk:'праворуч на 90°'},
+ left:{cls:'k-drive',en:'turn left 90°',uk:'ліворуч на 90°'},
+ repeat:{cls:'k-ctrl',en:'repeat',uk:'повторити N разів'},
+ until:{cls:'k-ctrl',en:'repeat until',uk:'повторювати, доки…'},
+ 'if':{cls:'k-ctrl',en:'if … then',uk:'якщо … то'},
+ ifelse:{cls:'k-ctrl',en:'if … then … else',uk:'якщо … то … інакше'},
+ mark:{cls:'k-my',en:'mark mine',uk:'позначити міну 🚩'}
+};
+MISSIONS[0].prog={
+ par:5,
+ task:'Робот стоїть на старті й дивиться вгору. Склади програму, щоб він доїхав по лінії до <b>червоної клітинки</b> пакувальника і зупинився на ній. Між стелажами (темні клітинки) їхати не можна.',
+ tip:'Підказка: однакові команди підряд можна загорнути в <b>repeat</b>. Менше блоків — більше зірок.',
+ blocks:['fwd','right','left','repeat','until'],conds:['red'],goal:'target',
+ maps:[{name:'склад',grid:['######','######','....R#','.#####','.#####','.#####'],start:[0,5,0]}]
+};
+MISSIONS[2].prog={
+ par:6,
+ task:'Робот прочісує смугу поля зліва направо. Металодетектор «бачить» міну лише в клітинці <b>під роботом</b>. Познач <b>усі</b> міни блоком <b>mark mine</b> і не постав жодної зайвої позначки.',
+ tip:'Увага: після «Здати» програму перевірять ще на <b>2 секретних смугах</b>, де міни лежать в інших місцях. Тому запам’ятати, де міни, не вийде — потрібен <b>if</b>.',
+ blocks:['fwd','repeat','until','if','ifelse','mark'],conds:['metal','wall'],goal:'mines',
+ maps:[{name:'видима смуга',grid:['..M..MM.'],start:[0,0,1]},{name:'секретна смуга 1',grid:['M..M...M'],start:[0,0,1],hidden:true},{name:'секретна смуга 2',grid:['.M..M...'],start:[0,0,1],hidden:true}]
+};
+MISSIONS[5].prog={
+ par:4,
+ task:'Фінал! Через затримку сигналу оператор не допоможе — марсохід має <b>сам</b> доїхати коридором між скелями до <b>червоного кратера</b>. Як у Dynamic Wall Maze: після «Здати» програму перевірять на <b>секретній карті</b>, якої ти не бачиш.',
+ tip:'Придумай правило, яке працює на <b>будь-якій</b> такій карті: що робити, коли попереду стіна, і коли вона зникла. Кратер — червона клітинка.',
+ blocks:['fwd','right','left','repeat','until','if','ifelse'],conds:['red','wall'],goal:'target',gyro:true,
+ maps:[{name:'видима карта',grid:['........','.######.','.#....#.','.#.##.#.','.#.##.#.','.#.#R.#.','.#.####.','.#......'],start:[0,7,0]},
+       {name:'секретна карта',grid:['########','########','########','.......#','.#####.#','.##.R#.#','.##.##.#','.##....#'],start:[0,7,0],hidden:true}]
+};
+var PROG_IDS=['warehouse','mines','mars'];
+function condAvail(c,sensors){return CONDS[c].needs.some(function(s){return sensors.indexOf(s)>=0;});}
+function countBlocks(arr){var n=0;(arr||[]).forEach(function(b){n++;if(b.body)n+=countBlocks(b.body);if(b.els)n+=countBlocks(b.els);});return n;}
+var DX=[0,1,0,-1],DY=[-1,0,1,0];
+/* виконання програми на одній карті; повертає слід кроків і результат */
+function runProgram(code,map,sensors,useGyro){
+ var g=map.grid,H=g.length,W=g[0].length;
+ var st={x:map.start[0],y:map.start[1],d:map.start[2],turns:0,marks:{},steps:0,drift:false};
+ var trace=[snap()],err=null;
+ function snap(ev){return {x:st.x,y:st.y,d:st.d,marks:Object.assign({},st.marks),ev:ev||null};}
+ function cell(x,y){if(x<0||y<0||x>=W||y>=H)return '#';return g[y][x];}
+ function cond(c){
+  if(!c)throw {k:'nocond'};
+  if(!condAvail(c,sensors))throw {k:'locked',c:c};
+  if(c==='red')return cell(st.x,st.y)==='R';
+  if(c==='wall')return cell(st.x+DX[st.d],st.y+DY[st.d])==='#';
+  if(c==='metal')return cell(st.x,st.y)==='M';
+  return false;
+ }
+ function tick(){if(++st.steps>400)throw {k:'limit'};}
+ function exec(list){
+  for(var i=0;i<list.length;i++){
+   var b=list[i];
+   if(b.t==='fwd'){tick();var nx=st.x+DX[st.d],ny=st.y+DY[st.d];if(cell(nx,ny)==='#'){trace.push(snap('crash'));throw {k:'crash',step:st.steps};}st.x=nx;st.y=ny;trace.push(snap());}
+   else if(b.t==='right'||b.t==='left'){tick();st.turns++;var q=b.t==='right'?1:3;
+    if(useGyro&&st.turns>=3&&st.turns%2===1){q=2;st.drift=true;}
+    st.d=(st.d+q)%4;trace.push(snap(q===2?'drift':null));}
+   else if(b.t==='mark'){tick();st.marks[st.x+','+st.y]=1;trace.push(snap('mark'));}
+   else if(b.t==='repeat'){var n=Math.max(1,Math.min(50,parseInt(b.n,10)||1));for(var k=0;k<n;k++)exec(b.body);}
+   else if(b.t==='until'){var guard=0;while(!cond(b.c)){tick();exec(b.body);if(++guard>400)throw {k:'limit'};}}
+   else if(b.t==='if'){if(cond(b.c))exec(b.body);}
+   else if(b.t==='ifelse'){if(cond(b.c))exec(b.body);else exec(b.els);}
+  }
+ }
+ try{if(!code.length)throw {k:'empty'};exec(code);}catch(e){if(e&&e.k)err=e;else throw e;}
+ var ok=false,why='';
+ if(err){
+  why=err.k==='crash'?'💥 Робот врізався в стіну.':err.k==='limit'?'🔁 Програма не закінчилася за 400 кроків — робот кружляє на місці.':err.k==='empty'?'Програма порожня.':err.k==='nocond'?'В одному з блоків if / repeat until не вибрано умову.':'Умова «'+CONDS[err.c].uk+'» недоступна: на роботі немає датчика ('+CONDS[err.c].why+').';
+ }else if(map.goal==='mines'||g.join('').indexOf('M')>=0){
+  var want=[],extra=0,miss=0;
+  for(var y=0;y<H;y++)for(var x=0;x<W;x++)if(g[y][x]==='M')want.push(x+','+y);
+  want.forEach(function(k){if(!st.marks[k])miss++;});
+  Object.keys(st.marks).forEach(function(k){if(want.indexOf(k)<0)extra++;});
+  ok=!miss&&!extra;
+  why=ok?'✅ Усі міни позначено.':(miss?'❌ Пропущено мін: '+miss+'. ':'')+(extra?'❌ Зайвих позначок: '+extra+' (там немає міни).':'');
+ }else{
+  ok=cell(st.x,st.y)==='R';
+  why=ok?'✅ Робот на червоній клітинці!':'❌ Програма закінчилася, але робот не на червоній клітинці.';
+ }
+ if(st.drift&&!ok)why+=' Без гіроскопа робот не знає точно, на скільки повернув: похибка накопичилась, і з 3-го повороту деякі повороти виходять на 180° — робот їде не туди.';
+ return {ok:ok,why:why,trace:trace,drift:st.drift};
+}
+function progStars(ok,blocks,par){if(!ok)return 0;return blocks<=par?3:(blocks<=par+3?2:1);}
+
 /* ---- код результату ---- */
 var ALPH='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+var P34=17179869184; /* 2^34 */
 function fnv(s){var h=0x811c9dc5;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return h>>>0;}
 function normName(n){return String(n).toLowerCase().replace(/[’'ʼ`\s.\-_,]/g,'');}
-function makeCode(name,stars,points){
- var data=0;for(var i=0;i<7;i++)data+=(stars[i]&3)*Math.pow(4,i);
- data+=Math.min(points,16383)*16384;
- var chk=fnv(normName(name)+'|'+data+'|r9l9')&0xFFF;
- var mask=fnv('m'+chk)&0xFFFFFFF;
- var val=((data^mask)>>>0)*4096+chk,out='';
- for(var j=0;j<8;j++){out=ALPH[val%32]+out;val=Math.floor(val/32);}
- return out.slice(0,4)+'-'+out.slice(4);
+function codeMask(chk){return fnv('a'+chk)*4+(fnv('b'+chk)&3);}
+/* vals: 7 зірок конструктора + 3 зірки програмування */
+function makeCode(name,vals,points){
+ var data=0;for(var i=0;i<10;i++)data+=(vals[i]&3)*Math.pow(4,i);
+ data+=Math.min(points,16383)*1048576;
+ var chk=fnv(normName(name)+'|'+data+'|r9l9v2')&0xFFF;
+ var val=((data+codeMask(chk))%P34)*4096+chk,out='';
+ for(var j=0;j<10;j++){out=ALPH[val%32]+out;val=Math.floor(val/32);}
+ return out.slice(0,5)+'-'+out.slice(5);
 }
 function readCode(name,code){
  code=String(code).toUpperCase().replace(/[^0-9A-Z]/g,'');
- if(code.length!==8)return null;
- var val=0;for(var i=0;i<8;i++){var d=ALPH.indexOf(code[i]);if(d<0)return null;val=val*32+d;}
+ if(code.length!==10)return null;
+ var val=0;for(var i=0;i<10;i++){var d=ALPH.indexOf(code[i]);if(d<0)return null;val=val*32+d;}
  var chk=val%4096,scr=Math.floor(val/4096);
- var data=(scr^(fnv('m'+chk)&0xFFFFFFF))>>>0;
- if((fnv(normName(name)+'|'+data+'|r9l9')&0xFFF)!==chk)return null;
- var stars=[];for(var j=0;j<7;j++)stars.push(Math.floor(data/Math.pow(4,j))%4);
- return {stars:stars,points:Math.floor(data/16384)};
+ var data=((scr-codeMask(chk))%P34+P34)%P34;
+ if((fnv(normName(name)+'|'+data+'|r9l9v2')&0xFFF)!==chk)return null;
+ var vals=[];for(var j=0;j<10;j++)vals.push(Math.floor(data/Math.pow(4,j))%4);
+ return {build:vals.slice(0,7),prog:vals.slice(7),points:Math.floor(data/1048576)};
 }
-var GRADE=[1,1,2,2,3,3,4,5,5,6,7,7,8,9,9,10,10,11,12];
-function rankTitle(p){return p>=6000?'Головний конструктор':p>=4500?'Головний інженер':p>=3000?'Інженер':p>=1500?'Технік':'Стажер';}
+var MAX_STARS=27;
+function gradeOf(s){return s<=0?1:Math.max(1,Math.round(s*12/MAX_STARS));}
+function rankTitle(p){return p>=8000?'Головний конструктор':p>=6000?'Головний інженер':p>=4000?'Інженер':p>=2000?'Технік':'Стажер';}
 /*DATA-END*/
 
 (function(){
@@ -394,11 +522,14 @@ function rankTitle(p){return p>=6000?'Головний конструктор':p
  function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
  function h(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
- function mstate(id){if(!S.m[id])S.m[id]={att:0,stars:0,pts:0,last:null};return S.m[id];}
+ function mstate(id){if(!S.m[id])S.m[id]={att:0,stars:0,pts:0,last:null};var x=S.m[id];if(x.pAtt==null){x.pAtt=0;x.pStars=0;x.pPts=0;x.code=null;}return x;}
  function starsStr(n,max){max=max||3;var s='';for(var i=0;i<max;i++)s+=i<n?'★':'☆';return s;}
- function mainStars(){var t=0;MISSIONS.forEach(function(m){if(!m.bonus)t+=mstate(m.id).stars;});return t;}
- function totalPts(){var t=0;MISSIONS.forEach(function(m){t+=mstate(m.id).pts;});return t;}
- function passed(id){var x=mstate(id);return x.stars>0||x.att>=3;}
+ function mainStars(){var t=0;MISSIONS.forEach(function(m){if(!m.bonus){var x=mstate(m.id);t+=x.stars+(m.prog?x.pStars:0);}});return t;}
+ function totalPts(){var t=0;MISSIONS.forEach(function(m){var x=mstate(m.id);t+=x.pts+x.pPts;});return t;}
+ function buildPassed(id){var x=mstate(id);return x.stars>0||x.att>=3;}
+ function progPassed(id){var x=mstate(id);return x.pStars>0||x.pAtt>=3;}
+ function mById(id){for(var i=0;i<MISSIONS.length;i++)if(MISSIONS[i].id===id)return MISSIONS[i];}
+ function passed(id){return buildPassed(id)&&(!mById(id).prog||progPassed(id));}
  function unlocked(i){
   var m=MISSIONS[i];
   if(m.bonus){for(var j=0;j<MISSIONS.length;j++)if(!MISSIONS[j].bonus&&!passed(MISSIONS[j].id))return false;return true;}
@@ -410,7 +541,7 @@ function rankTitle(p){return p>=6000?'Головний конструктор':p
   hdr.innerHTML='<div class="logo">🚀 Конструктор місій</div>';
   if(!S)return;
   hdr.appendChild(h('div','stat','👤 '+esc(S.name)));
-  hdr.appendChild(h('div','stat','⭐ '+mainStars()+' / 18'));
+  hdr.appendChild(h('div','stat','⭐ '+mainStars()+' / '+MAX_STARS));
   hdr.appendChild(h('div','stat','🏆 '+totalPts()+' очок'));
   var t=h('div','stat','⏱ '+elapsed());t.id='tmr';hdr.appendChild(t);
   var b=h('button','hbtn','🏁 Мій код');b.onclick=showFinal;hdr.appendChild(b);
@@ -444,17 +575,17 @@ function rankTitle(p){return p>=6000?'Головний конструктор':p
   noDock();header();window.scrollTo(0,0);
   app.innerHTML='';
   var intro=h('section','card blue');
-  intro.innerHTML='<h2>🗺️ Місії</h2><p style="margin:0">Проходь місії по черзі. Наступна відкривається, коли попередню пройдено хоча б на ★ (або після 3 спроб). Оцінку рахують за <b>6 основних місій</b> (максимум 18 ★). Бонусна місія дає лише очки для лідерборду.</p>';
+  intro.innerHTML='<h2>🗺️ Місії</h2><p style="margin:0">Проходь місії по черзі. Наступна відкривається, коли попередню пройдено хоча б на ★ (або після 3 спроб). Оцінку рахують за <b>6 основних місій</b>: до ★★★ за кожного робота і ще до ★★★ за кожну з 3 програм (позначені 💻) — разом максимум 27 ★. Бонусна місія дає лише очки для лідерборду.</p>';
   app.appendChild(intro);
   var g=h('section','mgrid');
   MISSIONS.forEach(function(m,i){
    var st=mstate(m.id),un=unlocked(i);
    var b=h('button','mcard'+(un?'':' locked')+(m.bonus?' bonus':''));
    b.innerHTML='<div class="mnum">'+(m.bonus?'БОНУС':'#'+(i+1))+'</div><div class="mi">'+(un?m.icon:'🔒')+'</div>'+
-    '<div class="mt">'+m.title+'</div>'+
-    '<div class="ms">'+starsStr(st.stars)+'</div>'+
-    '<div class="small">'+(st.att?('Спроб: '+st.att+' · '+st.pts+' очок'):(un?'Бюджет: 🪙 '+m.budget:'Пройди попередню місію'))+'</div>';
-   if(un)b.onclick=function(){showMission(i);};else b.disabled=true;
+    '<div class="mt">'+m.title+(m.prog?'<span class="tag2">💻 2 етапи</span>':'')+'</div>'+
+    (m.prog?'<div class="mrow"><span>🔧 <span class="ms" style="font-size:18px">'+starsStr(st.stars)+'</span></span><span>💻 <span class="ms" style="font-size:18px">'+starsStr(st.pStars)+'</span></span></div>':'<div class="ms">'+starsStr(st.stars)+'</div>')+
+    '<div class="small">'+(st.att?('Спроб: '+st.att+(m.prog?' · програм здано: '+st.pAtt:'')+' · '+(st.pts+st.pPts)+' очок'):(un?'Бюджет: 🪙 '+m.budget:'Пройди попередню місію'))+'</div>';
+   if(un)b.onclick=function(){if(m.prog&&buildPassed(m.id)&&mstate(m.id).pStars<3)showProg(i);else showMission(i);};else b.disabled=true;
    g.appendChild(b);
   });
   app.appendChild(g);
@@ -526,7 +657,7 @@ function rankTitle(p){return p>=6000?'Головний конструктор':p
   r.att=st.att;r.cap=cap;
   r.newBest=r.points>st.pts;
   st.stars=Math.max(st.stars,r.attStars);st.pts=Math.max(st.pts,r.points);
-  st.last=JSON.parse(JSON.stringify(build));save();
+  st.last=JSON.parse(JSON.stringify(build));if(r.success)st.pass=JSON.parse(JSON.stringify(build));save();
   noDock();header();window.scrollTo(0,0);
   app.innerHTML='';
   var sec=h('section','card');
@@ -690,23 +821,199 @@ function rankTitle(p){return p>=6000?'Головний конструктор':p
   app.appendChild(bs);
   var act=h('section','row');
   var st=mstate(cur.id),idx=MISSIONS.indexOf(cur);
+  if(cur.prog&&r.success){var pg=h('button','btn purple','💻 Етап 2: запрограмуй цього робота ▶');pg.onclick=function(){showProg(idx);};act.appendChild(pg);}
+  else if(cur.prog&&buildPassed(cur.id)&&!r.success&&st.pass){var pg2=h('button','btn purple','💻 До програмування (з попереднім вдалим роботом)');pg2.onclick=function(){showProg(idx);};act.appendChild(pg2);}
   if(st.stars<3){var again=h('button','btn ghost','🔧 Змінити робота (спроба '+(st.att+1)+', макс. '+starsStr(st.att+1===2?2:1)+')');again.onclick=function(){showMission(idx);};act.appendChild(again);}
   var next=null;for(var j=idx+1;j<MISSIONS.length;j++){if(unlocked(j)){next=j;break;}}
-  if(next!==null&&(MISSIONS[next].bonus?true:passed(cur.id))){var nb=h('button','btn green','Наступна місія: '+MISSIONS[next].icon+' '+MISSIONS[next].title+' ▶');nb.onclick=function(){showMission(next);};act.appendChild(nb);}
+  if(next!==null&&passed(cur.id)){var nb=h('button','btn green','Наступна місія: '+MISSIONS[next].icon+' '+MISSIONS[next].title+' ▶');nb.onclick=function(){showMission(next);};act.appendChild(nb);}
   var mb=h('button','btn','🗺️ До місій');mb.onclick=showMap;act.appendChild(mb);
   app.appendChild(act);
+ }
+
+ /* ---------- етап програмування ---------- */
+ function showProg(i){
+  cur=MISSIONS[i];var P=cur.prog,st=mstate(cur.id);
+  var rb=st.pass||st.last||{chassis:'wheels2',sensors:[],power:'small',control:'auto'};
+  var sensors=rb.sensors.slice();
+  var drift=!!P.gyro&&sensors.indexOf('gyro')<0;
+  var code=st.code?JSON.parse(JSON.stringify(st.code)):[];
+  var target=code,busy=false;
+  noDock();header();window.scrollTo(0,0);
+  app.innerHTML='';
+  var back=h('button','btn ghost','← До місій');back.onclick=showMap;back.style.marginTop='18px';app.appendChild(back);
+  var br=h('section','card purple');
+  br.innerHTML='<h1>💻 Етап 2: програма — '+cur.icon+' '+cur.title+'</h1><p style="font-size:17px">'+P.task+'</p><p class="small" style="font-size:15px">'+P.tip+'</p>';
+  app.appendChild(br);
+  /* робот і доступні умови */
+  var rc=h('section','card');
+  var ch=findPart('chassis',rb.chassis);
+  var html='<h2>🤖 Твій робот і його датчики</h2><p style="margin:0">'+ch.icon+' '+ch.name+' · '+(sensors.length?sensors.map(function(s){var p=findPart('sensors',s);return p.icon+' '+p.name;}).join(' · '):'без датчиків')+'</p><div class="sens">';
+  P.conds.forEach(function(c){var on=condAvail(c,sensors);html+='<span class="'+(on?'on':'off')+'">'+(on?'✅':'🔒')+' умова <b>'+CONDS[c].en+'</b> ('+CONDS[c].uk+') — '+(on?'є датчик':'потрібен '+CONDS[c].why)+'</span>';});
+  if(P.gyro)html+='<span class="'+(drift?'off':'on')+'">'+(drift?'⚠️ немає гіроскопа — повороти з похибкою':'✅ гіроскоп — точні повороти на 90°')+'</span>';
+  html+='</div><p class="small">Датчики, які ти поставив у конструкторі, вирішують, які блоки-умови тобі доступні. Не вистачає датчика — повернись до конструктора (це буде нова спроба робота).</p>';
+  rc.innerHTML=html;
+  var rbtn=h('button','btn ghost','🔧 Змінити робота');rbtn.onclick=function(){showMission(i);};rc.appendChild(rbtn);
+  app.appendChild(rc);
+  /* поле + редактор */
+  var grid=h('section','pgrid');
+  var left=h('div','card'),right=h('div','card');
+  var vis=P.maps[0];
+  left.innerHTML='<h2>🗺️ '+(P.maps.length>1?'Видима карта':'Карта')+'</h2>';
+  var cv=h('canvas');left.appendChild(cv);
+  var legend=h('p','small','🟦 робот (трикутник — куди дивиться) · 🟥 ціль'+(P.goal==='mines'?' · ❓ міна (на видимій смузі)':'')+' · темне — стіна'+(P.maps.length>1?' · секретних карт: '+(P.maps.length-1):''));
+  left.appendChild(legend);
+  var br2=h('div','row');var bt=h('button','btn','▶ Тест');var bs=h('button','btn green','✅ Здати програму');br2.appendChild(bt);br2.appendChild(bs);left.appendChild(br2);
+  var status=h('div','status info','Склади програму праворуч і натисни «▶ Тест» — робот проїде видиму карту. «✅ Здати» перевіряє '+(P.maps.length>1?'всі карти, зокрема секретні,':'програму')+' і дає зірки.');left.appendChild(status);
+  var res=h('div');left.appendChild(res);
+  right.innerHTML='<h2>🧩 Програма</h2><p class="small" style="margin:0">Клацни блок — він додасться в місце з <b>синьою пунктирною рамкою</b>. Клацни в «пащу» блока repeat / if, щоб додавати всередину.</p>';
+  var pal=h('div','pal');
+  P.blocks.forEach(function(k){var B=BLOCKS[k];var b=h('button',B.cls,B.en+'<small>'+B.uk+'</small>');b.type='button';b.onclick=function(){add(k);};pal.appendChild(b);});
+  right.appendChild(pal);
+  var cnt=h('div','small');right.appendChild(cnt);
+  var ws=h('div','ws');right.appendChild(ws);
+  var clr=h('button','btn ghost','🗑 Очистити');clr.style.marginTop='10px';
+  var armed=false;clr.onclick=function(){if(!armed){armed=true;clr.textContent='Точно очистити? Натисни ще раз';return;}armed=false;clr.textContent='🗑 Очистити';code.length=0;target=code;changed();};
+  right.appendChild(clr);
+  grid.appendChild(left);grid.appendChild(right);app.appendChild(grid);
+  var cs=Math.min(64,Math.floor(560/vis.grid[0].length));
+  cv.width=vis.grid[0].length*cs;cv.height=vis.grid.length*cs;cv.style.maxWidth=cv.width+'px';
+  drawMap(cv,vis,{x:vis.start[0],y:vis.start[1],d:vis.start[2],marks:{}},[],cs);
+
+  function changed(){st.code=JSON.parse(JSON.stringify(code));save();render();}
+  function firstCond(){for(var j=0;j<P.conds.length;j++)if(condAvail(P.conds[j],sensors))return P.conds[j];return '';}
+  function add(k){
+   var n={t:k};
+   if(k==='repeat'){n.n=3;n.body=[];}
+   if(k==='until'||k==='if'||k==='ifelse'){n.c=firstCond();n.body=[];}
+   if(k==='ifelse')n.els=[];
+   target.push(n);
+   if(n.body)target=n.body;
+   changed();
+  }
+  function contains(arr,t){if(arr===t)return true;for(var j=0;j<arr.length;j++){var b=arr[j];if(b.body&&contains(b.body,t))return true;if(b.els&&contains(b.els,t))return true;}return false;}
+  function render(){
+   var n=countBlocks(code);
+   cnt.innerHTML='Блоків: <b>'+n+'</b> · ★★★ — якщо програма працює і блоків ≤ <b>'+P.par+'</b>, ★★ — ≤ '+(P.par+3)+', ★ — більше';
+   ws.innerHTML='';
+   ws.appendChild(h('div','hat','when started'));
+   ws.appendChild(slot(code));
+  }
+  function slot(arr){
+   var d=h('div','slot'+(arr===target?' tgt':''));
+   d.onclick=function(e){e.stopPropagation();target=arr;render();};
+   if(!arr.length)d.appendChild(h('div','empty',arr===code?'Порожньо — клацни блок угорі':'＋ сюди (клацни, потім обери блок)'));
+   arr.forEach(function(b,ix){d.appendChild(node(b,arr,ix));});
+   return d;
+  }
+  function ctl(arr,ix){
+   var c=h('span','ctl');
+   [['↑',function(){if(ix>0){var t=arr[ix-1];arr[ix-1]=arr[ix];arr[ix]=t;}}],['↓',function(){if(ix<arr.length-1){var t=arr[ix+1];arr[ix+1]=arr[ix];arr[ix]=t;}}],['✕',function(){arr.splice(ix,1);if(!contains(code,target))target=code;}]].forEach(function(x){
+    var b=h('button',null,x[0]);b.type='button';b.title=x[0]==='✕'?'Видалити':'Перемістити';b.onclick=function(e){e.stopPropagation();x[1]();changed();};c.appendChild(b);});
+   return c;
+  }
+  function condSel(b){
+   var s=h('select','pcond');
+   var o0=h('option',null,'— обери умову —');o0.value='';s.appendChild(o0);
+   P.conds.forEach(function(c){var on=condAvail(c,sensors);var o=h('option',null,(on?'':'🔒 ')+CONDS[c].en+' ('+CONDS[c].uk+')');o.value=c;o.disabled=!on;s.appendChild(o);});
+   s.value=b.c||'';
+   s.onclick=function(e){e.stopPropagation();};
+   s.onchange=function(){b.c=s.value;changed();};
+   return s;
+  }
+  function node(b,arr,ix){
+   var B=BLOCKS[b.t];
+   if(!b.body){var d=h('div','pb '+B.cls);d.appendChild(h('span',null,B.en));d.appendChild(ctl(arr,ix));d.onclick=function(e){e.stopPropagation();};return d;}
+   var c=h('div','pc');c.onclick=function(e){e.stopPropagation();};
+   var hd=h('div','ph');
+   if(b.t==='repeat'){hd.appendChild(h('span',null,'repeat'));var inp=h('input','pnum');inp.type='number';inp.min=1;inp.max=50;inp.value=b.n;inp.onclick=function(e){e.stopPropagation();};inp.onchange=function(){b.n=Math.max(1,Math.min(50,parseInt(inp.value,10)||1));changed();};hd.appendChild(inp);}
+   else{hd.appendChild(h('span',null,b.t==='until'?'repeat until':'if'));hd.appendChild(condSel(b));if(b.t!=='until')hd.appendChild(h('span',null,'then'));}
+   hd.appendChild(ctl(arr,ix));c.appendChild(hd);
+   var bd=h('div','pbody');bd.appendChild(slot(b.body));c.appendChild(bd);
+   if(b.t==='ifelse'){c.appendChild(h('div','ph mid','else'));var be=h('div','pbody');be.appendChild(slot(b.els));c.appendChild(be);}
+   c.appendChild(h('div','pf'));
+   return c;
+  }
+  ws.onclick=function(){target=code;render();};
+  render();
+
+  function play(map,r,done){
+   busy=true;bt.disabled=bs.disabled=true;
+   var k=0,trail=[];
+   (function stepf(){
+    var f=r.trace[k];trail.push([f.x,f.y]);
+    drawMap(cv,map,f,trail,cs);
+    k++;
+    if(k<r.trace.length)setTimeout(stepf,260);
+    else{busy=false;bt.disabled=bs.disabled=false;done&&done();}
+   })();
+  }
+  bt.onclick=function(){
+   if(busy)return;res.innerHTML='';
+   var r=runProgram(code,vis,sensors,drift);
+   status.className='status info';status.textContent='Робот виконує програму…';
+   play(vis,r,function(){status.className='status '+(r.ok?'ok':'bad');status.textContent=(P.maps.length>1&&r.ok?'На видимій карті працює! Тепер натисни «✅ Здати» — перевіримо на секретних. ':'')+r.why;});
+  };
+  bs.onclick=function(){
+   if(busy)return;
+   var all=P.maps.map(function(mp){return runProgram(code,mp,sensors,drift);});
+   var ok=all.every(function(x){return x.ok;}),n=countBlocks(code),stars=progStars(ok,n,P.par);
+   var pts=ok?stars*300+100:0;
+   res.innerHTML='';
+   st.pAtt++;var newBest=pts>st.pPts;st.pStars=Math.max(st.pStars,stars);st.pPts=Math.max(st.pPts,pts);save();
+   status.className='status info';status.textContent='Перевірка…';
+   play(vis,all[0],function(){
+    header();
+    status.className='status '+(ok?'ok':'bad');
+    status.textContent=ok?'✅ Програма працює на всіх картах!':'❌ Програма працює не на всіх картах — дивись звіт нижче.';
+    var html='<div class="card '+(ok?'green':'red')+'" style="box-shadow:none;margin-top:12px"><div class="res"><div class="bigstars">'+starsStr(stars)+'</div><div><div class="num">'+n+'</div><div class="small">блоків (ціль ≤ '+P.par+')</div></div><div><div class="num">+'+pts+'</div><div class="small">очок'+(newBest?'':' · рекорд не побито')+'</div></div></div><ul class="expl">';
+    P.maps.forEach(function(mp,j){html+='<li class="'+(all[j].ok?'ok':'bad')+'"><b>'+(mp.hidden?'🔒 ':'')+mp.name+':</b> '+esc(all[j].why)+'</li>';});
+    html+='</ul>';
+    if(ok&&stars<3)html+='<p class="small">Працює! Спробуй скоротити програму до '+P.par+' блоків — тоді буде ★★★.</p>';
+    if(!ok&&all[0].ok)html+='<p class="small">На видимій карті працює, а на секретних — ні. Отже, програма «запам’ятала» маршрут. Використай датчики й умови, щоб робот сам вирішував, що робити.</p>';
+    html+='</div>';
+    res.innerHTML=html;
+    var row=h('div','row');row.style.marginTop='10px';
+    var next=null;for(var j=i+1;j<MISSIONS.length;j++){if(unlocked(j)){next=j;break;}}
+    if(next!==null&&passed(cur.id)){var nb=h('button','btn green','Наступна місія: '+MISSIONS[next].icon+' '+MISSIONS[next].title+' ▶');nb.onclick=function(){showMission(next);};row.appendChild(nb);}
+    var mb=h('button','btn','🗺️ До місій');mb.onclick=showMap;row.appendChild(mb);
+    res.appendChild(row);
+   });
+  };
+ }
+ function drawMap(cv,map,f,trail,cs){
+  var c=cv.getContext('2d'),g=map.grid,th=cur.theme;
+  var floor=th==='mars'?'#c8734f':th==='mines'?'#6aa84f':'#cfd7e1',wall=th==='mars'?'#5e2614':th==='mines'?'#2f5a22':'#8a6d4a';
+  for(var y=0;y<g.length;y++)for(var x=0;x<g[0].length;x++){
+   var ch=g[y][x];
+   c.fillStyle=ch==='#'?wall:floor;c.fillRect(x*cs,y*cs,cs,cs);
+   c.strokeStyle='rgba(0,0,0,.15)';c.lineWidth=1;c.strokeRect(x*cs+0.5,y*cs+0.5,cs-1,cs-1);
+   if(ch==='#'&&th==='warehouse'){c.fillStyle='#c9a46b';c.fillRect(x*cs+6,y*cs+6,cs-12,cs/2-8);c.fillRect(x*cs+6,y*cs+cs/2+2,cs-12,cs/2-8);}
+   if(ch==='#'&&th==='mars'){c.fillStyle='#7a3520';c.beginPath();c.arc(x*cs+cs/2,y*cs+cs/2,cs*0.32,0,7);c.fill();}
+   if(ch==='R'){c.fillStyle='#d83b3b';c.fillRect(x*cs+3,y*cs+3,cs-6,cs-6);}
+   if(ch==='M'&&!map.hidden){c.fillStyle='rgba(0,0,0,.35)';c.beginPath();c.arc(x*cs+cs/2,y*cs+cs/2,cs*0.22,0,7);c.fill();c.fillStyle='#fff';c.font='bold '+Math.round(cs*0.3)+'px Segoe UI';c.textAlign='center';c.textBaseline='middle';c.fillText('?',x*cs+cs/2,y*cs+cs/2+1);}
+  }
+  if(th==='warehouse'){c.strokeStyle='#f2b705';c.lineWidth=5;c.beginPath();c.moveTo(map.start[0]*cs+cs/2,map.start[1]*cs+cs/2);c.lineTo(cs/2,2*cs+cs/2);c.lineTo(4*cs+cs/2,2*cs+cs/2);c.stroke();}
+  c.fillStyle='rgba(25,118,210,.35)';trail.forEach(function(p){c.beginPath();c.arc(p[0]*cs+cs/2,p[1]*cs+cs/2,cs*0.1,0,7);c.fill();});
+  c.font=Math.round(cs*0.42)+'px Segoe UI Emoji, sans-serif';c.textAlign='center';c.textBaseline='middle';
+  Object.keys(f.marks).forEach(function(k){var p=k.split(',');c.fillText('🚩',p[0]*cs+cs*0.72,p[1]*cs+cs*0.3);});
+  var cx=f.x*cs+cs/2,cy=f.y*cs+cs/2,r=cs*0.34;
+  c.fillStyle='#1976d2';c.beginPath();c.arc(cx,cy,r,0,7);c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.stroke();
+  var a=[-Math.PI/2,0,Math.PI/2,Math.PI][f.d];
+  c.fillStyle='#fff';c.beginPath();c.moveTo(cx+Math.cos(a)*r*0.8,cy+Math.sin(a)*r*0.8);c.lineTo(cx+Math.cos(a+2.4)*r*0.55,cy+Math.sin(a+2.4)*r*0.55);c.lineTo(cx+Math.cos(a-2.4)*r*0.55,cy+Math.sin(a-2.4)*r*0.55);c.fill();
+  if(f.ev==='crash'){var nx=cx+[0,1,0,-1][f.d]*cs*0.5,ny=cy+[-1,0,1,0][f.d]*cs*0.5;c.fillText('💥',nx,ny);}
+  if(f.ev==='drift')c.fillText('🌀',cx,cy-cs*0.55);
  }
 
  /* ---------- фінал ---------- */
  function showFinal(){
   noDock();header();window.scrollTo(0,0);
-  var stars=MISSIONS.map(function(m){return mstate(m.id).stars;});
-  var ms=mainStars(),pts=totalPts(),code=makeCode(S.name,stars,pts),line=S.name+' — '+code;
+  var vals=MISSIONS.map(function(m){return mstate(m.id).stars;}).concat(PROG_IDS.map(function(id){return mstate(id).pStars;}));
+  var ms=mainStars(),pts=totalPts(),code=makeCode(S.name,vals,pts),line=S.name+' — '+code;
   app.innerHTML='';
   var c=h('section','card green');
   c.innerHTML='<h1>🏁 Твій результат</h1>'+
-   '<div class="res"><div><div class="bigstars" style="font-size:34px">⭐ '+ms+' / 18</div><div class="small">зірок в основних місіях</div></div>'+
-   '<div><div class="num">'+GRADE[ms]+'</div><div class="small">оцінка (з 12)</div></div>'+
+   '<div class="res"><div><div class="bigstars" style="font-size:34px">⭐ '+ms+' / '+MAX_STARS+'</div><div class="small">зірок в основних місіях</div></div>'+
+   '<div><div class="num">'+gradeOf(ms)+'</div><div class="small">оцінка (з 12)</div></div>'+
    '<div><div class="num">'+pts+'</div><div class="small">очок · звання «'+rankTitle(pts)+'»</div></div></div>'+
    '<h3>Код результату</h3><div class="code">'+code+'</div>'+
    '<p>Надішли вчителю <b>цей рядок</b> (як домовились у класі) або покажи екран:</p>';
@@ -717,8 +1024,8 @@ function rankTitle(p){return p>=6000?'Головний конструктор':p
   c.appendChild(h('p','small','Якщо ще пройдеш місії — повернись сюди: код оновиться.'));
   app.appendChild(c);
   var t=h('section','card');
-  var rows=MISSIONS.map(function(m){var s=mstate(m.id);return '<tr><td>'+m.icon+' '+m.title+'</td><td style="color:#f2b705;font-size:18px">'+starsStr(s.stars)+'</td><td>'+s.att+'</td><td>'+s.pts+'</td></tr>';}).join('');
-  t.innerHTML='<h2>По місіях</h2><table><tr><th>Місія</th><th>Зірки</th><th>Спроб</th><th>Очки</th></tr>'+rows+'</table>';
+  var rows=MISSIONS.map(function(m){var s=mstate(m.id);return '<tr><td>'+m.icon+' '+m.title+'</td><td style="color:#f2b705;font-size:18px">'+starsStr(s.stars)+'</td><td style="color:#f2b705;font-size:18px">'+(m.prog?starsStr(s.pStars):'—')+'</td><td>'+(s.pts+s.pPts)+'</td></tr>';}).join('');
+  t.innerHTML='<h2>По місіях</h2><table><tr><th>Місія</th><th>🔧 Робот</th><th>💻 Програма</th><th>Очки</th></tr>'+rows+'</table>';
   app.appendChild(t);
   var a=h('section','row');
   var mb=h('button','btn','🗺️ До місій');mb.onclick=showMap;a.appendChild(mb);
