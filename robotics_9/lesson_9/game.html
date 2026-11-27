@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор місій — гра з робототехніки</title>
+<script>
+(function(){var t=null;try{t=localStorage.getItem('vexTheme');}catch(e){}
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#fff; --text:#172033; --muted:#5d687c;
+  --blue:#1976d2; --blue-soft:#eaf3ff; --red:#d83b3b; --red-soft:#fff0f0;
+  --green:#198754; --green-soft:#edf9f2; --yellow:#f2b705; --yellow-soft:#fff9df;
+  --border:#dce3ed; --purple:#7b4bc4; --purple-soft:#f4eeff;
+  --th:#eef2f7; --tile:#fff; --vis:#f9fafc; --link:#0d5bd7;
+  --shadow:0 5px 18px rgba(30,50,80,.06);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#0f1520; --card:#18202e; --text:#e6ecf5; --muted:#9aa6b8;
+  --blue:#4f9cf0; --blue-soft:#14253c; --red:#f06b6b; --red-soft:#331b1e;
+  --green:#3fbf7f; --green-soft:#12291e; --yellow:#f2c230; --yellow-soft:#2c2614;
+  --border:#2b3647; --purple:#a983ec; --purple-soft:#231a37;
+  --th:#1f2938; --tile:#1d2636; --vis:#121925; --link:#7db4ff;
+  --shadow:0 5px 18px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1520; --card:#18202e; --text:#e6ecf5; --muted:#9aa6b8;
+    --blue:#4f9cf0; --blue-soft:#14253c; --red:#f06b6b; --red-soft:#331b1e;
+    --green:#3fbf7f; --green-soft:#12291e; --yellow:#f2c230; --yellow-soft:#2c2614;
+    --border:#2b3647; --purple:#a983ec; --purple-soft:#231a37;
+    --th:#1f2938; --tile:#1d2636; --vis:#121925; --link:#7db4ff;
+    --shadow:0 5px 18px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;padding-bottom:110px}
+.wrap{max-width:1100px;margin:auto;padding:0 18px}
+header{background:linear-gradient(135deg,#0d47a1,#1976d2);color:#fff;padding:16px 0}
+.hrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:60px}
+.logo{font-size:24px;font-weight:800;margin-right:auto}
+.stat{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:6px 12px;border-radius:999px;font-weight:700;white-space:nowrap}
+.hbtn{background:#fff;color:#0d47a1;border:0;border-radius:999px;padding:8px 14px;font:700 15px Segoe UI,Arial,sans-serif;cursor:pointer}
+.theme-btn{position:fixed;top:12px;right:12px;z-index:60;border:1px solid var(--border);background:var(--card);color:var(--text);width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(20,40,80,.18)}
+h1{font-size:clamp(26px,4vw,38px);margin:0 0 8px}
+h2{font-size:24px;margin:0 0 10px}
+h3{font-size:19px;margin:18px 0 8px}
+section{margin:20px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.notice{border-left:6px solid var(--yellow);background:var(--yellow-soft)}
+.blue{border-left:6px solid var(--blue);background:var(--blue-soft)}
+.green{border-left:6px solid var(--green);background:var(--green-soft)}
+.red{border-left:6px solid var(--red);background:var(--red-soft)}
+.purple{border-left:6px solid var(--purple);background:var(--purple-soft)}
+.small{color:var(--muted);font-size:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;padding:12px 20px;font:700 17px Segoe UI,Arial,sans-serif;cursor:pointer;background:var(--blue);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--text);border:2px solid var(--border)}
+.btn.green{background:var(--green);border:0}
+.btn.purple{background:var(--purple)}
+input[type=text]{font:600 18px Segoe UI,Arial,sans-serif;padding:12px 14px;border-radius:12px;border:2px solid var(--border);background:var(--tile);color:var(--text);width:100%;max-width:420px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.mcard{background:var(--tile);border:2px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;text-align:left;font:inherit;color:inherit;position:relative;transition:transform .12s,border-color .12s}
+.mcard:hover:not(.locked){transform:translateY(-2px);border-color:var(--blue)}
+.mcard.locked{opacity:.5;cursor:not-allowed}
+.mcard.bonus{border-style:dashed;border-color:var(--purple)}
+.mcard .mi{font-size:40px;line-height:1}
+.mcard .mt{font-weight:800;font-size:18px;margin:6px 0 2px}
+.mcard .ms{font-size:22px;letter-spacing:2px;color:#f2b705}
+.mcard .mnum{position:absolute;top:12px;right:14px;font-weight:800;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{background:var(--tile);border:1px solid var(--border);border-radius:12px;padding:8px 12px;font-size:15px}
+.chip b{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}
+.part{background:var(--tile);border:2px solid var(--border);border-radius:14px;padding:12px;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;transition:border-color .1s,background .1s}
+.part:hover{border-color:var(--blue)}
+.part.sel{border-color:var(--blue);background:var(--blue-soft);box-shadow:0 0 0 2px var(--blue) inset}
+.part .ptop{display:flex;align-items:center;gap:8px}
+.part .pi{font-size:28px;line-height:1}
+.part .pn{font-weight:800;font-size:16px;line-height:1.2}
+.part .pm{font-size:13px;font-weight:700;color:var(--muted)}
+.part .pd{font-size:13px;color:var(--muted);line-height:1.35}
+.gh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gh .small{margin:0}
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -6px 20px rgba(20,40,80,.12);z-index:40}
+.dock .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 18px}
+.meter{font-weight:800;font-size:17px}
+.meter.over{color:var(--red)}
+.dock .grow{margin-right:auto}
+canvas{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--border)}
+.log{font-family:Consolas,monospace;font-size:15px;background:#202733;color:#e6ecf5;border-radius:12px;padding:12px 14px;min-height:150px;margin-top:12px}
+.log div{margin:3px 0;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0}
+.bar{background:var(--tile);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.bar .bl{display:flex;justify-content:space-between;font-weight:700;font-size:15px}
+.bar .bt{height:10px;border-radius:99px;background:var(--th);margin-top:6px;overflow:hidden}
+.bar .bf{height:100%;border-radius:99px}
+.bigstars{font-size:46px;letter-spacing:6px;color:#f2b705;line-height:1}
+.res{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.res .num{font-size:38px;font-weight:800;color:var(--blue);line-height:1}
+.expl{list-style:none;padding:0;margin:10px 0}
+.expl li{padding:9px 12px;border-radius:10px;margin:6px 0;border:1px solid var(--border);background:var(--tile)}
+.expl li.ok{border-left:6px solid var(--green)}
+.expl li.warn{border-left:6px solid var(--yellow)}
+.expl li.bad{border-left:6px solid var(--red)}
+.code{font:800 clamp(30px,6vw,52px) Consolas,monospace;letter-spacing:4px;background:#202733;color:#7df0b0;border-radius:14px;padding:16px 22px;display:inline-block}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid var(--border);padding:8px 10px;text-align:left}
+th{background:var(--th)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
+.flow div{background:var(--tile);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;font-weight:700}
+@media(max-width:650px){.card{padding:16px}.hrow{padding-right:50px}}
+</style>
+</head>
+<body>
+<button type="button" class="theme-btn" id="themeBtn" aria-label="Світла / темна тема">🌙</button>
+<header>
+  <div class="wrap hrow" id="hdr">
+    <div class="logo">🚀 Конструктор місій</div>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<div class="dock" id="dock" style="display:none"></div>
+
+<script>
+/*DATA-START*/
+var PARTS={
+ chassis:[
+  {id:'wheels2',icon:'🛞',name:'2 колеса',cost:2,w:2,d:'Два ведучі колеса + опора. Розвертається на місці (диференціальний привід). Швидкий і дешевий, але тільки для рівної підлоги.'},
+  {id:'wheels4',icon:'🚙',name:'4 колеса (4WD)',cost:3,w:3,d:'Чотири ведучі колеса. Краще тягне по ґрунту й бруду, долає невеликі нерівності.'},
+  {id:'tracks',icon:'🚜',name:'Гусениці',cost:4,w:5,d:'Розподіляють вагу на велику площу — не грузнуть. Повільні, важкі й дорожчі.'},
+  {id:'legs',icon:'🕷️',name:'Ноги (6 шт.)',cost:6,w:3,d:'Переступають через перешкоди. Складна механіка й програмування, рухаються повільно.'},
+  {id:'drone',icon:'🚁',name:'Дрон',cost:5,w:1,maxLoad:3,d:'Летить над перешкодами і не торкається землі. Піднімає лише до 3 ⚖️ вантажу, політ короткий.'},
+  {id:'rov',icon:'🤿',name:'Підводний апарат',cost:5,w:3,d:'Герметичний корпус із гвинтами для води. На суші безпорадний.'},
+  {id:'snake',icon:'🐍',name:'Робот-змія',cost:5,w:2,d:'Довгий гнучкий робот із сегментів. Пролазить у вузькі щілини й труби, але повільний.'},
+  {id:'magnetic',icon:'🧲',name:'Магнітні колеса',cost:4,w:2,d:'Колеса з магнітами тримаються за сталеві стіни й навіть стелю.'}
+ ],
+ sensors:[
+  {id:'ultrasonic',icon:'🦇',name:'Ультразвуковий далекомір',cost:1,w:0.5,d:'Вимірює відстань до перешкоди звуком, як кажан. Дешевий, працює в темряві.'},
+  {id:'lidar',icon:'📡',name:'Лідар',cost:3,w:1,d:'Лазерний сканер: будує 3D-карту навколо робота. Дуже точний, але дорогий.'},
+  {id:'camera',icon:'📷',name:'Камера + ШІ',cost:2,w:0.5,d:'«Очі» робота: розпізнає предмети на зображенні. Потребує світла.'},
+  {id:'thermal',icon:'🌡️',name:'Тепловізор',cost:3,w:1,d:'Бачить тепло: людей і тварин навіть у темряві та диму.'},
+  {id:'ir',icon:'🔻',name:'ІЧ-датчик вниз',cost:1,w:0.5,d:'Дивиться на підлогу: бачить лінію або край (як DownEye у VEX).'},
+  {id:'gyro',icon:'🌀',name:'Гіроскоп',cost:1,w:0.5,d:'Знає, на скільки градусів робот повернувся і чи нахилився. Працює будь-де.'},
+  {id:'gps',icon:'🛰️',name:'GPS',cost:1,w:0.5,d:'Координати від супутників. Тільки під відкритим небом і тільки на Землі.'},
+  {id:'metal',icon:'🔍',name:'Металодетектор',cost:2,w:1,d:'Знаходить металеві предмети, заховані в землі.'},
+  {id:'sonar',icon:'🐬',name:'Сонар',cost:2,w:1,d:'Звуковий «локатор» для води: бачить дно й предмети в каламутній воді.'},
+  {id:'touch',icon:'👆',name:'Датчик дотику',cost:1,w:0.5,d:'Бампер: спрацьовує, коли робот уже в щось врізався.'}
+ ],
+ power:[
+  {id:'small',icon:'🔋',name:'Мала батарея',cost:1,w:1,d:'Легка, вистачає на 1–2 години роботи.'},
+  {id:'large',icon:'🔋',name:'Велика батарея',cost:3,w:3,d:'Вистачає на цілий день, але важка.'},
+  {id:'solar',icon:'☀️',name:'Сонячна панель',cost:3,w:2,d:'Підзаряджає батарею від сонця. Для довгих місій під відкритим небом.'},
+  {id:'tether',icon:'🔌',name:'Кабель (тетер)',cost:1,w:1,d:'Нескінченне живлення і надійний зв’язок, але робот «на прив’язі» (до ~100 м).'}
+ ],
+ control:[
+  {id:'operator',icon:'🎮',name:'Оператор з пульта',cost:0,w:0,d:'Людина керує в реальному часі. Потрібен постійний зв’язок без затримки.'},
+  {id:'semi',icon:'🗺️',name:'Напівавтономний',cost:1,w:0,d:'Людина задає ціль, а робот сам прокладає шлях і обходить перешкоди.'},
+  {id:'auto',icon:'🤖',name:'Повністю автономний',cost:2,w:0,d:'Робот сам ухвалює всі рішення, працює без людини і без зв’язку.'}
+ ]
+};
+var MAX_SENSORS=4;
+
+var MISSIONS=[
+ {id:'warehouse',icon:'📦',title:'Склад інтернет-магазину',budget:8,theme:'warehouse',
+  story:'Величезний склад працює цілодобово. Роботи мають возити полиці з товарами до пакувальників, їдучи по лінії на підлозі. Поруч ходять люди та їздять ще 50 роботів.',
+  conds:[['Поверхня','рівна гладка підлога'],['Де','у приміщенні, багато людей і роботів'],['Зв’язок','Wi-Fi є скрізь'],['Тривалість','24/7, є зарядні станції'],['Завдання','їхати по лінії, не зіткнутися']],
+  chassis:{wheels2:[1,'2 колеса — ідеально для рівної підлоги: дешево, швидко, розвертається на місці. Такі роботи справді працюють на складах.'],
+   wheels4:[0.85,'4WD їде добре, але дорожчий і гірше розвертається на місці — на рівній підлозі повний привід не потрібен.'],
+   tracks:[0.5,'Гусениці повільні й важкі, а на рівній підлозі їхня прохідність просто не потрібна.'],
+   legs:[0.35,'Ноги на рівній підлозі — повільно, складно й дорого. Колесо тут набагато ефективніше.'],
+   drone:[0.15,'Дрон не підніме полицю з товарами, а батарея сяде за 20 хвилин.'],
+   rov:[0,'Підводний апарат на суші не може рухатися!'],
+   snake:[0.2,'Змія повзе повільно й не може везти полицю.'],
+   magnetic:[0.6,'Магніти тут не потрібні: на підлозі немає сталі, а заплатили ви за них більше.']},
+  sensors:[
+   {name:'Їхати по лінії',w:3,crit:true,opts:{ir:1,camera:0.7},good:'ІЧ-датчик знизу бачить лінію на підлозі — як DownEye у VEX. Дешево і надійно.',part:'Камера може бачити лінію, але це дорожче й складніше, ніж простий ІЧ-датчик знизу.',bad:'Робот не бачить розмітку на підлозі — не знає, куди їхати.'},
+   {name:'Не врізатися в людей',w:2,crit:true,opts:{ultrasonic:1,lidar:1,camera:0.7,touch:0.35},good:'Датчик відстані помічає людину попереду і робот гальмує заздалегідь.',part:'Робот помітить перешкоду надто пізно або не завжди.',bad:'Нічим помітити людину попереду — зіткнення!'}],
+  useless:{gps:'GPS не працює в приміщенні: сигнал від супутників не проходить крізь дах.',sonar:'Сонар працює у воді, а не на складі.',metal:'Металодетектор на складі не потрібен.',thermal:'Тепловізор — дорога річ, а тут вистачить звичайного датчика відстані.'},
+  power:{small:[1,'Мала батарея — те, що треба: є зарядні станції, робот сам їде заряджатися.'],large:[0.7,'Велика батарея працює, але це зайва вага й гроші — зарядки ж поруч.'],solar:[0.3,'Сонячна панель у приміщенні? Сонця на складі немає.'],tether:[0.1,'50 роботів на кабелях — кабелі заплутаються за хвилину!']},
+  control:{auto:[1,'Автономність — єдиний розумний варіант для 50 роботів, що працюють цілодобово.'],semi:[0.8,'Комп’ютер складу задає ціль, робот їде сам — непогано, але повна автономія ще краща.'],operator:[0.2,'50 операторів цілодобово? Дорого, повільно й безглуздо — для цього й придумали роботів.']}
+ },
+ {id:'farm',icon:'🌾',title:'Ферма: прополювання',budget:12,theme:'farm',
+  story:'Поле площею кілька гектарів. Після дощу земля розмокла. Робот має їхати між рядками моркви, знаходити бур’яни й видаляти їх. Працювати — увесь світловий день.',
+  conds:[['Поверхня','м’який ґрунт, бруд'],['Де','відкрите поле, рядки рослин'],['Зв’язок','мобільний інтернет'],['Тривалість','10+ годин, розеток немає'],['Завдання','відрізнити бур’ян від моркви']],
+  chassis:{wheels4:[1,'4WD — найкращий вибір: повний привід тягне в бруді, а колеса вміщаються між рядками.'],
+   tracks:[0.85,'Гусениці не загрузнуть, але вони важкі, дорожчі й ущільнюють ґрунт.'],
+   wheels2:[0.4,'Два колеса буксують у мокрому ґрунті — робот застрягає.'],
+   legs:[0.6,'Ноги пройдуть, але для великого поля це занадто повільно й дорого.'],
+   drone:[0.3,'Дрон знайде бур’яни згори, але не зможе їх виполоти, і не пролетить 10 годин.'],
+   rov:[0,'Підводний апарат на полі не поїде!'],
+   snake:[0.15,'Змія повзе надто повільно для кількох гектарів.'],
+   magnetic:[0.1,'Магнітні колеса буксують у бруді — сталі в полі немає.']},
+  sensors:[
+   {name:'Розпізнати бур’ян',w:3,crit:true,opts:{camera:1},good:'Камера + штучний інтелект відрізняють бур’ян від моркви за формою листя.',bad:'Нічим відрізнити бур’ян від моркви — роботу потрібен «зір» і ШІ.'},
+   {name:'Їхати рядком',w:2,crit:false,opts:{gps:1,lidar:0.7,camera:0.4},good:'GPS тримає точний маршрут на відкритому полі.',part:'Робот трохи збивається з рядка — на відкритому полі є дешевший і точніший спосіб навігації.',bad:'Робот не знає, де він на полі, і їде навмання.'},
+   {name:'Безпека людей і тварин',w:1,crit:false,opts:{ultrasonic:1,lidar:1,thermal:0.8,touch:0.3},good:'Робот помітить людину чи тварину попереду і зупиниться.',part:'Перешкоду помічає не завжди.',bad:'Робот може наїхати на людину чи тварину, що опинилася в рядку.'}],
+  useless:{sonar:'Сонар працює лише у воді.',metal:'Металодетектор на прополюванні не допоможе.',ir:'На полі немає намальованих ліній — ІЧ-датчику нема за чим їхати.'},
+  power:{solar:[1,'Сонячна панель — ідеально: відкрите поле й цілий день сонця.'],large:[0.85,'Велика батарея витягне день, але важка, а сонце в полі безкоштовне.'],small:[0.3,'Мала батарея сяде за годину-дві, а розеток у полі немає.'],tether:[0.05,'Кабель на кілька гектарів? Робот заплутається в рядках.']},
+  control:{auto:[1,'Автономний робот працює весь день сам — фермер займається іншим.'],semi:[0.8,'Фермер задає ділянку, робот працює сам — непогано.'],operator:[0.4,'Людина 10 годин тримає пульт? Тоді простіше полоти руками.']}
+ },
+ {id:'mines',icon:'🚩',title:'Розмінування поля',budget:13,theme:'mines',
+  story:'Поле біля села треба перевірити на міни. Протипіхотні міни спрацьовують від тиску, тому робот має бути легким: загальна вага не більше 6 ⚖️. Людина-оператор перебуває далеко, у безпечному місці.',
+  conds:[['Поверхня','трава, ямки, нерівності'],['Небезпека','міни спрацьовують від тиску'],['Обмеження','загальна вага ≤ 6 ⚖️'],['Зв’язок','радіо стабільне'],['Завдання','знайти міни й позначити місце']],
+  weightLimit:6,
+  chassis:{drone:[1,'Дрон летить над землею і взагалі не тисне на міни. Дрони з детекторами справді використовують для пошуку мін.'],
+   wheels4:[0.85,'4WD долає траву й ямки — гарний вибір, якщо втриматися в межах ваги.'],
+   legs:[0.75,'Ноги переступають через нерівності, але це дорого й повільно.'],
+   tracks:[0.7,'Гусениці добре їдуть, але дуже важкі для мінного поля.'],
+   wheels2:[0.45,'Маленькі колеса застрягають у ямках і траві.'],
+   snake:[0.3,'Змія повзе надто повільно для цілого поля.'],
+   magnetic:[0.2,'Магнітні колеса в траві не допоможуть.'],
+   rov:[0,'Підводний апарат на суші не рухається!']},
+  sensors:[
+   {name:'Знайти міну',w:3,crit:true,opts:{metal:1},good:'Металодетектор знаходить міни, заховані в землі.',bad:'Міну в землі не видно — без металодетектора робот її не знайде.'},
+   {name:'Позначити місце',w:2,crit:false,opts:{gps:1,camera:0.3},good:'GPS записує точні координати кожної знахідки для саперів.',part:'Фото є, але без координат сапери довго шукатимуть це місце.',bad:'Знайдену міну ніяк не позначено — сапери не знатимуть, де шукати.'},
+   {name:'Оператор бачить поле',w:1,crit:false,opts:{camera:1,thermal:0.5},good:'Оператор бачить поле через камеру і розуміє, що відбувається.',part:'Картинка для оператора неякісна.',bad:'Оператор нічого не бачить і керує наосліп.'}],
+  useless:{touch:'Датчик дотику на мінному полі?! Торкатися предметів — найгірша ідея.',sonar:'Сонар працює лише у воді.',ir:'На полі немає ліній для ІЧ-датчика.'},
+  power:{small:[1,'Мала батарея легка — для коротких робочих сесій якраз.'],solar:[0.6,'Сонячна панель працює, але додає вагу.'],large:[0.6,'Велика батарея важка — а вага тут критична.'],tether:[0.4,'Кабель чіпляється за траву і може зачепити розтяжку.']},
+  control:{semi:[1,'Оператор задає ділянку, робот прочісує її сам, а людина ухвалює рішення про небезпеку.'],operator:[0.85,'Оператор у безпеці керує по радіо — це працює, хоч і втомлює.'],auto:[0.6,'Повна автономія на мінному полі ризикована: важливі рішення має ухвалювати людина.']}
+ },
+ {id:'rubble',icon:'🏚️',title:'Пошук людей у завалах',budget:14,theme:'rubble',
+  story:'Будинок зруйновано. Під бетонними плитами можуть бути живі люди. Між уламками — щілини завширшки 15 см, усередині темно і пил. Бетон глушить радіосигнал, GPS тут не працює.',
+  conds:[['Поверхня','уламки бетону, щілини 15 см'],['Умови','темрява, пил'],['Зв’язок','радіо глушиться бетоном'],['GPS','не працює'],['Завдання','знайти живих людей']],
+  chassis:{snake:[1,'Робот-змія пролазить у щілини між плитами. Такі роботи справді шукають людей під завалами.'],
+   legs:[0.8,'Ноги переступають уламки, але у вузьку щілину не пролізуть.'],
+   tracks:[0.65,'Гусениці долають уламки, але не пролазять у щілини 15 см.'],
+   drone:[0.35,'У вузьких щілинах дрон б’ється гвинтами об бетон, пил забиває мотори.'],
+   wheels4:[0.25,'Колеса застрягають серед уламків бетону.'],
+   wheels2:[0.1,'Два маленькі колеса не подолають навіть першу плиту.'],
+   magnetic:[0.15,'Бетон — не сталь, магніти не тримають.'],
+   rov:[0,'Підводний апарат на суші не рухається!']},
+  sensors:[
+   {name:'Знайти людину в темряві',w:3,crit:true,opts:{thermal:1,camera:0.4},good:'Тепловізор бачить тепло людського тіла навіть у повній темряві й пилу.',part:'Камера в темряві й пилу майже нічого не бачить — людину легко пропустити.',bad:'Нічим знайти людину в темряві — потрібен датчик, що «бачить» тепло тіла.'},
+   {name:'Орієнтуватися в тісноті',w:2,crit:false,opts:{lidar:1,ultrasonic:0.75,touch:0.45},good:'Робот «бачить» стіни щілини й не застрягає.',part:'Робот орієнтується в тісноті, але грубо — часто зупиняється.',bad:'Робот наосліп б’ється об уламки і застрягає.'},
+   {name:'Знати свій поворот і нахил',w:1,crit:false,opts:{gyro:1},good:'Без GPS гіроскоп підказує, куди робот повернув і чи не перекидається.',bad:'Робот не знає, як він повернувся, — карту ходів не побудувати.'}],
+  useless:{gps:'Під бетоном GPS не працює — сигнал від супутників не доходить.',metal:'Металодетектор знаходитиме арматуру в кожній плиті — марно.',sonar:'Сонар працює лише у воді.',ir:'Ліній на підлозі в завалах немає.'},
+  power:{tether:[1,'Кабель дає і живлення, і зв’язок крізь бетон, а ще ним можна витягти робота назад.'],small:[0.55,'Батарея є, але радіо крізь бетон працює погано — сигнал губиться.'],large:[0.55,'Велика батарея важка, а радіо крізь бетон однаково слабке.'],solar:[0,'Під завалами темно — сонячна панель не дасть енергії взагалі!']},
+  control:{semi:[1,'Оператор вказує напрямок, а робот сам обходить уламки — найкраще для таких умов.'],operator:[0.6,'Керувати вручну в тісноті через слабкий зв’язок дуже важко.'],auto:[0.6,'Повна автономія в незнайомих завалах ризикована: людина краще вирішить, куди повзти.']}
+ },
+ {id:'reef',icon:'🪸',title:'Підводний риф',budget:12,theme:'reef',
+  story:'Глибина 40 метрів, вода каламутна. Треба оглянути коралові рифи і знайти сміття на дні. Під водою радіосигнал і GPS не працюють, а світла дуже мало.',
+  conds:[['Середовище','вода, глибина 40 м, тиск'],['Видимість','каламутна вода, темно'],['Зв’язок','радіо у воді не працює'],['GPS','не працює'],['Завдання','огляд коралів, пошук сміття']],
+  chassis:{rov:[1,'Підводний апарат — єдиний робот, створений для води: герметичний корпус і гвинти.'],
+   wheels2:[0,'Вода потрапляє в електроніку — коротке замикання!'],wheels4:[0,'Вода потрапляє в електроніку — коротке замикання!'],
+   tracks:[0,'Вода потрапляє в електроніку — коротке замикання!'],legs:[0,'Вода потрапляє в електроніку — коротке замикання!'],
+   drone:[0,'Дрон у воді — гвинти не працюють, електроніка замикає!'],snake:[0,'Наша змія не герметична — вода зіпсує електроніку.'],
+   magnetic:[0,'Вода потрапляє в електроніку — коротке замикання!']},
+  sensors:[
+   {name:'Бачити в каламутній воді',w:3,crit:true,opts:{sonar:1,camera:0.4},good:'Сонар — це «ультразвук для води»: бачить дно й предмети крізь каламуть.',part:'Камера в каламутній воді бачить лише на пів метра.',bad:'Робот нічого не бачить у каламуті — потрібен звуковий локатор для води.'},
+   {name:'Огляд коралів',w:2,crit:false,opts:{camera:1},good:'Камера знімає коралі для науковців.',bad:'Науковцям потрібні знімки коралів, а знімати нічим.'},
+   {name:'Тримати глибину й курс',w:1,crit:false,opts:{gyro:1},good:'Гіроскоп допомагає тримати курс, коли течія зносить апарат.',bad:'Течія зносить апарат, і він не помічає, що повернувся.'}],
+  useless:{gps:'Радіохвилі GPS не проходять у воду.',lidar:'Вода поглинає світло лазера — лідар бачить лише кілька метрів.',thermal:'Вода швидко гасить тепло — тепловізор тут майже сліпий.',ir:'На дні немає ліній для ІЧ-датчика.',metal:'Металодетектор знайде хіба бляшанку, а риф ним не оглянеш.',ultrasonic:'Цей далекомір налаштований для повітря. Для води існує сонар.'},
+  power:{tether:[1,'Кабель — ідеально: живлення і зв’язок, адже радіо у воді не працює.'],large:[0.6,'Велика батарея витягне занурення, але без кабелю немає зв’язку з поверхнею.'],small:[0.35,'Мала батарея сяде посеред занурення.'],solar:[0,'На глибині 40 м немає сонячного світла!']},
+  control:function(b){
+   var t=b.power==='tether';
+   if(b.control==='operator')return t?[1,'Оператор на кораблі бачить відео по кабелю й керує — так працюють справжні підводні апарати.']:[0,'Без кабелю немає зв’язку: радіо у воді не працює, оператор не може керувати!'];
+   if(b.control==='semi')return t?[0.9,'Оператор задає точку, апарат сам тримає позицію — добре.']:[0.5,'Без кабелю оператор не може передати навіть ціль — апарат майже весь час сам.'];
+   return [0.8,'Автономний підводний апарат працює без зв’язку, але сміття краще розпізнає людина.'];
+  }
+ },
+ {id:'mars',icon:'🔴',title:'Марсохід',budget:15,theme:'mars',
+  story:'Місія на Марс триватиме 2 роки. Поверхня — пісок і каміння, мороз до −60 °C, пилові бурі. Сигнал від Землі до Марса йде до 20 хвилин в один бік. На Марсі немає GPS.',
+  conds:[['Поверхня','пісок, каміння'],['Умови','мороз, пил'],['Зв’язок','затримка до 20 хв'],['GPS','немає'],['Тривалість','2 роки']],
+  chassis:{wheels4:[0.9,'Колеса — правильний вибір: справжні марсоходи мають 6 коліс із підвіскою, 4WD найближчий варіант.'],
+   tracks:[0.55,'Гусениці ризиковані: пісок забивається в механізм, а зламана ланка зупинить усю місію.'],
+   legs:[0.5,'Ноги — це багато суглобів, які можуть замерзнути. На Марсі ремонтувати нікому.'],
+   wheels2:[0.35,'Два колеса на піску й камінні — робот перекинеться або застрягне.'],
+   drone:[0.3,'Гелікоптер Ingenuity літав на Марсі як розвідник, але атмосфера дуже розріджена — головну роботу дрон не виконає.'],
+   snake:[0.15,'Змія надто повільна, щоб досліджувати кілометри поверхні.'],
+   magnetic:[0.1,'На Марсі немає сталевих поверхонь для магнітів.'],
+   rov:[0,'Підводний апарат на суші не рухається!']},
+  sensors:[
+   {name:'Наукові знімки й навігація',w:3,crit:true,opts:{camera:1},good:'Камери — головний інструмент марсохода: і для науки, і для вибору шляху.',bad:'Без камери науковці на Землі не побачать нічого — місія марна.'},
+   {name:'Самостійно об’їжджати каміння',w:2,crit:false,opts:{lidar:1,ultrasonic:0.5},good:'Лідар будує 3D-карту каміння, і робот сам обирає безпечний шлях.',part:'Далекомір помічає камінь, але не будує карту місцевості.',bad:'Робот не бачить каміння попереду і може перекинутися.'},
+   {name:'Знати напрямок без GPS',w:2,crit:false,opts:{gyro:1},good:'Без GPS гіроскоп підказує, куди повернув робот і чи не нахилився надто сильно.',bad:'Без GPS і гіроскопа робот не знає, куди повернув і чи не перекидається.'}],
+  useless:{gps:'На Марсі немає супутників GPS!',sonar:'Сонар працює лише у воді, а води на Марсі немає.',metal:'Металодетектор не потрібен для цієї місії.',ir:'На Марсі немає намальованих ліній.',touch:'Коли бампер торкнеться каменя, буде вже пізно.'},
+  power:{solar:[1,'Сонячні панелі роками живили марсоходи Spirit і Opportunity. Пил — ризик, але вітер іноді їх очищає.'],large:[0.3,'Батарея сяде за кілька днів, а місія триває 2 роки.'],small:[0.1,'Мала батарея сяде в перший же день.'],tether:[0,'Кабель до Землі завдовжки 225 млн км?!']},
+  control:{semi:[1,'Саме так працюють справжні марсоходи: раз на добу з Землі задають ціль, а дорогу робот обирає сам.'],auto:[0.9,'Автономія — добре, але науковці хочуть самі обирати, що досліджувати.'],operator:[0,'Сигнал іде до 20 хвилин! Поки оператор натисне «стоп», марсохід уже впаде в кратер.']}
+ },
+ {id:'tank',icon:'🛢️',title:'Бонус: огляд резервуара',bonus:true,budget:12,theme:'tank',
+  story:'Величезний сталевий резервуар для пального треба перевірити зсередини: чи немає тріщин та іржі на стінах. Стіни вертикальні, всередині темно. Люди туди лізти не можуть — небезпечно.',
+  conds:[['Поверхня','вертикальні сталеві стіни'],['Умови','темно, небезпечно для людей'],['Зв’язок','поганий крізь сталь'],['Висота','15 метрів'],['Завдання','знайти тріщини та іржу']],
+  chassis:{magnetic:[1,'Магнітні колеса тримаються за сталеву стіну — так справді перевіряють резервуари й корпуси кораблів.'],
+   drone:[0.5,'Дрон може оглянути стіну, але в замкненому темному резервуарі легко розбитися.'],
+   snake:[0.35,'Змія не втримається на вертикальній гладкій стіні.'],
+   tracks:[0.15,'Гусениці зісковзують з вертикальної стіни.'],legs:[0.2,'Ноги не тримаються за гладку сталеву стіну.'],
+   wheels2:[0.05,'Звичайні колеса не їдуть по стіні вгору!'],wheels4:[0.05,'Звичайні колеса не їдуть по стіні вгору!'],
+   rov:[0,'Резервуар порожній — підводному апарату нема де плавати.']},
+  sensors:[
+   {name:'Бачити тріщини',w:3,crit:true,opts:{camera:1},good:'Камера з підсвіткою знімає стіну — інспектор бачить кожну тріщину.',bad:'Тріщину треба побачити, а бачити нічим.'},
+   {name:'Не впасти',w:2,crit:false,opts:{gyro:1},good:'Гіроскоп показує нахил: робот знає, що він на стіні, і не їде вниз головою.',bad:'Робот не знає свого нахилу на вертикальній стіні — ризик падіння.'},
+   {name:'Відстань до перешкод',w:1,crit:false,opts:{ultrasonic:1,lidar:1,touch:0.6},good:'Робот помічає труби й шви попереду.',part:'Робот помічає перешкоду лише торкнувшись її.',bad:'Робот наїжджає на труби і шви всередині резервуара.'}],
+  useless:{gps:'Усередині сталевого резервуара GPS не працює.',sonar:'Сонар — для води.',thermal:'Тріщини не гарячі — тепловізор їх не покаже.',metal:'Стіна і так уся металева — детектор пищатиме без зупину.',ir:'Ліній на стіні немає.'},
+  power:{tether:[1,'Кабель і живить, і страхує від падіння, і передає відео крізь сталь.'],small:[0.6,'Батарея легка, але радіо крізь сталеві стіни працює погано.'],large:[0.4,'Важка батарея тягне робота вниз зі стіни.'],solar:[0,'Усередині резервуара темно — сонячна панель марна.']},
+  control:{operator:[1,'Інспектор дивиться відео й сам веде робота до підозрілих місць.'],semi:[1,'Оператор задає ділянку стіни, робот сам її об’їжджає — відмінно.'],auto:[0.7,'Автономний огляд можливий, але рішення про тріщину краще ухвалює людина.']}
+ }
+];
+
+function findPart(group,id){var a=PARTS[group];for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+function buildCost(b){
+ var c=0,p;
+ if(b.chassis)c+=findPart('chassis',b.chassis).cost;
+ b.sensors.forEach(function(s){c+=findPart('sensors',s).cost;});
+ if(b.power)c+=findPart('power',b.power).cost;
+ if(b.control)c+=findPart('control',b.control).cost;
+ return c;
+}
+function buildWeight(b){
+ var w=0,load=0;
+ b.sensors.forEach(function(s){load+=findPart('sensors',s).w;});
+ if(b.power)load+=findPart('power',b.power).w;
+ if(b.chassis)w=findPart('chassis',b.chassis).w;
+ return {total:w+load,load:load};
+}
+function pick(map,key,b){
+ if(typeof map==='function')return map(b);
+ return map[key]||[0.2,'Не найкращий вибір для цієї місії.'];
+}
+function evaluate(m,b){
+ var lines=[],crit=false;
+ function add(f,msg,isCrit){lines.push({t:f>=0.85?'ok':(f>=0.4?'warn':'bad'),msg:msg});if(isCrit)crit=true;}
+ var ch=pick(m.chassis,b.chassis,b),c=ch[0];add(c,'Шасі: '+ch[1],c===0);
+ var tot=0,sum=0,used={};
+ m.sensors.forEach(function(r){
+  tot+=r.w;var q=0;
+  b.sensors.forEach(function(s){var v=r.opts[s]||0;if(v>0)used[s]=1;if(v>q)q=v;});
+  sum+=r.w*q;
+  if(q>=0.85)lines.push({t:'ok',msg:r.name+': '+r.good});
+  else if(q>0)lines.push({t:'warn',msg:r.name+': '+(r.part||'справляється лише частково — для цього є кращий датчик.')});
+  else{lines.push({t:'bad',msg:r.name+': '+r.bad});if(r.crit)crit=true;}
+ });
+ var pen=0;
+ b.sensors.forEach(function(s){
+  if(used[s])return;var p=findPart('sensors',s);
+  if(m.useless[s]){pen+=0.08;lines.push({t:'bad',msg:p.name+' — зайвий: '+m.useless[s]});}
+  else{pen+=0.04;lines.push({t:'warn',msg:p.name+' у цій місії не знадобився — гроші витрачено даремно.'});}
+ });
+ var s=Math.max(0,Math.min(1,(tot?sum/tot:1)-pen));
+ var pw=pick(m.power,b.power,b),p=pw[0];add(p,'Живлення: '+pw[1],p===0);
+ var ct=pick(m.control,b.control,b),k=ct[0];add(k,'Керування: '+ct[1],k===0);
+ var wt=buildWeight(b),chp=findPart('chassis',b.chassis);
+ if(chp.maxLoad&&wt.load>chp.maxLoad+1e-9){crit=true;lines.push({t:'bad',msg:'Вантаж: дрон не злетить! Датчики й живлення важать '+fmt(wt.load)+' ⚖️, а дрон піднімає лише '+chp.maxLoad+' ⚖️.'});}
+ if(m.weightLimit&&wt.total>m.weightLimit+1e-9){crit=true;lines.push({t:'bad',msg:'Вага: робот важить '+fmt(wt.total)+' ⚖️, а дозволено '+m.weightLimit+' ⚖️ — міна може спрацювати під ним!'});}
+ var score=Math.round(100*(0.4*c+0.3*s+0.15*p+0.15*k));
+ if(crit)score=Math.min(score,30);
+ var success=!crit&&score>=40;
+ var stars=success?(score>=85?3:(score>=65?2:1)):0;
+ return {c:c,s:s,p:p,k:k,score:score,crit:crit,success:success,stars:stars,lines:lines,leftover:m.budget-buildCost(b)};
+}
+function fmt(x){return (Math.round(x*10)/10).toString().replace('.',',');}
+
+/* ---- код результату ---- */
+var ALPH='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+function fnv(s){var h=0x811c9dc5;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return h>>>0;}
+function normName(n){return String(n).toLowerCase().replace(/[’'ʼ`\s.\-_,]/g,'');}
+function makeCode(name,stars,points){
+ var data=0;for(var i=0;i<7;i++)data+=(stars[i]&3)*Math.pow(4,i);
+ data+=Math.min(points,16383)*16384;
+ var chk=fnv(normName(name)+'|'+data+'|r9l9')&0xFFF;
+ var mask=fnv('m'+chk)&0xFFFFFFF;
+ var val=((data^mask)>>>0)*4096+chk,out='';
+ for(var j=0;j<8;j++){out=ALPH[val%32]+out;val=Math.floor(val/32);}
+ return out.slice(0,4)+'-'+out.slice(4);
+}
+function readCode(name,code){
+ code=String(code).toUpperCase().replace(/[^0-9A-Z]/g,'');
+ if(code.length!==8)return null;
+ var val=0;for(var i=0;i<8;i++){var d=ALPH.indexOf(code[i]);if(d<0)return null;val=val*32+d;}
+ var chk=val%4096,scr=Math.floor(val/4096);
+ var data=(scr^(fnv('m'+chk)&0xFFFFFFF))>>>0;
+ if((fnv(normName(name)+'|'+data+'|r9l9')&0xFFF)!==chk)return null;
+ var stars=[];for(var j=0;j<7;j++)stars.push(Math.floor(data/Math.pow(4,j))%4);
+ return {stars:stars,points:Math.floor(data/16384)};
+}
+var GRADE=[1,1,2,2,3,3,4,5,5,6,7,7,8,9,9,10,10,11,12];
+function rankTitle(p){return p>=6000?'Головний конструктор':p>=4500?'Головний інженер':p>=3000?'Інженер':p>=1500?'Технік':'Стажер';}
+/*DATA-END*/
+
+(function(){
+ var KEY='r9l9_mission_game';
+ var S=load();
+ var app=document.getElementById('app'),hdr=document.getElementById('hdr'),dock=document.getElementById('dock');
+ var timerId=null;
+
+ function load(){try{var x=JSON.parse(localStorage.getItem(KEY));if(x&&x.name)return x;}catch(e){}return null;}
+ function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+ function h(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+ function mstate(id){if(!S.m[id])S.m[id]={att:0,stars:0,pts:0,last:null};return S.m[id];}
+ function starsStr(n,max){max=max||3;var s='';for(var i=0;i<max;i++)s+=i<n?'★':'☆';return s;}
+ function mainStars(){var t=0;MISSIONS.forEach(function(m){if(!m.bonus)t+=mstate(m.id).stars;});return t;}
+ function totalPts(){var t=0;MISSIONS.forEach(function(m){t+=mstate(m.id).pts;});return t;}
+ function passed(id){var x=mstate(id);return x.stars>0||x.att>=3;}
+ function unlocked(i){
+  var m=MISSIONS[i];
+  if(m.bonus){for(var j=0;j<MISSIONS.length;j++)if(!MISSIONS[j].bonus&&!passed(MISSIONS[j].id))return false;return true;}
+  return i===0||passed(MISSIONS[i-1].id);
+ }
+ function elapsed(){var s=Math.floor((Date.now()-S.start)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+
+ function header(){
+  hdr.innerHTML='<div class="logo">🚀 Конструктор місій</div>';
+  if(!S)return;
+  hdr.appendChild(h('div','stat','👤 '+esc(S.name)));
+  hdr.appendChild(h('div','stat','⭐ '+mainStars()+' / 18'));
+  hdr.appendChild(h('div','stat','🏆 '+totalPts()+' очок'));
+  var t=h('div','stat','⏱ '+elapsed());t.id='tmr';hdr.appendChild(t);
+  var b=h('button','hbtn','🏁 Мій код');b.onclick=showFinal;hdr.appendChild(b);
+  if(!timerId)timerId=setInterval(function(){var e=document.getElementById('tmr');if(e&&S)e.textContent='⏱ '+elapsed();},1000);
+ }
+ function noDock(){dock.style.display='none';dock.innerHTML='';}
+
+ /* ---------- старт ---------- */
+ function showStart(){
+  noDock();header();
+  app.innerHTML='';
+  var c=h('section','card');
+  c.innerHTML='<h1>Збери робота під місію</h1>'+
+  '<p>Ти — інженер-конструктор. Тобі дають <b>реальні місії</b>: склад, ферма, мінне поле, завали, морське дно, Марс. Під кожну треба зібрати робота з обмеженого бюджету: обрати <b>шасі</b>, <b>датчики</b>, <b>живлення</b> і <b>спосіб керування</b>. Симуляція покаже, чи впорається твій робот, і пояснить чому.</p>'+
+  '<div class="flow"><div>📋 Читаєш умови місії</div><div>🔧 Збираєш робота</div><div>🎬 Дивишся симуляцію</div><div>⭐ Отримуєш зірки й очки</div></div>'+
+  '<div class="card notice" style="box-shadow:none"><b>Важливо про спроби:</b> перша спроба — до ★★★, друга — до ★★, третя й далі — максимум ★. Тому <b>думай до запуску</b>, а не перебирай навмання. Очки за повторні спроби теж менші.</div>';
+  app.appendChild(c);
+  var f=h('section','card');
+  f.innerHTML='<h2>Твоє прізвище та ім’я</h2><p class="small">Пиши так само, як потім надішлеш учителю — код результату прив’язаний до імені.</p>';
+  var inp=h('input');inp.type='text';inp.placeholder='Наприклад: Петренко Іван';inp.maxLength=40;
+  var go=h('button','btn','Почати гру ▶');go.style.marginLeft='10px';go.disabled=true;
+  inp.oninput=function(){go.disabled=inp.value.trim().length<3;};
+  inp.onkeydown=function(e){if(e.key==='Enter'&&!go.disabled)go.click();};
+  go.onclick=function(){S={name:inp.value.trim().replace(/\s+/g,' '),start:Date.now(),m:{}};save();showMap();};
+  var r=h('div','row');r.appendChild(inp);r.appendChild(go);f.appendChild(r);
+  app.appendChild(f);inp.focus();
+ }
+
+ /* ---------- карта місій ---------- */
+ function showMap(){
+  noDock();header();window.scrollTo(0,0);
+  app.innerHTML='';
+  var intro=h('section','card blue');
+  intro.innerHTML='<h2>🗺️ Місії</h2><p style="margin:0">Проходь місії по черзі. Наступна відкривається, коли попередню пройдено хоча б на ★ (або після 3 спроб). Оцінку рахують за <b>6 основних місій</b> (максимум 18 ★). Бонусна місія дає лише очки для лідерборду.</p>';
+  app.appendChild(intro);
+  var g=h('section','mgrid');
+  MISSIONS.forEach(function(m,i){
+   var st=mstate(m.id),un=unlocked(i);
+   var b=h('button','mcard'+(un?'':' locked')+(m.bonus?' bonus':''));
+   b.innerHTML='<div class="mnum">'+(m.bonus?'БОНУС':'#'+(i+1))+'</div><div class="mi">'+(un?m.icon:'🔒')+'</div>'+
+    '<div class="mt">'+m.title+'</div>'+
+    '<div class="ms">'+starsStr(st.stars)+'</div>'+
+    '<div class="small">'+(st.att?('Спроб: '+st.att+' · '+st.pts+' очок'):(un?'Бюджет: 🪙 '+m.budget:'Пройди попередню місію'))+'</div>';
+   if(un)b.onclick=function(){showMission(i);};else b.disabled=true;
+   g.appendChild(b);
+  });
+  app.appendChild(g);
+  var allDone=MISSIONS.every(function(m){return m.bonus||passed(m.id);});
+  var fin=h('section','card '+(allDone?'green':''));
+  fin.innerHTML='<h2>🏁 Завершення</h2><p>'+(allDone?'Усі основні місії пройдено! Можеш спробувати бонус або одразу отримати код.':'Коли закінчиш (або вчитель скаже, що час вийшов) — натисни кнопку й надішли код учителю.')+'</p>';
+  var fb=h('button','btn green','Отримати код результату');fb.onclick=showFinal;fin.appendChild(fb);
+  app.appendChild(fin);
+ }
+
+ /* ---------- місія ---------- */
+ var cur=null,build=null;
+ function showMission(i){
+  cur=MISSIONS[i];var st=mstate(cur.id);
+  build=st.last?JSON.parse(JSON.stringify(st.last)):{chassis:null,sensors:[],power:null,control:null};
+  header();window.scrollTo(0,0);
+  app.innerHTML='';
+  var back=h('button','btn ghost','← До місій');back.onclick=showMap;back.style.marginTop='18px';app.appendChild(back);
+  var br=h('section','card notice');
+  var chips=cur.conds.map(function(c){return '<div class="chip"><b>'+c[0]+'</b>'+c[1]+'</div>';}).join('');
+  br.innerHTML='<h1>'+cur.icon+' '+cur.title+'</h1><p style="font-size:17px">'+cur.story+'</p><div class="chips">'+chips+'<div class="chip"><b>Бюджет</b>🪙 '+cur.budget+'</div></div>';
+  app.appendChild(br);
+  group('chassis','1. Шасі — як робот рухається','обери одне',false);
+  group('sensors','2. Датчики — як робот «відчуває» світ','до '+MAX_SENSORS+' шт., тільки потрібні',true);
+  group('power','3. Живлення','обери одне',false);
+  group('control','4. Керування','обери одне',false);
+  renderDock();
+ }
+ function group(key,title,hint,multi){
+  var sec=h('section','card');
+  sec.innerHTML='<div class="gh"><h2>'+title+'</h2><p class="small">'+hint+'</p></div>';
+  var grid=h('div','parts');
+  PARTS[key].forEach(function(p){
+   var b=h('button','part');b.type='button';
+   var meta='🪙 '+p.cost+(key==='control'?'':' · ⚖️ '+fmt(p.w));
+   b.innerHTML='<div class="ptop"><span class="pi">'+p.icon+'</span><span class="pn">'+p.name+'</span></div><div class="pm">'+meta+'</div><div class="pd">'+p.d+'</div>';
+   function sync(){var on=multi?build.sensors.indexOf(p.id)>=0:build[key]===p.id;b.classList.toggle('sel',on);b.setAttribute('aria-pressed',on);}
+   b.onclick=function(){
+    if(multi){var ix=build.sensors.indexOf(p.id);if(ix>=0)build.sensors.splice(ix,1);else if(build.sensors.length<MAX_SENSORS)build.sensors.push(p.id);}
+    else build[key]=p.id;
+    [].forEach.call(grid.children,function(x){x._sync();});renderDock();
+   };
+   b._sync=sync;sync();grid.appendChild(b);
+  });
+  sec.appendChild(grid);app.appendChild(sec);
+ }
+ function renderDock(){
+  var st=mstate(cur.id),att=st.att+1,cap=att===1?3:att===2?2:1;
+  var cost=buildCost(build),wt=buildWeight(build),over=cost>cur.budget;
+  var ready=build.chassis&&build.power&&build.control&&build.sensors.length>0&&!over;
+  dock.style.display='block';
+  var wtxt='⚖️ '+fmt(wt.total);
+  if(build.chassis==='drone')wtxt+=' (вантаж '+fmt(wt.load)+' / 3)';
+  if(cur.weightLimit)wtxt+=' / '+cur.weightLimit;
+  var missing=[];if(!build.chassis)missing.push('шасі');if(!build.sensors.length)missing.push('датчики');if(!build.power)missing.push('живлення');if(!build.control)missing.push('керування');
+  dock.innerHTML='<div class="wrap"><span class="meter'+(over?' over':'')+'">🪙 '+cost+' / '+cur.budget+'</span><span class="meter">'+wtxt+'</span><span class="meter">📡 '+build.sensors.length+' / '+MAX_SENSORS+'</span>'+
+   '<span class="small grow">'+(over?'❗ Перевищено бюджет — прибери щось':missing.length?'Ще обери: '+missing.join(', '):'Спроба '+att+' · максимум '+starsStr(cap))+'</span></div>';
+  var go=h('button','btn green','🚀 Запуск');go.disabled=!ready;go.onclick=launch;
+  dock.firstChild.appendChild(go);
+ }
+
+ /* ---------- симуляція ---------- */
+ function launch(){
+  var st=mstate(cur.id);st.att++;
+  var r=evaluate(cur,build);
+  var cap=st.att===1?3:st.att===2?2:1,mult=st.att===1?1:st.att===2?0.8:0.6;
+  r.attStars=Math.min(r.stars,cap);
+  r.points=r.success?Math.round(r.score*10*mult)+Math.max(0,r.leftover)*25:Math.round(r.score*2*mult);
+  r.att=st.att;r.cap=cap;
+  r.newBest=r.points>st.pts;
+  st.stars=Math.max(st.stars,r.attStars);st.pts=Math.max(st.pts,r.points);
+  st.last=JSON.parse(JSON.stringify(build));save();
+  noDock();header();window.scrollTo(0,0);
+  app.innerHTML='';
+  var sec=h('section','card');
+  sec.innerHTML='<h2>🎬 Симуляція: '+cur.icon+' '+cur.title+'</h2>';
+  var cv=h('canvas');cv.width=1000;cv.height=320;sec.appendChild(cv);
+  var log=h('div','log');sec.appendChild(log);
+  var skip=h('button','btn ghost','Пропустити ⏩');skip.style.marginTop='12px';sec.appendChild(skip);
+  app.appendChild(sec);
+  var done=false;
+  function finish(){if(done)return;done=true;stop();showResult(r);}
+  skip.onclick=finish;
+  var stop=animate(cv,cur,build,r,log,finish);
+ }
+
+ function animate(cv,m,b,r,log,onEnd){
+  var ctx=cv.getContext('2d'),W=cv.width,H=cv.height,t0=performance.now(),DUR=5200,raf;
+  var prog=r.success?1:Math.max(0.18,Math.min(0.6,r.score/100*0.9));
+  var steps=r.lines.slice(),shown=0;
+  var start=['00:00 ▶ Запуск місії «'+m.title+'»'];
+  log.innerHTML='<div>'+esc(start[0])+'</div>';
+  function frame(now){
+   var t=Math.min(1,(now-t0)/DUR);
+   var mv=Math.min(1,t/0.85);var e=mv<0.5?2*mv*mv:1-Math.pow(-2*mv+2,2)/2;
+   var x=60+(W-160)*prog*e;
+   var stuck=!r.success&&mv>=1;
+   if(stuck)x+=Math.sin(now/40)*3;
+   drawScene(ctx,W,H,m.theme,now);
+   drawRobot(ctx,x,m,b,now,stuck);
+   if(stuck){ctx.font='bold 34px Segoe UI, sans-serif';ctx.textAlign='center';ctx.fillText('💥',x,groundY(H,m,b)-95);}
+   if(t>=0.97){
+    ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,H/2-38,W,76);
+    ctx.fillStyle=r.success?'#7df0b0':'#ff8a8a';ctx.font='bold 36px Segoe UI, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(r.success?'✅ Місію виконано!':'❌ Місію провалено',W/2,H/2);ctx.textBaseline='alphabetic';
+   }
+   var want=Math.floor(t*(steps.length+1)*1.05);
+   while(shown<steps.length&&shown<want){
+    var L=steps[shown],ic=L.t==='ok'?'✅':L.t==='warn'?'⚠️':'❌';
+    var sec=Math.round(3+shown*7+Math.random()*4);
+    var d=h('div',null,esc('00:'+String(sec).padStart(2,'0')+' '+ic+' '+L.msg.split(':')[0]));
+    log.appendChild(d);shown++;
+   }
+   if(t<1)raf=requestAnimationFrame(frame);else setTimeout(onEnd,900);
+  }
+  raf=requestAnimationFrame(frame);
+  return function(){cancelAnimationFrame(raf);};
+ }
+
+ function groundY(H,m,b){
+  if(m.theme==='reef')return H*0.62;
+  if(m.theme==='tank')return H*0.8;
+  return H*0.74;
+ }
+ function drawScene(c,W,H,th,now){
+  var gy=H*0.74,i,g;
+  c.textAlign='left';
+  if(th==='warehouse'){
+   c.fillStyle='#d6dee8';c.fillRect(0,0,W,H);
+   for(i=0;i<6;i++){var sx=20+i*170;c.fillStyle='#8a6d4a';c.fillRect(sx,40,130,gy-40);c.fillStyle='#c9a46b';
+    for(var r=0;r<3;r++)for(var k=0;k<3;k++)c.fillRect(sx+8+k*40,50+r*55,34,40);}
+   c.fillStyle='#9aa3ad';c.fillRect(0,gy,W,H-gy);
+   c.strokeStyle='#f2b705';c.lineWidth=6;c.setLineDash([30,16]);c.beginPath();c.moveTo(0,gy+30);c.lineTo(W,gy+30);c.stroke();c.setLineDash([]);
+  }else if(th==='farm'){
+   g=c.createLinearGradient(0,0,0,gy);g.addColorStop(0,'#7cc7f5');g.addColorStop(1,'#d6f0ff');c.fillStyle=g;c.fillRect(0,0,W,gy);
+   c.fillStyle='#f7d34a';c.beginPath();c.arc(W-90,60,32,0,7);c.fill();
+   c.fillStyle='#6b4423';c.fillRect(0,gy,W,H-gy);
+   c.fillStyle='#4f3018';for(i=0;i<14;i++){c.beginPath();c.ellipse(40+i*75,gy+40+(i%3)*10,30,7,0,0,7);c.fill();}
+   for(i=0;i<34;i++){var px=15+i*30;c.fillStyle=(i%7===3)?'#b5c934':'#2f9e44';c.beginPath();c.moveTo(px,gy);c.lineTo(px-8,gy-18);c.lineTo(px,gy-8);c.lineTo(px+8,gy-20);c.closePath();c.fill();}
+  }else if(th==='mines'){
+   g=c.createLinearGradient(0,0,0,gy);g.addColorStop(0,'#9fc9e8');g.addColorStop(1,'#e3eef5');c.fillStyle=g;c.fillRect(0,0,W,gy);
+   c.fillStyle='#5f9e3c';c.beginPath();c.moveTo(0,gy);for(i=0;i<=20;i++)c.lineTo(i*W/20,gy+Math.sin(i*1.7)*6);c.lineTo(W,H);c.lineTo(0,H);c.fill();
+   var fl=[150,330,520,610,800,900];fl.forEach(function(fx){c.strokeStyle='#333';c.lineWidth=2;c.beginPath();c.moveTo(fx,gy+4);c.lineTo(fx,gy-30);c.stroke();c.fillStyle='#d83b3b';c.beginPath();c.moveTo(fx,gy-30);c.lineTo(fx+20,gy-24);c.lineTo(fx,gy-18);c.fill();});
+   c.fillStyle='#d83b3b';c.fillRect(30,40,150,40);c.fillStyle='#fff';c.font='bold 20px Segoe UI, sans-serif';c.fillText('⚠ МІНИ',58,67);
+  }else if(th==='rubble'){
+   c.fillStyle='#24262c';c.fillRect(0,0,W,H);
+   c.fillStyle='#4a4d55';
+   for(i=0;i<12;i++){c.save();c.translate(40+i*85,gy+5);c.rotate((i%4-1.5)*0.18);c.fillRect(-45,-25-(i%3)*10,90,35);c.restore();}
+   c.fillStyle='#3a3c43';c.fillRect(0,gy+20,W,H-gy);
+   c.fillStyle='rgba(200,200,200,.18)';for(i=0;i<60;i++){var dx=(i*137+now/30)%W,dy=(i*53)%gy;c.fillRect(dx,dy,2,2);}
+  }else if(th==='reef'){
+   g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1a7bb0');g.addColorStop(1,'#062f4a');c.fillStyle=g;c.fillRect(0,0,W,H);
+   c.fillStyle='#b9a26a';c.beginPath();c.moveTo(0,H*0.82);for(i=0;i<=10;i++)c.lineTo(i*W/10,H*0.82+Math.sin(i)*8);c.lineTo(W,H);c.lineTo(0,H);c.fill();
+   var cols=['#ff7b9c','#ffa94d','#e599f7','#ff6b6b'];
+   for(i=0;i<9;i++){c.fillStyle=cols[i%4];var cx=60+i*115;for(var k=0;k<4;k++){c.beginPath();c.arc(cx+(k-1.5)*10,H*0.8-k*12-(i%2)*8,9,0,7);c.fill();}}
+   c.fillStyle='rgba(255,255,255,.35)';for(i=0;i<25;i++){var bx=(i*97)%W,by=H-((now/12+i*40)%H);c.beginPath();c.arc(bx,by,3,0,7);c.fill();}
+  }else if(th==='mars'){
+   g=c.createLinearGradient(0,0,0,gy);g.addColorStop(0,'#d98c5f');g.addColorStop(1,'#f0c39a');c.fillStyle=g;c.fillRect(0,0,W,gy);
+   c.fillStyle='#b8603d';c.beginPath();c.moveTo(0,gy);c.lineTo(160,gy-60);c.lineTo(330,gy);c.lineTo(520,gy-40);c.lineTo(760,gy);c.lineTo(900,gy-70);c.lineTo(W,gy);c.fill();
+   c.fillStyle='#a2492b';c.fillRect(0,gy,W,H-gy);
+   c.fillStyle='#7a3520';for(i=0;i<11;i++){c.beginPath();c.ellipse(70+i*90,gy+10+(i%3)*14,10+(i%4)*5,6+(i%3)*3,0,0,7);c.fill();}
+  }else if(th==='tank'){
+   c.fillStyle='#6f7884';c.fillRect(0,0,W,H);
+   c.fillStyle='#5b636e';for(i=0;i<W;i+=100)c.fillRect(i,0,4,H);for(i=0;i<H;i+=80)c.fillRect(0,i,W,4);
+   c.fillStyle='#9a5a2a';[[230,90],[640,170],[820,60]].forEach(function(p){c.beginPath();c.ellipse(p[0],p[1],26,14,0.4,0,7);c.fill();});
+   c.fillStyle='#4b525c';c.fillRect(0,H*0.8,W,H*0.2);
+   g=c.createRadialGradient(W/2,H/2,80,W/2,H/2,W*0.7);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.6)');c.fillStyle=g;c.fillRect(0,0,W,H);
+  }
+ }
+ function drawRobot(c,x,m,b,now,stuck){
+  var H=c.canvas.height,gy=groundY(H,m,b),ch=b.chassis,y=gy,spin=stuck?0:now/90;
+  if(ch==='drone')y=gy-80+Math.sin(now/300)*6;
+  if(ch==='rov'&&m.theme!=='reef')y=gy;
+  if(m.theme==='reef'&&ch!=='rov')y=H*0.82;
+  if(b.power==='tether'){c.strokeStyle='#222';c.lineWidth=3;c.beginPath();c.moveTo(0,y-20);c.quadraticCurveTo(x/2,y+10,x-30,y-18);c.stroke();}
+  var body=ch==='rov'?'#f2b705':'#1976d2';
+  if(ch==='snake'){
+   for(var i=6;i>=0;i--){var sx=x-i*16,sy=y-10+Math.sin(now/150+i)*6;c.fillStyle=i===0?'#0d47a1':'#1976d2';c.beginPath();c.arc(sx,sy,10,0,7);c.fill();}
+   drawSensors(c,x+6,y-16,b);return;
+  }
+  if(ch==='drone'){
+   c.fillStyle='#333';c.fillRect(x-40,y-4,80,4);
+   c.fillStyle=body;c.fillRect(x-18,y-12,36,18);
+   [-40,40].forEach(function(o){c.fillStyle='rgba(60,60,60,.6)';c.beginPath();c.ellipse(x+o,y-8,22*Math.abs(Math.cos(spin*3)),3,0,0,7);c.fill();});
+   drawSensors(c,x+14,y,b);return;
+  }
+  if(ch==='rov'){
+   c.fillStyle=body;c.fillRect(x-34,y-36,68,30);c.fillStyle='#333';c.fillRect(x-42,y-28,8,14);c.fillRect(x+34,y-28,8,14);
+   c.fillStyle='rgba(255,255,180,.25)';c.beginPath();c.moveTo(x+34,y-24);c.lineTo(x+160,y-60);c.lineTo(x+160,y+10);c.fill();
+   drawSensors(c,x+28,y-36,b);return;
+  }
+  var by=y-(ch==='legs'?46:30);
+  c.fillStyle=body;c.fillRect(x-32,by-22,64,24);
+  if(b.power==='solar'){c.fillStyle='#1b3a6b';c.fillRect(x-36,by-30,72,6);}
+  c.fillStyle='#222';
+  if(ch==='wheels2'){wheel(c,x-14,y-11,11,spin);c.beginPath();c.arc(x+24,y-5,5,0,7);c.fill();}
+  else if(ch==='wheels4'||ch==='magnetic'){wheel(c,x-20,y-11,11,spin);wheel(c,x+20,y-11,11,spin);
+   if(ch==='magnetic'){c.fillStyle='#d83b3b';c.fillRect(x-24,y-4,8,4);c.fillRect(x+16,y-4,8,4);}}
+  else if(ch==='tracks'){c.fillStyle='#333';roundRect(c,x-38,y-22,76,22,11);c.fillStyle='#777';for(var k=0;k<7;k++){var tx=x-30+((k*12+spin*6)%72);c.fillRect(tx,y-3,4,3);}}
+  else if(ch==='legs'){c.strokeStyle='#222';c.lineWidth=4;for(var l=0;l<3;l++){var lx=x-22+l*22,ph=Math.sin(spin*0.6+l*2)*8;c.beginPath();c.moveTo(lx,by+2);c.lineTo(lx+ph,by+14);c.lineTo(lx+ph*0.5,y);c.stroke();}}
+  else{c.fillStyle='#555';c.fillRect(x-30,y-10,60,10);}
+  drawSensors(c,x+28,by-16,b);
+ }
+ function wheel(c,x,y,r,a){c.fillStyle='#222';c.beginPath();c.arc(x,y,r,0,7);c.fill();c.strokeStyle='#888';c.lineWidth=2;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(a)*r*0.8,y+Math.sin(a)*r*0.8);c.stroke();}
+ function roundRect(c,x,y,w,hh,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+hh,r);c.arcTo(x+w,y+hh,x,y+hh,r);c.arcTo(x,y+hh,x,y,r);c.arcTo(x,y,x+w,y,r);c.fill();}
+ function drawSensors(c,x,y,b){
+  c.font='16px Segoe UI Emoji, Segoe UI, sans-serif';c.textAlign='center';
+  b.sensors.forEach(function(s,i){c.fillText(findPart('sensors',s).icon,x-i*18,y);});
+ }
+
+ /* ---------- результат ---------- */
+ function showResult(r){
+  header();window.scrollTo(0,0);
+  app.innerHTML='';
+  var top=h('section','card '+(r.success?'green':'red'));
+  top.innerHTML='<h1>'+(r.success?'✅ Місію виконано!':'❌ Місію провалено')+'</h1>'+
+   '<div class="res"><div><div class="bigstars">'+starsStr(r.attStars)+'</div><div class="small">'+(r.attStars<r.stars?'Збірка заробила б '+starsStr(r.stars)+', але це спроба '+r.att+' (максимум '+starsStr(r.cap)+')':'Спроба '+r.att)+'</div></div>'+
+   '<div><div class="num">'+r.score+'%</div><div class="small">якість робота</div></div>'+
+   '<div><div class="num">+'+r.points+'</div><div class="small">очок'+(r.success&&r.leftover>0?' (з них '+r.leftover*25+' за зекономлені 🪙'+r.leftover+')':'')+(r.newBest?'':' · рекорд місії не побито')+'</div></div></div>';
+  app.appendChild(top);
+  var bs=h('section','card');
+  bs.innerHTML='<h2>📊 Звіт інженерів</h2>';
+  var bars=h('div','bars');
+  [['🚗 Прохідність (шасі)',r.c],['📡 Датчики',r.s],['🔋 Живлення',r.p],['🧠 Керування',r.k]].forEach(function(x){
+   var v=Math.round(x[1]*100),col=v>=85?'var(--green)':v>=40?'var(--yellow)':'var(--red)';
+   bars.appendChild(h('div','bar','<div class="bl"><span>'+x[0]+'</span><span>'+v+'%</span></div><div class="bt"><div class="bf" style="width:'+v+'%;background:'+col+'"></div></div>'));
+  });
+  bs.appendChild(bars);
+  var ul=h('ul','expl');
+  r.lines.forEach(function(L){var ic=L.t==='ok'?'✅':L.t==='warn'?'⚠️':'❌';ul.appendChild(h('li',L.t,ic+' '+esc(L.msg)));});
+  bs.appendChild(ul);
+  if(!r.success)bs.appendChild(h('p','small','Порада: виправ пункти з ❌ — це критичні помилки, через які робот не впорався.'));
+  app.appendChild(bs);
+  var act=h('section','row');
+  var st=mstate(cur.id),idx=MISSIONS.indexOf(cur);
+  if(st.stars<3){var again=h('button','btn ghost','🔧 Змінити робота (спроба '+(st.att+1)+', макс. '+starsStr(st.att+1===2?2:1)+')');again.onclick=function(){showMission(idx);};act.appendChild(again);}
+  var next=null;for(var j=idx+1;j<MISSIONS.length;j++){if(unlocked(j)){next=j;break;}}
+  if(next!==null&&(MISSIONS[next].bonus?true:passed(cur.id))){var nb=h('button','btn green','Наступна місія: '+MISSIONS[next].icon+' '+MISSIONS[next].title+' ▶');nb.onclick=function(){showMission(next);};act.appendChild(nb);}
+  var mb=h('button','btn','🗺️ До місій');mb.onclick=showMap;act.appendChild(mb);
+  app.appendChild(act);
+ }
+
+ /* ---------- фінал ---------- */
+ function showFinal(){
+  noDock();header();window.scrollTo(0,0);
+  var stars=MISSIONS.map(function(m){return mstate(m.id).stars;});
+  var ms=mainStars(),pts=totalPts(),code=makeCode(S.name,stars,pts),line=S.name+' — '+code;
+  app.innerHTML='';
+  var c=h('section','card green');
+  c.innerHTML='<h1>🏁 Твій результат</h1>'+
+   '<div class="res"><div><div class="bigstars" style="font-size:34px">⭐ '+ms+' / 18</div><div class="small">зірок в основних місіях</div></div>'+
+   '<div><div class="num">'+GRADE[ms]+'</div><div class="small">оцінка (з 12)</div></div>'+
+   '<div><div class="num">'+pts+'</div><div class="small">очок · звання «'+rankTitle(pts)+'»</div></div></div>'+
+   '<h3>Код результату</h3><div class="code">'+code+'</div>'+
+   '<p>Надішли вчителю <b>цей рядок</b> (як домовились у класі) або покажи екран:</p>';
+  var r=h('div','row');var li=h('input');li.type='text';li.readOnly=true;li.value=line;li.style.maxWidth='520px';
+  var cp=h('button','btn','📋 Копіювати');cp.onclick=function(){li.select();var ok=false;try{ok=document.execCommand('copy');}catch(e){}
+   try{navigator.clipboard.writeText(line).then(function(){cp.textContent='✅ Скопійовано';});}catch(e){if(ok)cp.textContent='✅ Скопійовано';}if(ok)cp.textContent='✅ Скопійовано';};
+  r.appendChild(li);r.appendChild(cp);c.appendChild(r);
+  c.appendChild(h('p','small','Якщо ще пройдеш місії — повернись сюди: код оновиться.'));
+  app.appendChild(c);
+  var t=h('section','card');
+  var rows=MISSIONS.map(function(m){var s=mstate(m.id);return '<tr><td>'+m.icon+' '+m.title+'</td><td style="color:#f2b705;font-size:18px">'+starsStr(s.stars)+'</td><td>'+s.att+'</td><td>'+s.pts+'</td></tr>';}).join('');
+  t.innerHTML='<h2>По місіях</h2><table><tr><th>Місія</th><th>Зірки</th><th>Спроб</th><th>Очки</th></tr>'+rows+'</table>';
+  app.appendChild(t);
+  var a=h('section','row');
+  var mb=h('button','btn','🗺️ До місій');mb.onclick=showMap;a.appendChild(mb);
+  var rs=h('button','btn ghost','Почати заново');var arm=false;
+  rs.onclick=function(){if(!arm){arm=true;rs.textContent='Точно? Увесь прогрес зітреться — натисни ще раз';return;}try{localStorage.removeItem(KEY);}catch(e){}S=null;showStart();};
+  a.appendChild(rs);app.appendChild(a);
+ }
+
+ /* ---------- тема ---------- */
+ (function(){
+  var root=document.documentElement,tb=document.getElementById('themeBtn');
+  function isDark(){var t=root.getAttribute('data-theme');if(t)return t==='dark';return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;}
+  function syncIcon(){tb.textContent=isDark()?'☀️':'🌙';}
+  tb.onclick=function(){var n=isDark()?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('vexTheme',n);}catch(e){}syncIcon();};
+  syncIcon();
+ })();
+
+ if(S)showMap();else showStart();
+})();
+</script>
+</body>
+</html>
