@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лідерборд — Конструктор місій</title>
+<script>
+(function(){var t=null;try{t=localStorage.getItem('vexTheme');}catch(e){}
+if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#5d687c;--blue:#1976d2;--green:#198754;--red:#d83b3b;--red-soft:#fff0f0;--border:#dce3ed;--th:#eef2f7;--tile:#fff;--shadow:0 5px 18px rgba(30,50,80,.06);color-scheme:light}
+:root[data-theme="dark"]{--bg:#0f1520;--card:#18202e;--text:#e6ecf5;--muted:#9aa6b8;--blue:#4f9cf0;--green:#3fbf7f;--red:#f06b6b;--red-soft:#331b1e;--border:#2b3647;--th:#1f2938;--tile:#1d2636;--shadow:0 5px 18px rgba(0,0,0,.35);color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1520;--card:#18202e;--text:#e6ecf5;--muted:#9aa6b8;--blue:#4f9cf0;--green:#3fbf7f;--red:#f06b6b;--red-soft:#331b1e;--border:#2b3647;--th:#1f2938;--tile:#1d2636;--shadow:0 5px 18px rgba(0,0,0,.35);color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+header{background:linear-gradient(135deg,#b8860b,#f2b705);color:#1c1300;padding:26px 0}
+.wrap{max-width:1150px;margin:auto;padding:0 18px}
+h1{margin:0;font-size:clamp(28px,4.5vw,44px)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:var(--shadow);margin:20px 0}
+textarea{width:100%;min-height:160px;font:15px Consolas,monospace;padding:12px;border-radius:12px;border:2px solid var(--border);background:var(--tile);color:var(--text)}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.btn{border:0;border-radius:12px;padding:11px 18px;font:700 16px Segoe UI,Arial,sans-serif;cursor:pointer;background:var(--blue);color:#fff}
+.btn.ghost{background:transparent;color:var(--text);border:2px solid var(--border)}
+label{font-weight:600;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid var(--border);padding:12px 10px;text-align:left}
+th{background:var(--th);font-size:15px}
+td.place{font-size:26px;font-weight:800;width:70px;text-align:center}
+td.pts{font-weight:800;color:var(--blue);font-size:22px}
+td.st{color:#f2b705;letter-spacing:1px;white-space:nowrap}
+tr.top1{background:rgba(242,183,5,.16)}tr.top2{background:rgba(160,170,185,.16)}tr.top3{background:rgba(205,127,50,.14)}
+.small{color:var(--muted);font-size:14px}
+.bad{background:var(--red-soft);border-left:6px solid var(--red)}
+body.big table{font-size:24px}body.big td.place{font-size:38px}body.big td.pts{font-size:32px}body.big .hide-big,body.big textarea,body.big .hint{display:none}
+.theme-btn{position:fixed;top:12px;right:12px;z-index:60;border:1px solid var(--border);background:var(--card);color:var(--text);width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer}
+</style>
+</head>
+<body>
+<button type="button" class="theme-btn" id="themeBtn" aria-label="Світла / темна тема">🌙</button>
+<header><div class="wrap"><h1>🏆 Лідерборд: Конструктор місій</h1><div>Робототехніка, 9 клас · урок 9</div></div></header>
+<main class="wrap">
+<section class="card">
+  <b>Вставте рядки від учнів</b> — по одному на рядок, у форматі <code>Прізвище Ім'я — КОД</code>. Розділювач може бути будь-який (тире, двокрапка, пробіл).
+  <textarea id="inp" placeholder="Петренко Іван — JND5-5APN&#10;Коваль Марія: 7KQ2-HX9C"></textarea>
+  <div class="row">
+    <button class="btn" id="go">Оновити таблицю</button>
+    <label><input type="checkbox" id="short"> Показувати лише ім'я та першу літеру прізвища</label>
+    <label><input type="checkbox" id="big"> Великий шрифт для дошки</label>
+    <button class="btn ghost" id="clr">Очистити</button>
+  </div>
+  <p class="small hint">Код прив'язаний до імені: якщо учень змінить ім'я або візьме чужий код, рядок не пройде перевірку. Дані зберігаються лише в цьому браузері.</p>
+</section>
+<section class="card" id="out"></section>
+<section class="card bad" id="errs" style="display:none"></section>
+</main>
+<script>
+var ALPH='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+function fnv(s){var h=0x811c9dc5;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return h>>>0;}
+function normName(n){return String(n).toLowerCase().replace(/[’'ʼ`\s.\-_,]/g,'');}
+function readCode(name,code){
+ code=String(code).toUpperCase().replace(/[^0-9A-Z]/g,'');
+ if(code.length!==8)return null;
+ var val=0;for(var i=0;i<8;i++){var d=ALPH.indexOf(code[i]);if(d<0)return null;val=val*32+d;}
+ var chk=val%4096,scr=Math.floor(val/4096);
+ var data=(scr^(fnv('m'+chk)&0xFFFFFFF))>>>0;
+ if((fnv(normName(name)+'|'+data+'|r9l9')&0xFFF)!==chk)return null;
+ var stars=[];for(var j=0;j<7;j++)stars.push(Math.floor(data/Math.pow(4,j))%4);
+ return {stars:stars,points:Math.floor(data/16384)};
+}
+var GRADE=[1,1,2,2,3,3,4,5,5,6,7,7,8,9,9,10,10,11,12];
+function rankTitle(p){return p>=6000?'Головний конструктор':p>=4500?'Головний інженер':p>=3000?'Інженер':p>=1500?'Технік':'Стажер';}
+var ICONS=['📦','🌾','🚩','🏚️','🪸','🔴','🛢️'];
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var inp=document.getElementById('inp'),out=document.getElementById('out'),errs=document.getElementById('errs'),sh=document.getElementById('short'),big=document.getElementById('big');
+try{inp.value=localStorage.getItem('r9l9_lb')||'';sh.checked=localStorage.getItem('r9l9_lb_short')==='1';}catch(e){}
+function shortName(n){var p=n.trim().split(/\s+/);if(p.length<2)return n;return p[1]+' '+p[0].charAt(0)+'.';}
+function render(){
+ try{localStorage.setItem('r9l9_lb',inp.value);localStorage.setItem('r9l9_lb_short',sh.checked?'1':'0');}catch(e){}
+ var best={},bad=[];
+ inp.value.split(/\r?\n/).forEach(function(line){
+  var L=line.trim();if(!L)return;
+  var m=L.match(/([0-9A-Za-z]{4})\s*-?\s*([0-9A-Za-z]{4})\s*$/);
+  if(!m){bad.push([L,'не знайдено код']);return;}
+  var name=L.slice(0,m.index).replace(/[\s\-—–:;,|]+$/,'').trim();
+  if(!name){bad.push([L,'немає імені']);return;}
+  var r=readCode(name,m[1]+m[2]);
+  if(!r){bad.push([L,'код не збігається з іменем (помилка в імені чи коді, або чужий код)']);return;}
+  var key=normName(name);
+  var ms=r.stars.slice(0,6).reduce(function(a,b){return a+b;},0);
+  var o={name:name,stars:r.stars,ms:ms,pts:r.points};
+  if(!best[key]||best[key].pts<o.pts)best[key]=o;
+ });
+ var list=Object.keys(best).map(function(k){return best[k];}).sort(function(a,b){return b.pts-a.pts||b.ms-a.ms;});
+ if(!list.length){out.innerHTML='<p class="small">Поки що немає результатів.</p>';}
+ else{
+  var medals=['🥇','🥈','🥉'];
+  var rows=list.map(function(o,i){
+   var per=o.stars.map(function(s,j){return '<span title="місія '+(j+1)+'">'+ICONS[j]+(s?'★'.repeat(s):'·')+'</span>';}).join(' ');
+   return '<tr class="'+(i<3?'top'+(i+1):'')+'"><td class="place">'+(medals[i]||i+1)+'</td><td><b>'+esc(sh.checked?shortName(o.name):o.name)+'</b><div class="small">'+rankTitle(o.pts)+'</div></td><td class="pts">'+o.pts+'</td><td class="st">⭐ '+o.ms+'/18</td><td class="hide-big"><b>'+GRADE[o.ms]+'</b></td><td class="small hide-big">'+per+'</td></tr>';
+  }).join('');
+  out.innerHTML='<table><tr><th>Місце</th><th>Інженер</th><th>Очки</th><th>Зірки</th><th class="hide-big">Оцінка</th><th class="hide-big">По місіях</th></tr>'+rows+'</table><p class="small">Учасників: '+list.length+'. У режимі великого шрифту оцінки приховано.</p>';
+ }
+ if(bad.length){errs.style.display='block';errs.innerHTML='<b>Не пройшли перевірку ('+bad.length+'):</b><ul>'+bad.map(function(b){return '<li><code>'+esc(b[0])+'</code> — '+b[1]+'</li>';}).join('')+'</ul>';}
+ else errs.style.display='none';
+}
+document.getElementById('go').onclick=render;
+document.getElementById('clr').onclick=function(){inp.value='';render();};
+sh.onchange=render;
+big.onchange=function(){document.body.classList.toggle('big',big.checked);};
+render();
+(function(){var root=document.documentElement,tb=document.getElementById('themeBtn');
+ function isDark(){var t=root.getAttribute('data-theme');if(t)return t==='dark';return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;}
+ function syncIcon(){tb.textContent=isDark()?'☀️':'🌙';}
+ tb.onclick=function(){var n=isDark()?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('vexTheme',n);}catch(e){}syncIcon();};syncIcon();})();
+</script>
+</body>
+</html>
